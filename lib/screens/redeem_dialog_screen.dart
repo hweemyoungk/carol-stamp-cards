@@ -1,29 +1,30 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:carol/main.dart';
+import 'package:carol/providers/stamp_card_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:carol/models/redeem_rule.dart';
 import 'package:carol/models/stamp_card.dart';
 import 'package:carol/utils.dart';
 import 'package:flutter/material.dart';
+import 'package:transparent_image/transparent_image.dart';
 
-class RedeemDialog extends StatefulWidget {
-  const RedeemDialog({
+class RedeemDialogScreen extends ConsumerStatefulWidget {
+  const RedeemDialogScreen({
     super.key,
+    required this.stampCardProvider,
     required this.redeemRule,
-    required this.stampCard,
-    required this.parentContext,
   });
 
+  final StateNotifierProvider<StampCardNotifier, StampCard> stampCardProvider;
   final RedeemRule redeemRule;
-  final StampCard stampCard;
-  final BuildContext parentContext;
 
   @override
-  State<RedeemDialog> createState() => _RedeemDialogState();
+  ConsumerState<RedeemDialogScreen> createState() => _RedeemDialogScreenState();
 }
 
-class _RedeemDialogState extends State<RedeemDialog> {
+class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
   bool redeeming = false;
   late Widget redeemButton;
   String? redeemRequestId;
@@ -32,7 +33,6 @@ class _RedeemDialogState extends State<RedeemDialog> {
   @override
   void initState() {
     super.initState();
-    MyApp.activeContext = context;
     redeemButton = ElevatedButton(
       onPressed: _onPressRedeem,
       child: Text('Consume ${widget.redeemRule.consumes} stamps to get reward'),
@@ -41,30 +41,48 @@ class _RedeemDialogState extends State<RedeemDialog> {
 
   @override
   void dispose() {
-    MyApp.activeContext = widget.parentContext;
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(widget.redeemRule.description),
-        TextButton(
-          onPressed: _onPressBack,
-          child: const Text(
-            'Back',
-            textAlign: TextAlign.end,
+    Widget image = widget.redeemRule.imageUrl == null
+        ? Image.memory(
+            kTransparentImage,
+            fit: BoxFit.contain,
+          )
+        : Image.asset(
+            widget.redeemRule.imageUrl!,
+            fit: BoxFit.contain,
+          );
+    return AlertDialog(
+      title: Text(widget.redeemRule.displayName),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          image,
+          Padding(
+            padding: Utils.basicWidgetEdgeInsets(),
+            child: Text(widget.redeemRule.description),
           ),
-        ),
-        redeemButton,
-      ],
+          TextButton(
+            onPressed: _onPressBack,
+            child: const Text(
+              'Back',
+              textAlign: TextAlign.end,
+            ),
+          ),
+          redeemButton,
+        ],
+      ),
     );
   }
 
   void _onPressRedeem() async {
+    final stampCard = ref.read(widget.stampCardProvider);
+    final stampCardNotifier = ref.read(widget.stampCardProvider.notifier);
+
     // 0. Disable Redeem button.
     setState(() {
       redeeming = true;
@@ -74,7 +92,9 @@ class _RedeemDialogState extends State<RedeemDialog> {
     // Trigger customerService.initRedeemRequest
     if (redeeming) {
       redeemRequestId = await initRedeemRequest(
-          stampCardId: widget.stampCard.id, redeemRuleId: widget.redeemRule.id);
+        stampCardId: stampCard.id,
+        redeemRuleId: widget.redeemRule.id,
+      );
     }
 
     // 2. Every n seconds, check RedeemRequest still exists, until m seconds.
@@ -104,13 +124,20 @@ class _RedeemDialogState extends State<RedeemDialog> {
       }
 
       // 3-1.2. Close Dialog and refresh CardScreen
-      ScaffoldMessenger.of(MyApp.activeContext!).clearSnackBars();
-      ScaffoldMessenger.of(MyApp.activeContext!).showSnackBar(const SnackBar(
+      ScaffoldMessenger.of(MyApp.materialKey.currentContext!).clearSnackBars();
+      ScaffoldMessenger.of(MyApp.materialKey.currentContext!)
+          .showSnackBar(const SnackBar(
         content: Text('Request success'),
         duration: Duration(seconds: 3),
       ));
+      final updatedNumCollectedStamps =
+          stampCard.numCollectedStamps - widget.redeemRule.consumes;
+      final updatedStampCard = stampCard.copyWith(
+        numCollectedStamps: updatedNumCollectedStamps,
+      );
+      stampCardNotifier.set(stampCard: updatedStampCard);
     } else {
-      // 3-2. If not, redeem failed. (probably due to owner didn't allowed or timeout)
+      // 3-2. If not, redeem failed. (probably because owner didn't allowed or timeout)
       // 3-2.1. Change Progress with to Refresh widget
       if (redeeming) {
         setState(() {
@@ -124,8 +151,9 @@ class _RedeemDialogState extends State<RedeemDialog> {
         });
         await Future.delayed(Duration(seconds: 1));
       }
-      ScaffoldMessenger.of(MyApp.activeContext!).clearSnackBars();
-      ScaffoldMessenger.of(MyApp.activeContext!).showSnackBar(const SnackBar(
+      ScaffoldMessenger.of(MyApp.materialKey.currentContext!).clearSnackBars();
+      ScaffoldMessenger.of(MyApp.materialKey.currentContext!)
+          .showSnackBar(const SnackBar(
         content: Text('Request canceled'),
         duration: Duration(seconds: 3),
       ));
@@ -147,7 +175,7 @@ class _RedeemDialogState extends State<RedeemDialog> {
     final historyExistsTask = Future(() async {
       // sleep(Duration(seconds: random.nextInt(5) + 1));
       await Future.delayed(Duration(seconds: random.nextInt(5) + 1));
-      final exists = random.nextDouble() < 0.5;
+      final exists = random.nextDouble() < 1.0;
       return exists;
     });
     return await historyExistsTask;
@@ -189,7 +217,7 @@ class _RedeemDialogState extends State<RedeemDialog> {
             localCompleter.completeError(error);
             return Future.error(error);
           }
-          final exists = random.nextDouble() < 0.7;
+          final exists = random.nextDouble() < 0.0;
           print('RequestExists at t=${i}s responds: $exists');
           localCompleter.complete(exists);
           return exists;
@@ -253,6 +281,7 @@ class _RedeemDialogState extends State<RedeemDialog> {
           print('RedeemRequest deleted!');
         },
       );
+      redeemRequestId = null;
     }
     Navigator.of(context).pop();
   }

@@ -1,36 +1,34 @@
 import 'package:carol/data/dummy_data.dart';
-import 'package:carol/main.dart';
+import 'package:carol/models/stamp_card.dart';
+import 'package:carol/providers/stamp_card_provider.dart';
 import 'package:carol/widgets/cards_explorer/cards_list_item_card.dart';
-import 'package:carol/widgets/cards_explorer/cards_list_item_tile.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class CardsList extends StatefulWidget {
+class CardsList extends ConsumerStatefulWidget {
   const CardsList({
     super.key,
-    required this.parentContext,
   });
 
-  final BuildContext parentContext;
-
   @override
-  State<CardsList> createState() => _CardsListState();
+  ConsumerState<CardsList> createState() => _CardsListState();
 }
 
-class _CardsListState extends State<CardsList> {
+class _CardsListState extends ConsumerState<CardsList> {
   final ScrollController _controller = ScrollController();
 
-  final _items = dummyStampCards;
+  List<StampCard> _stampCards = [];
 
   @override
   void initState() {
+    // TODO: implement initState
     super.initState();
-    MyApp.activeContext = context;
-  }
-
-  @override
-  void dispose() {
-    MyApp.activeContext = widget.parentContext;
-    super.dispose();
+    loadStampCards().then((value) {
+      setState(() {
+        _stampCards = value;
+      });
+      print('CardsList loaded stampcards!');
+    });
   }
 
   @override
@@ -39,17 +37,17 @@ class _CardsListState extends State<CardsList> {
       onNotification: _handleScrollNotification,
       child: ListView.builder(
         controller: _controller,
-        itemCount: _items.length + 1,
+        itemCount: _stampCards.length + 1,
         itemBuilder: (ctx, index) {
-          return index == _items.length
+          return index == _stampCards.length
               ? const Text(
                   // TODO Implement load symbol.
                   'LOAD MORE?',
                   style: TextStyle(color: Colors.white),
                 )
               : CardsListItemCard(
-                  stampCard: _items[index],
-                  parentContext: widget.parentContext,
+                  provider:
+                      StampCardProviders.providers[_stampCards[index].id]!,
                 );
         },
       ),
@@ -67,11 +65,20 @@ class _CardsListState extends State<CardsList> {
     return false;
   }
 
-  void loadMore() {
+  void loadMore() async {
     // TODO Implement loadMore
-    throw UnimplementedError();
+    // throw UnimplementedError();
+    await Future.delayed(const Duration(seconds: 2));
+    final newDummyStampCards = genDummyStampCards(
+      numCards: 10,
+    );
     setState(() {
-      // _items.addAll(List.generate(100, (index) => 'Inserted $index'));
+      _stampCards.addAll(newDummyStampCards);
     });
+  }
+
+  Future<List<StampCard>> loadStampCards() async {
+    await Future.delayed(const Duration(seconds: 1));
+    return genDummyStampCards(numCards: 10);
   }
 }

@@ -1,48 +1,35 @@
 import 'package:carol/main.dart';
 import 'package:carol/models/redeem_rule.dart';
 import 'package:carol/models/stamp_card.dart';
-import 'package:carol/widgets/card/redeem_dialog.dart';
+import 'package:carol/providers/stamp_card_provider.dart';
+import 'package:carol/screens/redeem_dialog_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class RedeemRuleListItem extends StatefulWidget {
+class RedeemRuleListItem extends ConsumerStatefulWidget {
   const RedeemRuleListItem({
     super.key,
     required this.redeemRule,
-    required this.stampCard,
+    required this.stampCardProvider,
     required this.style,
     required this.color,
-    required this.parentContext,
   });
 
   final RedeemRule redeemRule;
-  final StampCard stampCard;
+  final StateNotifierProvider<StampCardNotifier, StampCard> stampCardProvider;
   final TextStyle style;
   final Color color;
-  final BuildContext parentContext;
 
   @override
-  State<RedeemRuleListItem> createState() => _RedeemRuleListItemState();
+  ConsumerState<RedeemRuleListItem> createState() => _RedeemRuleListItemState();
 }
 
-class _RedeemRuleListItemState extends State<RedeemRuleListItem> {
-  late Widget redeemButton;
-
-  @override
-  void initState() {
-    super.initState();
-    MyApp.activeContext = context;
-  }
-
-  @override
-  void dispose() {
-    MyApp.activeContext = widget.parentContext;
-    super.dispose();
-  }
-
+class _RedeemRuleListItemState extends ConsumerState<RedeemRuleListItem> {
   @override
   Widget build(BuildContext context) {
+    final stampCard = ref.watch(widget.stampCardProvider);
     final redeemable =
-        widget.redeemRule.consumes <= widget.stampCard.numCollectedStamps;
+        widget.redeemRule.consumes <= stampCard.numCollectedStamps;
     final appliedColor =
         redeemable ? widget.color : widget.color.withOpacity(.2);
     return ListTile(
@@ -52,13 +39,10 @@ class _RedeemRuleListItemState extends State<RedeemRuleListItem> {
               await showDialog(
                 context: context,
                 builder: (ctx) {
-                  return AlertDialog(
-                    title: Text(widget.redeemRule.displayName),
-                    content: RedeemDialog(
-                      redeemRule: widget.redeemRule,
-                      stampCard: widget.stampCard,
-                      parentContext: widget.parentContext,
-                    ),
+                  return RedeemDialogScreen(
+                    stampCardProvider:
+                        StampCardProviders.providers[stampCard.id]!,
+                    redeemRule: widget.redeemRule,
                   );
                 },
               );

@@ -36,6 +36,7 @@ class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
   static BuildContext? activeContext;
+  static GlobalKey<NavigatorState> materialKey = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
@@ -43,6 +44,7 @@ class MyApp extends StatelessWidget {
       title: 'Carol Cards',
       theme: theme,
       home: const DashboardScreen(),
+      navigatorKey: MyApp.materialKey,
     );
   }
 }

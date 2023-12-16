@@ -10,6 +10,8 @@ class StampCard {
   final DateTime expirationDate;
   final bool isFavorite;
   final bool isOneTimeUse;
+  final String customerId;
+  final String ownerId;
   final Icon? icon;
   final String? imageUrl;
 
@@ -23,9 +25,43 @@ class StampCard {
     required this.expirationDate,
     required this.isFavorite,
     required this.isOneTimeUse,
+    required this.customerId,
+    required this.ownerId,
     this.icon,
     this.imageUrl,
   });
+
+  StampCard copyWith({
+    String? id,
+    String? displayName,
+    int? numCollectedStamps,
+    int? numGoalStamps,
+    int? numMaxStamps,
+    DateTime? lastModifiedDate,
+    DateTime? expirationDate,
+    bool? isFavorite,
+    bool? isOneTimeUse,
+    String? customerId,
+    String? ownerId,
+    Icon? icon,
+    String? imageUrl,
+  }) {
+    return StampCard(
+      id: id ?? this.id,
+      displayName: displayName ?? this.displayName,
+      numCollectedStamps: numCollectedStamps ?? this.numCollectedStamps,
+      numGoalStamps: numGoalStamps ?? this.numGoalStamps,
+      numMaxStamps: numMaxStamps ?? this.numMaxStamps,
+      lastModifiedDate: lastModifiedDate ?? this.lastModifiedDate,
+      expirationDate: expirationDate ?? this.expirationDate,
+      isFavorite: isFavorite ?? this.isFavorite,
+      isOneTimeUse: isOneTimeUse ?? this.isOneTimeUse,
+      customerId: customerId ?? this.customerId,
+      ownerId: ownerId ?? this.ownerId,
+      icon: icon ?? this.icon,
+      imageUrl: imageUrl ?? this.imageUrl,
+    );
+  }
 
   String get stampsRatio => '$numCollectedStamps/$numGoalStamps';
   String get lastModifiedDateLabel {

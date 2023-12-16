@@ -1,25 +1,25 @@
 import 'package:carol/main.dart';
 import 'package:carol/models/stamp_card.dart';
+import 'package:carol/providers/stamp_card_provider.dart';
 import 'package:carol/utils.dart';
 import 'package:carol/widgets/card/card_info.dart';
 import 'package:carol/widgets/card/redeem_rules_list.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
-class CardScreen extends StatefulWidget {
-  final StampCard stampCard;
-  final BuildContext parentContext;
+class CardScreen extends ConsumerStatefulWidget {
+  final StateNotifierProvider<StampCardNotifier, StampCard> stampCardProvider;
   const CardScreen({
     super.key,
-    required this.stampCard,
-    required this.parentContext,
+    required this.stampCardProvider,
   });
 
   @override
-  State<CardScreen> createState() => _CardScreenState();
+  ConsumerState<CardScreen> createState() => _CardScreenState();
 }
 
-class _CardScreenState extends State<CardScreen> {
+class _CardScreenState extends ConsumerState<CardScreen> {
   final loadableStoreInfo = ElevatedButton.icon(
     onPressed: _onPressLoadStoreInfo,
     icon: const Icon(Icons.store),
@@ -27,26 +27,15 @@ class _CardScreenState extends State<CardScreen> {
   );
 
   @override
-  void initState() {
-    super.initState();
-    MyApp.activeContext = context;
-  }
-
-  @override
-  void dispose() {
-    MyApp.activeContext = widget.parentContext;
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final cardInfo = CardInfo(stampCard: widget.stampCard);
+    final stampCard = ref.watch(widget.stampCardProvider);
+    final cardInfo = CardInfo(stampCardProvider: widget.stampCardProvider);
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.secondary,
       body: LayoutBuilder(
         builder: (ctx, constraints) {
           final qrImageView = QrImageView(
-            data: widget.stampCard.id,
+            data: stampCard.id,
             version: QrVersions.auto,
             size: constraints.maxWidth * 0.4,
           );
@@ -57,14 +46,14 @@ class _CardScreenState extends State<CardScreen> {
                 Padding(
                   padding: Utils.basicWidgetEdgeInsets(.5),
                   child: Text(
-                    widget.stampCard.stampsRatio,
+                    stampCard.stampsRatio,
                     style: Theme.of(context).textTheme.headlineLarge,
                     textAlign: TextAlign.center,
                   ),
                 ),
                 Padding(
                   padding: Utils.basicWidgetEdgeInsets(.5),
-                  child: Text('Max: ${widget.stampCard.numMaxStamps}'),
+                  child: Text('Max: ${stampCard.numMaxStamps}'),
                 ),
               ],
             ),
@@ -93,8 +82,7 @@ class _CardScreenState extends State<CardScreen> {
                   Padding(
                     padding: Utils.basicWidgetEdgeInsets(1.5),
                     child: RedeemRulesList(
-                      stampCard: widget.stampCard,
-                      parentContext: context,
+                      stampCardProvider: widget.stampCardProvider,
                     ),
                   ),
                   loadableStoreInfo,

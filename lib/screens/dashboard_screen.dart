@@ -1,3 +1,4 @@
+import 'package:carol/main.dart';
 import 'package:carol/widgets/cards_explorer/cards_explorer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,9 +14,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: CardsExplorer(
-        parentContext: context,
-      ),
+      body: CardsExplorer(),
       bottomNavigationBar: BottomNavigationBar(
         onTap: (value) {},
         items: const [

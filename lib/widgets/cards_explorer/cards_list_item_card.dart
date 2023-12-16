@@ -1,37 +1,25 @@
-import 'package:carol/main.dart';
 import 'package:carol/models/stamp_card.dart';
+import 'package:carol/providers/stamp_card_provider.dart';
 import 'package:carol/screens/card_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:transparent_image/transparent_image.dart';
 
-class CardsListItemCard extends StatefulWidget {
-  final StampCard stampCard;
-  final BuildContext parentContext;
+class CardsListItemCard extends ConsumerStatefulWidget {
+  final StateNotifierProvider<StampCardNotifier, StampCard> provider;
   const CardsListItemCard({
     super.key,
-    required this.stampCard,
-    required this.parentContext,
+    required this.provider,
   });
 
   @override
-  State<CardsListItemCard> createState() => _CardsListItemCardState();
+  ConsumerState<CardsListItemCard> createState() => _CardsListItemCardState();
 }
 
-class _CardsListItemCardState extends State<CardsListItemCard> {
-  @override
-  void initState() {
-    super.initState();
-    MyApp.activeContext = context;
-  }
-
-  @override
-  void dispose() {
-    MyApp.activeContext = widget.parentContext;
-    super.dispose();
-  }
-
+class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
   @override
   Widget build(BuildContext context) {
+    final stampCard = ref.watch(widget.provider);
     return Card(
       margin: const EdgeInsets.all(10),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -42,8 +30,8 @@ class _CardsListItemCardState extends State<CardsListItemCard> {
         child: Stack(
           children: [
             Hero(
-              tag: widget.stampCard.id,
-              child: widget.stampCard.imageUrl == null
+              tag: stampCard.id,
+              child: stampCard.imageUrl == null
                   ? Image.memory(
                       kTransparentImage,
                       height: 200,
@@ -52,8 +40,8 @@ class _CardsListItemCardState extends State<CardsListItemCard> {
                     )
                   : FadeInImage(
                       placeholder: MemoryImage(kTransparentImage),
-                      // image: NetworkImage(widget.stampCard.imageUrl!),
-                      image: AssetImage(widget.stampCard.imageUrl!),
+                      // image: NetworkImage(stampCard.imageUrl!),
+                      image: AssetImage(stampCard.imageUrl!),
                       fit: BoxFit.cover,
                       height: 200,
                       width: double.infinity,
@@ -71,7 +59,7 @@ class _CardsListItemCardState extends State<CardsListItemCard> {
                 ),
                 child: Column(children: [
                   Text(
-                    widget.stampCard.displayName,
+                    stampCard.displayName,
                     maxLines: 2,
                     textAlign: TextAlign.center,
                     softWrap: true,
@@ -85,7 +73,7 @@ class _CardsListItemCardState extends State<CardsListItemCard> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       Text(
-                        widget.stampCard.lastModifiedDateLabel,
+                        stampCard.lastModifiedDateLabel,
                         style: Theme.of(context)
                             .textTheme
                             .labelMedium!
@@ -96,7 +84,7 @@ class _CardsListItemCardState extends State<CardsListItemCard> {
                       ),
                       const SizedBox(width: 12),
                       Text(
-                        widget.stampCard.stampsRatio,
+                        stampCard.stampsRatio,
                         style: Theme.of(context)
                             .textTheme
                             .labelMedium!
@@ -107,7 +95,7 @@ class _CardsListItemCardState extends State<CardsListItemCard> {
                       ),
                       const SizedBox(width: 12),
                       Text(
-                        widget.stampCard.expirationDateLabel,
+                        stampCard.expirationDateLabel,
                         style: Theme.of(context)
                             .textTheme
                             .labelMedium!
@@ -131,8 +119,7 @@ class _CardsListItemCardState extends State<CardsListItemCard> {
     Navigator.of(context).push(MaterialPageRoute(
       builder: (ctx) {
         return CardScreen(
-          stampCard: widget.stampCard,
-          parentContext: widget.parentContext,
+          stampCardProvider: widget.provider,
         );
       },
     ));
