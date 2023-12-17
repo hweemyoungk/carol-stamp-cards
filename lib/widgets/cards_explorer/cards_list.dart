@@ -46,6 +46,7 @@ class _CardsListState extends ConsumerState<CardsList> {
                   style: TextStyle(color: Colors.white),
                 )
               : CardsListItemCard(
+                  key: ValueKey(_stampCards[index].id),
                   provider:
                       StampCardProviders.providers[_stampCards[index].id]!,
                 );

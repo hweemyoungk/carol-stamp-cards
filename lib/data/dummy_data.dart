@@ -1,4 +1,5 @@
 import 'dart:core';
+import 'dart:math';
 
 import 'package:carol/models/redeem_rule.dart';
 import 'package:carol/models/stamp_card.dart';
@@ -20,6 +21,18 @@ List<StampCard> genDummyStampCards({
           DateTime.now().add(Duration(days: -(random.nextInt(99) + 1)));
       final expirationDate =
           DateTime.now().add(Duration(days: random.nextInt(99) + 1));
+      // final wasDiscarded = random.nextDouble() < 0.2;
+      // Infinite (50%) / 1~5 (50%)
+      final numMaxRedeems =
+          random.nextDouble() < 0.5 ? 0 : random.nextInt(5) + 1;
+      final numRedeemed = numMaxRedeems == 0
+          ? random.nextInt(3)
+          : random.nextInt(numMaxRedeems + 1);
+      final wasUsedOut =
+          numMaxRedeems == 0 ? false : numMaxRedeems == numRedeemed;
+      // If not used out, discarded by 20%
+      final wasDiscarded = wasUsedOut ? false : random.nextDouble() < 0.2;
+      final isInactive = wasUsedOut || wasDiscarded;
       final stampCard = StampCard(
         id: uuid.v4(),
         displayName: 'Card Name $index',
@@ -28,11 +41,15 @@ List<StampCard> genDummyStampCards({
         numMaxStamps: numMaxStamps,
         lastModifiedDate: lastModifiedDate,
         expirationDate: expirationDate,
-        isFavorite: random.nextDouble() < 0.1,
-        isOneTimeUse: random.nextDouble() < 0.5,
+        isFavorite: random.nextDouble() < 0.3,
+        numMaxRedeems: numMaxRedeems,
+        numRedeemed: numRedeemed,
+        wasUsedOut: wasUsedOut,
+        wasDiscarded: wasDiscarded,
+        isInactive: isInactive,
         customerId: '',
-        ownerId: '',
-        imageUrl: random.nextDouble() < 0.5
+        storeId: '',
+        bgImageUrl: random.nextDouble() < 0.5
             // ? 'https://cdn.pixabay.com/photo/2018/03/31/19/29/schnitzel-3279045_1280.jpg'
             ? 'assets/images/schnitzel-3279045_1280.jpg'
             : null,

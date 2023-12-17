@@ -1,6 +1,7 @@
 import 'package:carol/models/stamp_card.dart';
 import 'package:carol/providers/stamp_card_provider.dart';
 import 'package:carol/screens/card_screen.dart';
+import 'package:carol/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:transparent_image/transparent_image.dart';
@@ -31,7 +32,7 @@ class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
           children: [
             Hero(
               tag: stampCard.id,
-              child: stampCard.imageUrl == null
+              child: stampCard.bgImageUrl == null
                   ? Image.memory(
                       kTransparentImage,
                       height: 200,
@@ -41,7 +42,7 @@ class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
                   : FadeInImage(
                       placeholder: MemoryImage(kTransparentImage),
                       // image: NetworkImage(stampCard.imageUrl!),
-                      image: AssetImage(stampCard.imageUrl!),
+                      image: AssetImage(stampCard.bgImageUrl!),
                       fit: BoxFit.cover,
                       height: 200,
                       width: double.infinity,
@@ -109,6 +110,18 @@ class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
                 ]),
               ),
             ),
+            Positioned(
+              top: 10,
+              right: 10,
+              child: IconButton(
+                icon: Icon(
+                  stampCard.isFavorite ? Icons.favorite : Icons.favorite_border,
+                  size: 40,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                onPressed: _onPressFavoriteIcon,
+              ),
+            ),
           ],
         ),
       ),
@@ -123,5 +136,27 @@ class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
         );
       },
     ));
+  }
+
+  Future<void> _onPressFavoriteIcon() async {
+    final stampCard = ref.read(widget.provider);
+    final notifier = ref.read(widget.provider.notifier);
+    final updatedFavorite = await _toggleFavorite(stampCard: stampCard);
+    notifier.set(stampCard: stampCard.copyWith(isFavorite: updatedFavorite));
+  }
+
+  Future<bool> _toggleFavorite({
+    required StampCard stampCard,
+  }) async {
+    // TODO: replace with http.
+    return Future.delayed(
+      const Duration(seconds: 1),
+      () {
+        // Case: broken integrity by 10%
+        final integrity = random.nextDouble() < 0.9;
+        if (!integrity) print('[-]Broken integrity!');
+        return integrity ? !stampCard.isFavorite : stampCard.isFavorite;
+      },
+    );
   }
 }

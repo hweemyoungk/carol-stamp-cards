@@ -9,11 +9,15 @@ class StampCard {
   final DateTime lastModifiedDate;
   final DateTime expirationDate;
   final bool isFavorite;
-  final bool isOneTimeUse;
+  final int numMaxRedeems;
+  final int numRedeemed;
   final String customerId;
-  final String ownerId;
+  final String storeId;
   final Icon? icon;
-  final String? imageUrl;
+  final String? bgImageUrl;
+  final bool wasDiscarded;
+  final bool wasUsedOut;
+  final bool isInactive;
 
   StampCard({
     required this.id,
@@ -24,11 +28,15 @@ class StampCard {
     required this.lastModifiedDate,
     required this.expirationDate,
     required this.isFavorite,
-    required this.isOneTimeUse,
+    required this.numMaxRedeems,
+    required this.numRedeemed,
     required this.customerId,
-    required this.ownerId,
+    required this.storeId,
     this.icon,
-    this.imageUrl,
+    this.bgImageUrl,
+    required this.wasDiscarded,
+    required this.wasUsedOut,
+    required this.isInactive,
   });
 
   StampCard copyWith({
@@ -40,11 +48,15 @@ class StampCard {
     DateTime? lastModifiedDate,
     DateTime? expirationDate,
     bool? isFavorite,
-    bool? isOneTimeUse,
+    int? numMaxRedeems,
+    int? numRedeemed,
     String? customerId,
     String? ownerId,
     Icon? icon,
-    String? imageUrl,
+    String? bgImageUrl,
+    bool? wasDiscarded,
+    bool? wasUsedOut,
+    bool? isInactive,
   }) {
     return StampCard(
       id: id ?? this.id,
@@ -55,11 +67,15 @@ class StampCard {
       lastModifiedDate: lastModifiedDate ?? this.lastModifiedDate,
       expirationDate: expirationDate ?? this.expirationDate,
       isFavorite: isFavorite ?? this.isFavorite,
-      isOneTimeUse: isOneTimeUse ?? this.isOneTimeUse,
+      numMaxRedeems: numMaxRedeems ?? this.numMaxRedeems,
+      numRedeemed: numRedeemed ?? this.numRedeemed,
       customerId: customerId ?? this.customerId,
-      ownerId: ownerId ?? this.ownerId,
+      storeId: ownerId ?? this.storeId,
       icon: icon ?? this.icon,
-      imageUrl: imageUrl ?? this.imageUrl,
+      bgImageUrl: bgImageUrl ?? this.bgImageUrl,
+      wasDiscarded: wasDiscarded ?? this.wasDiscarded,
+      wasUsedOut: wasUsedOut ?? this.wasUsedOut,
+      isInactive: isInactive ?? this.isInactive,
     );
   }
 

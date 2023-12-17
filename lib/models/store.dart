@@ -1,4 +1,5 @@
 import 'package:carol/models/stamp_card.dart';
+import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:flutter/material.dart';
 
 class Store {
@@ -9,10 +10,12 @@ class Store {
   final String phone;
   final String lat;
   final String lon;
-  final List<StampCard> issuedStampCards;
+  final List<StampCardBlueprint> stampCardBlueprints;
   final List<String> notices;
   final Icon? icon;
-  final String? imageUrl;
+  final String? bgImageUrl;
+  final String? profileImageUrl;
+  final String ownerId;
 
   Store({
     required this.id,
@@ -22,9 +25,11 @@ class Store {
     required this.phone,
     required this.lat,
     required this.lon,
-    required this.issuedStampCards,
+    required this.stampCardBlueprints,
     required this.notices,
     this.icon,
-    this.imageUrl,
+    this.bgImageUrl,
+    this.profileImageUrl,
+    required this.ownerId,
   });
 }
