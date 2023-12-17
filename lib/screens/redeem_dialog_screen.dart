@@ -105,12 +105,11 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
     // 3. Check if RedeemHistory exists.
     final hasRedeemHistory = await redeemHistoryExists(
       redeemRequestId: redeemRequestId!,
-      changeState: redeeming,
     );
     // 3-1. If exists, redeem succeeded.
     if (hasRedeemHistory) {
       // 3-1.1. Change Progress widget to Completed widget
-      if (redeeming) {
+      if (mounted) {
         setState(() {
           redeemButton = TextButton(
             onPressed: null,
@@ -139,7 +138,7 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
     } else {
       // 3-2. If not, redeem failed. (probably because owner didn't allowed or timeout)
       // 3-2.1. Change Progress with to Refresh widget
-      if (redeeming) {
+      if (mounted) {
         setState(() {
           redeemButton = TextButton(
             onPressed: null,
@@ -162,9 +161,8 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
 
   Future<bool> redeemHistoryExists({
     required String redeemRequestId,
-    required bool changeState,
   }) async {
-    if (changeState) {
+    if (mounted) {
       setState(() {
         redeemButton = const TextButton(
           onPressed: null,
@@ -188,17 +186,20 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
     Completer<bool> completer = Completer<bool>();
     for (var i = 0; i < totalSeconds; i++) {
       if (!redeeming) return;
-      setState(() {
-        redeemButton = TextButton(
-          onPressed: null,
-          child: Text(
-            'Awaiting owner\'s approval (${totalSeconds - i})',
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.primary,
+
+      if (mounted) {
+        setState(() {
+          redeemButton = TextButton(
+            onPressed: null,
+            child: Text(
+              'Awaiting owner\'s approval (${totalSeconds - i})',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.primary,
+              ),
             ),
-          ),
-        );
-      });
+          );
+        });
+      }
 
       // check RedeemRequest still exists
       if (i % checkIntervalSeconds == 0) {
@@ -246,17 +247,19 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
     required String stampCardId,
     required String redeemRuleId,
   }) async {
-    setState(() {
-      redeemButton = TextButton(
-        onPressed: null,
-        child: Text(
-          'Sending a reward request to owner...',
-          style: TextStyle(
-            color: Theme.of(context).colorScheme.primary,
+    if (mounted) {
+      setState(() {
+        redeemButton = TextButton(
+          onPressed: null,
+          child: Text(
+            'Sending a reward request to owner...',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.primary,
+            ),
           ),
-        ),
-      );
-    });
+        );
+      });
+    }
 
     // customerService.initRedeemRequest
     // 1. Check card exists: card = resource.getCard(cardId)

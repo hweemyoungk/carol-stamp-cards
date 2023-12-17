@@ -1,5 +1,5 @@
-import 'package:carol/main.dart';
 import 'package:carol/widgets/cards_explorer/cards_explorer.dart';
+import 'package:carol/widgets/stores_explorer/stores_explorer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -11,16 +11,26 @@ class DashboardScreen extends ConsumerStatefulWidget {
 }
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
+  int _activeBottomItemIndex = 0;
+
   @override
   Widget build(BuildContext context) {
+    final body = dashboardScreenBodies[_activeBottomItemIndex];
     return Scaffold(
-      body: CardsExplorer(),
+      body: body,
       bottomNavigationBar: BottomNavigationBar(
-        onTap: (value) {},
+        currentIndex: _activeBottomItemIndex,
+        onTap: (value) {
+          if (mounted) {
+            setState(() {
+              _activeBottomItemIndex = value;
+            });
+          }
+        },
         items: const [
           BottomNavigationBarItem(
             label: 'Cards',
-            icon: Icon(Icons.view_list),
+            icon: Icon(Icons.card_giftcard),
           ),
           BottomNavigationBarItem(
             label: 'Stores',
@@ -31,3 +41,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 }
+
+const dashboardScreenBodies = {
+  0: CardsExplorer(),
+  1: StoresExplorer(),
+};

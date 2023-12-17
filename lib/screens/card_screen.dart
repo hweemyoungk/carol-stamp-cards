@@ -1,4 +1,3 @@
-import 'package:carol/main.dart';
 import 'package:carol/models/stamp_card.dart';
 import 'package:carol/providers/stamp_card_provider.dart';
 import 'package:carol/utils.dart';

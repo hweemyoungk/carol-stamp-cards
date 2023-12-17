@@ -7,10 +7,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 class CardsListItemCard extends ConsumerStatefulWidget {
-  final StateNotifierProvider<StampCardNotifier, StampCard> provider;
+  final StateNotifierProvider<StampCardNotifier, StampCard> stampCardProvider;
   const CardsListItemCard({
     super.key,
-    required this.provider,
+    required this.stampCardProvider,
   });
 
   @override
@@ -20,7 +20,7 @@ class CardsListItemCard extends ConsumerStatefulWidget {
 class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
   @override
   Widget build(BuildContext context) {
-    final stampCard = ref.watch(widget.provider);
+    final stampCard = ref.watch(widget.stampCardProvider);
     return Card(
       margin: const EdgeInsets.all(10),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -132,15 +132,15 @@ class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
     Navigator.of(context).push(MaterialPageRoute(
       builder: (ctx) {
         return CardScreen(
-          stampCardProvider: widget.provider,
+          stampCardProvider: widget.stampCardProvider,
         );
       },
     ));
   }
 
   Future<void> _onPressFavoriteIcon() async {
-    final stampCard = ref.read(widget.provider);
-    final notifier = ref.read(widget.provider.notifier);
+    final stampCard = ref.read(widget.stampCardProvider);
+    final notifier = ref.read(widget.stampCardProvider.notifier);
     final updatedFavorite = await _toggleFavorite(stampCard: stampCard);
     notifier.set(stampCard: stampCard.copyWith(isFavorite: updatedFavorite));
   }

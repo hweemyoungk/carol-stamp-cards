@@ -1,12 +1,32 @@
 import 'dart:core';
-import 'dart:math';
 
 import 'package:carol/models/redeem_rule.dart';
 import 'package:carol/models/stamp_card.dart';
+import 'package:carol/models/store.dart';
 import 'package:carol/providers/stamp_card_provider.dart';
+import 'package:carol/providers/store_provider.dart';
 import 'package:carol/utils.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+List<Store> genDummyStores({
+  int numStores = 3,
+}) {
+  return List.generate(numStores, (index) {
+    final store = Store(
+      id: uuid.v4(),
+      displayName: 'H\'s Bakery $index',
+      zipcode: random.nextInt(100000).toString().padLeft(5, '0'),
+      address: 'Bar City, Foo State',
+      phone: '0212345678',
+      lat: 37.29386,
+      lng: 37.29386,
+      icon: Icons.bakery_dining,
+      ownerId: uuid.v4(),
+    );
+    StoreProviders.tryAddProvider(store: store);
+    return store;
+  });
+}
 
 List<StampCard> genDummyStampCards({
   int numCards = 3,

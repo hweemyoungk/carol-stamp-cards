@@ -1,6 +1,4 @@
 import 'package:carol/screens/dashboard_screen.dart';
-import 'package:carol/screens/sign_in_screen.dart';
-import 'package:carol/widgets/cards_explorer/cards_explorer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';

@@ -1,4 +1,3 @@
-import 'package:carol/data/dummy_data.dart';
 import 'package:carol/models/stamp_card.dart';
 import 'package:carol/models/store.dart';
 import 'package:flutter/material.dart';

@@ -1,22 +1,17 @@
-import 'package:carol/providers/stamp_cards_list_loaded_provider.dart';
 import 'package:carol/utils.dart';
-import 'package:carol/widgets/cards_explorer/cards_list.dart';
+import 'package:carol/widgets/stores_explorer/stores_list.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class CardsExplorer extends ConsumerStatefulWidget {
-  const CardsExplorer({
-    super.key,
-  });
+class StoresExplorer extends StatefulWidget {
+  const StoresExplorer({super.key});
 
   @override
-  ConsumerState<CardsExplorer> createState() => _CardsExplorerState();
+  State<StoresExplorer> createState() => _StoresExplorerState();
 }
 
-class _CardsExplorerState extends ConsumerState<CardsExplorer> {
+class _StoresExplorerState extends State<StoresExplorer> {
   @override
   Widget build(BuildContext context) {
-    final initLoaded = ref.watch(stampCardsListLoadedProvider);
     return LayoutBuilder(
       builder: (ctx, constraints) {
         return Container(
@@ -29,8 +24,8 @@ class _CardsExplorerState extends ConsumerState<CardsExplorer> {
           child: const Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // CardsExplorerControlBar(),
-              CardsList(),
+              // StoresListControlBar(),
+              StoresList(),
             ],
           ),
         );
