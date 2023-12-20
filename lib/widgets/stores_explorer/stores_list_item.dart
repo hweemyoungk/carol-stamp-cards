@@ -1,5 +1,6 @@
 import 'package:carol/models/store.dart';
 import 'package:carol/providers/store_provider.dart';
+import 'package:carol/screens/store_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -19,10 +20,20 @@ class _StoresListItemState extends ConsumerState<StoresListItem> {
   Widget build(BuildContext context) {
     final store = ref.watch(widget.storeProvider);
     return ListTile(
-      onTap: () {},
+      onTap: _onTapItem,
       leading: Icon(store.icon),
       title: Text(store.displayName),
       trailing: Text(store.getDistanceString(0.0, 0.0)),
     );
+  }
+
+  void _onTapItem() {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (ctx) {
+        return StoreScreen(
+          storeProvider: widget.storeProvider,
+        );
+      },
+    ));
   }
 }

@@ -14,21 +14,25 @@ class Utils {
   }
 
   static List<double> _basicScreenMarginLTRB(
-      BuildContext ctx, BoxConstraints constraints) {
-    final left = max(constraints.maxWidth * .05, 8.0);
+    BuildContext ctx,
+    BoxConstraints constraints, [
+    double scale = 1.0,
+  ]) {
+    final left = max(constraints.maxWidth * .05, 8.0) * scale;
     final top = MediaQuery.of(ctx).viewPadding.top +
-        max(constraints.maxHeight * .05, 8.0);
-    final right = max(constraints.maxWidth * .05, 8.0);
+        max(constraints.maxHeight * .05, 8.0) * scale;
+    final right = max(constraints.maxWidth * .05, 8.0) * scale;
     final bottom = MediaQuery.of(ctx).viewPadding.bottom +
-        max(constraints.maxHeight * .05, 8.0);
+        max(constraints.maxHeight * .05, 8.0) * scale;
     return [left, top, right, bottom];
   }
 
   static EdgeInsets basicScreenEdgeInsets(
     BuildContext ctx,
-    BoxConstraints constraints,
-  ) {
-    final ltrb = _basicScreenMarginLTRB(ctx, constraints);
+    BoxConstraints constraints, [
+    double scale = 1.0,
+  ]) {
+    final ltrb = _basicScreenMarginLTRB(ctx, constraints, scale);
     return EdgeInsets.fromLTRB(
       ltrb[0],
       ltrb[1],

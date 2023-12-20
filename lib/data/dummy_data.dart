@@ -2,11 +2,56 @@ import 'dart:core';
 
 import 'package:carol/models/redeem_rule.dart';
 import 'package:carol/models/stamp_card.dart';
+import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/models/store.dart';
+import 'package:carol/models/store_notice.dart';
 import 'package:carol/providers/stamp_card_provider.dart';
 import 'package:carol/providers/store_provider.dart';
 import 'package:carol/utils.dart';
 import 'package:flutter/material.dart';
+
+List<StoreNotice> genDummyNotices({
+  int numNotices = 3,
+  String? storeId,
+}) {
+  return List.generate(numNotices, (index) {
+    final notice = StoreNotice(
+      id: uuid.v4(),
+      displayName: 'Notice ${index + 1} from store!',
+      description:
+          'Amet irure ut incididunt officia eiusmod nisi ullamco dolore. Dolore non incididunt eu nisi id commodo aute elit laborum voluptate incididunt. Incididunt aute nisi do eu dolore duis. Exercitation enim minim eiusmod veniam officia exercitation labore est velit est consequat qui. Do anim officia ut sunt. Ut elit aute dolor duis in excepteur. Consectetur deserunt ut proident quis enim.',
+      storeId: storeId ?? uuid.v4(),
+      icon: random.nextDouble() < 0.5 ? Icons.breakfast_dining : null,
+    );
+    return notice;
+  });
+}
+
+List<StampCardBlueprint> genDummyBlueprints({
+  int numBps = 3,
+  String? storeId,
+}) {
+  return List.generate(numBps, (index) {
+    final bp = StampCardBlueprint(
+      id: uuid.v4(),
+      displayName: 'Blueprint ${index + 1}',
+      numMaxStamps: random.nextInt(50) + 1,
+      lastModifiedDate:
+          DateTime.now().add(Duration(days: -(random.nextInt(50) + 1))),
+      expirationDate:
+          DateTime.now().add(Duration(days: random.nextInt(50) + 1)),
+      numMaxRedeems: random.nextInt(3) + 1,
+      storeId: storeId ?? uuid.v4(),
+      icon: random.nextDouble() < 0.5 ? Icons.breakfast_dining : null,
+      bgImageUrl: random.nextDouble() < 1.0
+          // ? 'https://cdn.pixabay.com/photo/2018/03/31/19/29/schnitzel-3279045_1280.jpg'
+          ? 'assets/images/schnitzel-3279045_1280.jpg'
+          : null,
+      isInactive: random.nextDouble() < 0.5,
+    );
+    return bp;
+  });
+}
 
 List<Store> genDummyStores({
   int numStores = 3,
@@ -21,6 +66,10 @@ List<Store> genDummyStores({
       lat: 37.29386,
       lng: 37.29386,
       icon: Icons.bakery_dining,
+      bgImageUrl: random.nextDouble() < 1.0
+          // ? 'https://cdn.pixabay.com/photo/2018/03/31/19/29/schnitzel-3279045_1280.jpg'
+          ? 'assets/images/schnitzel-3279045_1280.jpg'
+          : null,
       ownerId: uuid.v4(),
     );
     StoreProviders.tryAddProvider(store: store);

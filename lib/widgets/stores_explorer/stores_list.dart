@@ -16,17 +16,17 @@ class StoresList extends ConsumerStatefulWidget {
 class _StoresListState extends ConsumerState<StoresList> {
   final ScrollController _controller = ScrollController();
   final List<Store> _stores = [];
-  bool _initLoaded = false;
+  bool _storesInitLoaded = false;
 
   @override
   void initState() {
     super.initState();
     if (StoreProviders.providers.isNotEmpty) {
-      _initLoaded = true;
       for (final entry in StoreProviders.providers.entries) {
         final store = ref.read(entry.value);
         _stores.add(store);
       }
+      _storesInitLoaded = true;
     } else {
       loadMore();
     }
@@ -34,8 +34,8 @@ class _StoresListState extends ConsumerState<StoresList> {
 
   @override
   Widget build(BuildContext context) {
-    return !_initLoaded
-        ? CircularProgressIndicator()
+    return !_storesInitLoaded
+        ? const CircularProgressIndicator()
         : Expanded(
             child: ListView.builder(
               controller: _controller,
@@ -59,7 +59,7 @@ class _StoresListState extends ConsumerState<StoresList> {
       if (mounted) {
         setState(() {
           _stores.addAll(value);
-          _initLoaded = true;
+          _storesInitLoaded = true;
         });
       }
     } on Exception catch (e) {
