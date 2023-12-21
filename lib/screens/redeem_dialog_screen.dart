@@ -28,7 +28,6 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
   bool redeeming = false;
   late Widget redeemButton;
   String? redeemRequestId;
-  Future<bool>? redeemHistoryExistsTask;
 
   @override
   void initState() {
@@ -37,11 +36,6 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
       onPressed: _onPressRedeem,
       child: Text('Consume ${widget.redeemRule.consumes} stamps to get reward'),
     );
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 
   @override
@@ -57,24 +51,26 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
           );
     return AlertDialog(
       title: Text(widget.redeemRule.displayName),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          image,
-          Padding(
-            padding: Utils.basicWidgetEdgeInsets(),
-            child: Text(widget.redeemRule.description),
-          ),
-          TextButton(
-            onPressed: _onPressBack,
-            child: const Text(
-              'Back',
-              textAlign: TextAlign.end,
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            image,
+            Padding(
+              padding: Utils.basicWidgetEdgeInsets(),
+              child: Text(widget.redeemRule.description),
             ),
-          ),
-          redeemButton,
-        ],
+            TextButton(
+              onPressed: _onPressBack,
+              child: const Text(
+                'Back',
+                textAlign: TextAlign.end,
+              ),
+            ),
+            redeemButton,
+          ],
+        ),
       ),
     );
   }

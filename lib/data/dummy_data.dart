@@ -5,6 +5,7 @@ import 'package:carol/models/stamp_card.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/models/store.dart';
 import 'package:carol/models/store_notice.dart';
+import 'package:carol/providers/stamp_card_blueprint_provider.dart';
 import 'package:carol/providers/stamp_card_provider.dart';
 import 'package:carol/providers/store_provider.dart';
 import 'package:carol/utils.dart';
@@ -32,9 +33,13 @@ List<StampCardBlueprint> genDummyBlueprints({
   String? storeId,
 }) {
   return List.generate(numBps, (index) {
-    final bp = StampCardBlueprint(
+    final blueprint = StampCardBlueprint(
       id: uuid.v4(),
       displayName: 'Blueprint ${index + 1}',
+      description:
+          'Enim nisi magna ex duis aute eiusmod proident ex anim deserunt ea in elit. Ad elit do irure reprehenderit ut esse commodo sunt adipisicing sunt elit eu. Officia sit nisi sit dolor aliquip exercitation nisi et excepteur. Proident proident commodo velit dolore anim mollit tempor magna ipsum esse irure eiusmod. Laborum excepteur et veniam pariatur aliqua ea culpa sit tempor. Tempor fugiat aute deserunt in voluptate ad pariatur. Nisi est dolore exercitation ipsum deserunt reprehenderit Lorem. Exercitation et cillum quis id. Duis ipsum ut occaecat officia ea pariatur ex laboris id. Et culpa consequat occaecat veniam Lorem aute. Nulla in dolor quis veniam occaecat. Quis eu enim amet ullamco ipsum pariatur pariatur excepteur ea dolore ipsum mollit fugiat. Minim anim qui consectetur laboris in ea aliqua minim sit consectetur aliquip. Fugiat laborum exercitation minim dolor. Proident amet nulla sit deserunt ad est est est cillum cupidatat tempor reprehenderit. In cupidatat cillum aute culpa ex magna nisi do reprehenderit magna consectetur reprehenderit. Enim nisi magna ex duis aute eiusmod proident ex anim deserunt ea in elit. Ad elit do irure reprehenderit ut esse commodo sunt adipisicing sunt elit eu. Officia sit nisi sit dolor aliquip exercitation nisi et excepteur. Proident proident commodo velit dolore anim mollit tempor magna ipsum esse irure eiusmod. Laborum excepteur et veniam pariatur aliqua ea culpa sit tempor. Tempor fugiat aute deserunt in voluptate ad pariatur. Nisi est dolore exercitation ipsum deserunt reprehenderit Lorem. Exercitation et cillum quis id. Duis ipsum ut occaecat officia ea pariatur ex laboris id. Et culpa consequat occaecat veniam Lorem aute. Nulla in dolor quis veniam occaecat. Quis eu enim amet ullamco ipsum pariatur pariatur excepteur ea dolore ipsum mollit fugiat. Minim anim qui consectetur laboris in ea aliqua minim sit consectetur aliquip. Fugiat laborum exercitation minim dolor. Proident amet nulla sit deserunt ad est est est cillum cupidatat tempor reprehenderit. In cupidatat cillum aute culpa ex magna nisi do reprehenderit magna consectetur reprehenderit.',
+      stampGrantCondDescription:
+          'Proident cillum reprehenderit cupidatat cupidatat sint enim in.',
       numMaxStamps: random.nextInt(50) + 1,
       lastModifiedDate:
           DateTime.now().add(Duration(days: -(random.nextInt(50) + 1))),
@@ -49,7 +54,8 @@ List<StampCardBlueprint> genDummyBlueprints({
           : null,
       isInactive: random.nextDouble() < 0.5,
     );
-    return bp;
+    StampCardBlueprintProviders.tryAddProvider(stampCardBlueprint: blueprint);
+    return blueprint;
   });
 }
 

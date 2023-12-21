@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 class StampCardBlueprint {
   final String id;
   final String displayName;
+  final String description;
+  final String stampGrantCondDescription;
   final int numMaxStamps;
   final int numMaxRedeems;
   final DateTime lastModifiedDate;
@@ -15,6 +17,8 @@ class StampCardBlueprint {
   StampCardBlueprint({
     required this.id,
     required this.displayName,
+    required this.description,
+    required this.stampGrantCondDescription,
     required this.numMaxStamps,
     required this.lastModifiedDate,
     required this.expirationDate,

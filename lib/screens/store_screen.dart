@@ -2,7 +2,9 @@ import 'package:carol/data/dummy_data.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/models/store.dart';
 import 'package:carol/models/store_notice.dart';
+import 'package:carol/providers/stamp_card_blueprint_provider.dart';
 import 'package:carol/providers/store_provider.dart';
+import 'package:carol/screens/issue_stamp_card_dialog_screen.dart';
 import 'package:carol/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -29,7 +31,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   void initState() {
     super.initState();
     final store = ref.read(widget.storeProvider);
-    loadBps(
+    loadBlueprints(
       numBps: 3,
       storeId: store.id,
     ).then((value) {
@@ -52,6 +54,9 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   @override
   Widget build(BuildContext context) {
     final store = ref.watch(widget.storeProvider);
+    final watchedBlueprints = _blueprints.map((blueprint) {
+      return ref.watch(StampCardBlueprintProviders.providers[blueprint.id]!);
+    }).toList();
 
     final bgImage = store.bgImageUrl == null
         ? Image.memory(
@@ -130,18 +135,29 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
             : ListView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: _blueprints.length,
+                itemCount: watchedBlueprints.length,
                 itemBuilder: (ctx, index) {
-                  final bp = _blueprints[index];
+                  final blueprint = watchedBlueprints[index];
                   return ListTile(
                     leading: Icon(
-                      bp.icon,
+                      blueprint.icon,
                       color: Theme.of(context).colorScheme.onSecondary,
                     ),
                     title: Text(
-                      bp.displayName,
+                      blueprint.displayName,
                       style: Theme.of(context).textTheme.bodyLarge,
                     ),
+                    onTap: () async {
+                      await showDialog(
+                        context: context,
+                        builder: (ctx) {
+                          return IssueStampCardDialogScreen(
+                            blueprintProvider: StampCardBlueprintProviders
+                                .providers[blueprint.id]!,
+                          );
+                        },
+                      );
+                    },
                   );
                 },
               ),
@@ -243,7 +259,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     );
   }
 
-  Future<List<StampCardBlueprint>> loadBps({
+  Future<List<StampCardBlueprint>> loadBlueprints({
     required int numBps,
     required String storeId,
   }) async {
