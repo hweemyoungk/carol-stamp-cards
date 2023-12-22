@@ -1,5 +1,5 @@
 import 'package:carol/models/stamp_card_blueprint.dart';
-import 'package:carol/providers/stamp_card_blueprint_provider.dart';
+import 'package:carol/providers/entity_provider.dart';
 import 'package:carol/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,8 +11,8 @@ class IssueStampCardDialogScreen extends ConsumerStatefulWidget {
     required this.blueprintProvider,
   });
 
-  final StateNotifierProvider<StampCardBlueprintNotifier, StampCardBlueprint>
-      blueprintProvider;
+  final StateNotifierProvider<EntityStateNotifier<StampCardBlueprint>,
+      StampCardBlueprint> blueprintProvider;
 
   @override
   ConsumerState<IssueStampCardDialogScreen> createState() =>

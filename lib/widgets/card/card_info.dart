@@ -1,11 +1,12 @@
 import 'package:carol/models/stamp_card.dart';
-import 'package:carol/providers/stamp_card_provider.dart';
+import 'package:carol/providers/entity_provider.dart';
 import 'package:carol/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class CardInfo extends ConsumerWidget {
-  final StateNotifierProvider<StampCardNotifier, StampCard> stampCardProvider;
+  final StateNotifierProvider<EntityStateNotifier<StampCard>, StampCard>
+      stampCardProvider;
   const CardInfo({
     super.key,
     required this.stampCardProvider,

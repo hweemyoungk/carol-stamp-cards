@@ -1,7 +1,7 @@
+import 'package:carol/models/base_model.dart';
 import 'package:flutter/material.dart';
 
-class StampCardBlueprint {
-  final String id;
+class StampCardBlueprint extends BaseModel {
   final String displayName;
   final String description;
   final String stampGrantCondDescription;
@@ -15,7 +15,7 @@ class StampCardBlueprint {
   final bool isInactive;
 
   StampCardBlueprint({
-    required this.id,
+    required super.id,
     required this.displayName,
     required this.description,
     required this.stampGrantCondDescription,

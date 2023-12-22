@@ -1,6 +1,8 @@
 import 'package:carol/data/dummy_data.dart';
 import 'package:carol/models/redeem_rule.dart';
 import 'package:carol/models/stamp_card.dart';
+import 'package:carol/providers/entity_provider.dart';
+import 'package:carol/providers/redeem_rule_provider.dart';
 import 'package:carol/providers/stamp_card_provider.dart';
 import 'package:carol/utils.dart';
 import 'package:carol/widgets/card/redeem_rule_list_item.dart';
@@ -8,7 +10,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class RedeemRulesList extends ConsumerStatefulWidget {
-  final StateNotifierProvider<StampCardNotifier, StampCard> stampCardProvider;
+  final StateNotifierProvider<EntityStateNotifier<StampCard>, StampCard>
+      stampCardProvider;
 
   const RedeemRulesList({
     super.key,
@@ -20,20 +23,27 @@ class RedeemRulesList extends ConsumerStatefulWidget {
 }
 
 class _RedeemRulesListState extends ConsumerState<RedeemRulesList> {
-  List<RedeemRule>? _redeemRules;
+  final List<RedeemRule> _redeemRules = [];
+  bool _redeemRulesInitLoaded = false;
 
   @override
   void initState() {
     super.initState();
     loadRedeemRules().then((value) {
       setState(() {
-        _redeemRules = value;
+        _redeemRules.addAll(value);
+        _redeemRulesInitLoaded = true;
       });
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final _watchedBlueprints = _redeemRules.map(
+      (blueprint) {
+        return ref.watch(redeemRuleProviders.providers[blueprint.id]!);
+      },
+    ).toList();
     return Column(
       // mainAxisSize: MainAxisSize.min,
       children: [
@@ -41,7 +51,7 @@ class _RedeemRulesListState extends ConsumerState<RedeemRulesList> {
           'Rewards',
           style: Theme.of(context).textTheme.displaySmall,
         ),
-        _redeemRules == null
+        !_redeemRulesInitLoaded
             ? Padding(
                 padding: Utils.basicWidgetEdgeInsets(5.0),
                 child: CircularProgressIndicator(
@@ -69,7 +79,6 @@ class _RedeemRulesListState extends ConsumerState<RedeemRulesList> {
 
   Future<List<RedeemRule>> loadRedeemRules() async {
     await Future.delayed(const Duration(seconds: 1));
-    return genDummySortedRedeemRules(
-        ref.read(widget.stampCardProvider.notifier).stampCard);
+    return genDummySortedRedeemRules(ref.read(widget.stampCardProvider));
   }
 }

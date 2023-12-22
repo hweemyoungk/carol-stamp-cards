@@ -24,9 +24,9 @@ class _CardsListState extends ConsumerState<CardsList> {
   @override
   void initState() {
     super.initState();
-    if (StampCardProviders.providers.isNotEmpty) {
+    if (stampCardProviders.providers.isNotEmpty) {
       _initLoaded = true;
-      for (final entry in StampCardProviders.providers.entries) {
+      for (final entry in stampCardProviders.providers.entries) {
         final stampCard = ref.read(entry.value);
         _stampCards.add(stampCard);
       }
@@ -50,7 +50,7 @@ class _CardsListState extends ConsumerState<CardsList> {
                       ? LoadMoreButton(onPressLoadMore: _onPressLoadMore)
                       : CardsListItemCard(
                           key: ValueKey(_stampCards[index].id),
-                          stampCardProvider: StampCardProviders
+                          stampCardProvider: stampCardProviders
                               .providers[_stampCards[index].id]!,
                         );
                 },

@@ -1,7 +1,7 @@
+import 'package:carol/models/base_model.dart';
 import 'package:flutter/material.dart';
 
-class StampCard {
-  final String id;
+class StampCard extends BaseModel {
   final String displayName;
   final int numCollectedStamps;
   final int numGoalStamps;
@@ -20,7 +20,7 @@ class StampCard {
   final bool isInactive;
 
   StampCard({
-    required this.id,
+    required super.id,
     required this.displayName,
     required this.numCollectedStamps,
     required this.numGoalStamps,

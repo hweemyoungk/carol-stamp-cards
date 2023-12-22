@@ -1,11 +1,11 @@
 import 'package:carol/models/store.dart';
-import 'package:carol/providers/store_provider.dart';
+import 'package:carol/providers/entity_provider.dart';
 import 'package:carol/screens/store_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class StoresListItem extends ConsumerStatefulWidget {
-  final StateNotifierProvider<StoreNotifier, Store> storeProvider;
+  final StateNotifierProvider<EntityStateNotifier<Store>, Store> storeProvider;
   const StoresListItem({
     super.key,
     required this.storeProvider,

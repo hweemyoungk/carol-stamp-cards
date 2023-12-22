@@ -1,4 +1,3 @@
-import 'package:carol/providers/stamp_cards_list_loaded_provider.dart';
 import 'package:carol/utils.dart';
 import 'package:carol/widgets/cards_explorer/cards_list.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +15,6 @@ class CardsExplorer extends ConsumerStatefulWidget {
 class _CardsExplorerState extends ConsumerState<CardsExplorer> {
   @override
   Widget build(BuildContext context) {
-    final initLoaded = ref.watch(stampCardsListLoadedProvider);
     return LayoutBuilder(
       builder: (ctx, constraints) {
         return Container(

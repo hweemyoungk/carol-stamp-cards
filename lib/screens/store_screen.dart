@@ -2,8 +2,8 @@ import 'package:carol/data/dummy_data.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/models/store.dart';
 import 'package:carol/models/store_notice.dart';
+import 'package:carol/providers/entity_provider.dart';
 import 'package:carol/providers/stamp_card_blueprint_provider.dart';
-import 'package:carol/providers/store_provider.dart';
 import 'package:carol/screens/issue_stamp_card_dialog_screen.dart';
 import 'package:carol/utils.dart';
 import 'package:flutter/material.dart';
@@ -11,7 +11,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 class StoreScreen extends ConsumerStatefulWidget {
-  final StateNotifierProvider<StoreNotifier, Store> storeProvider;
+  final StateNotifierProvider<EntityStateNotifier<Store>, Store> storeProvider;
   const StoreScreen({
     super.key,
     required this.storeProvider,
@@ -55,7 +55,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   Widget build(BuildContext context) {
     final store = ref.watch(widget.storeProvider);
     final watchedBlueprints = _blueprints.map((blueprint) {
-      return ref.watch(StampCardBlueprintProviders.providers[blueprint.id]!);
+      return ref.watch(stampCardBlueprintProviders.providers[blueprint.id]!);
     }).toList();
 
     final bgImage = store.bgImageUrl == null
@@ -152,7 +152,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                         context: context,
                         builder: (ctx) {
                           return IssueStampCardDialogScreen(
-                            blueprintProvider: StampCardBlueprintProviders
+                            blueprintProvider: stampCardBlueprintProviders
                                 .providers[blueprint.id]!,
                           );
                         },

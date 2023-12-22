@@ -1,8 +1,8 @@
+import 'package:carol/models/base_model.dart';
 import 'package:carol/params.dart';
 import 'package:flutter/material.dart';
 
-class RedeemRule {
-  final String id;
+class RedeemRule extends BaseModel {
   final String displayName;
   final String description;
   final int consumes;
@@ -11,7 +11,7 @@ class RedeemRule {
   final String? imageUrl;
 
   RedeemRule({
-    required this.id,
+    required super.id,
     required this.displayName,
     required this.description,
     required this.consumes,

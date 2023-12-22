@@ -1,9 +1,9 @@
+import 'package:carol/models/base_model.dart';
 import 'package:carol/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 
-class Store {
-  final String id;
+class Store extends BaseModel {
   final String displayName;
   final String zipcode;
   final String address;
@@ -16,7 +16,7 @@ class Store {
   final String ownerId;
 
   Store({
-    required this.id,
+    required super.id,
     required this.displayName,
     required this.zipcode,
     required this.address,

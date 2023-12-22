@@ -5,6 +5,7 @@ import 'package:carol/models/stamp_card.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/models/store.dart';
 import 'package:carol/models/store_notice.dart';
+import 'package:carol/providers/redeem_rule_provider.dart';
 import 'package:carol/providers/stamp_card_blueprint_provider.dart';
 import 'package:carol/providers/stamp_card_provider.dart';
 import 'package:carol/providers/store_provider.dart';
@@ -54,7 +55,7 @@ List<StampCardBlueprint> genDummyBlueprints({
           : null,
       isInactive: random.nextDouble() < 0.5,
     );
-    StampCardBlueprintProviders.tryAddProvider(stampCardBlueprint: blueprint);
+    stampCardBlueprintProviders.tryAddProvider(entity: blueprint);
     return blueprint;
   });
 }
@@ -78,7 +79,7 @@ List<Store> genDummyStores({
           : null,
       ownerId: uuid.v4(),
     );
-    StoreProviders.tryAddProvider(store: store);
+    storeProviders.tryAddProvider(entity: store);
     return store;
   });
 }
@@ -132,7 +133,7 @@ List<StampCard> genDummyStampCards({
             ? const Icon(Icons.breakfast_dining)
             : null,
       );
-      StampCardProviders.tryAddProvider(stampCard: stampCard);
+      stampCardProviders.tryAddProvider(entity: stampCard);
       return stampCard;
     },
   );
@@ -141,7 +142,7 @@ List<StampCard> genDummyStampCards({
 List<RedeemRule> genDummySortedRedeemRules(StampCard stampCard) {
   const numRules = 10;
   return List.generate(numRules, (index) {
-    return RedeemRule(
+    final redeemRule = RedeemRule(
       id: uuid.v4(),
       consumes: (stampCard.numMaxStamps / (numRules - index)).ceil(),
       displayName: '${index + 1} Cookies',
@@ -153,5 +154,7 @@ List<RedeemRule> genDummySortedRedeemRules(StampCard stampCard) {
           : null,
       icon: random.nextDouble() < 0.5 ? Icons.cookie : null,
     );
+    redeemRuleProviders.tryAddProvider(entity: redeemRule);
+    return redeemRule;
   });
 }

@@ -21,8 +21,8 @@ class _StoresListState extends ConsumerState<StoresList> {
   @override
   void initState() {
     super.initState();
-    if (StoreProviders.providers.isNotEmpty) {
-      for (final entry in StoreProviders.providers.entries) {
+    if (storeProviders.providers.isNotEmpty) {
+      for (final entry in storeProviders.providers.entries) {
         final store = ref.read(entry.value);
         _stores.add(store);
       }
@@ -46,7 +46,7 @@ class _StoresListState extends ConsumerState<StoresList> {
                     : StoresListItem(
                         key: ValueKey(_stores[index].id),
                         storeProvider:
-                            StoreProviders.providers[_stores[index].id]!,
+                            storeProviders.providers[_stores[index].id]!,
                       );
               },
             ),

@@ -1,5 +1,6 @@
 import 'package:carol/models/redeem_rule.dart';
 import 'package:carol/models/stamp_card.dart';
+import 'package:carol/providers/entity_provider.dart';
 import 'package:carol/providers/stamp_card_provider.dart';
 import 'package:carol/screens/redeem_dialog_screen.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +16,8 @@ class RedeemRuleListItem extends ConsumerStatefulWidget {
   });
 
   final RedeemRule redeemRule;
-  final StateNotifierProvider<StampCardNotifier, StampCard> stampCardProvider;
+  final StateNotifierProvider<EntityStateNotifier<StampCard>, StampCard>
+      stampCardProvider;
   final TextStyle style;
   final Color color;
 
@@ -40,7 +42,7 @@ class _RedeemRuleListItemState extends ConsumerState<RedeemRuleListItem> {
                 builder: (ctx) {
                   return RedeemDialogScreen(
                     stampCardProvider:
-                        StampCardProviders.providers[stampCard.id]!,
+                        stampCardProviders.providers[stampCard.id]!,
                     redeemRule: widget.redeemRule,
                   );
                 },

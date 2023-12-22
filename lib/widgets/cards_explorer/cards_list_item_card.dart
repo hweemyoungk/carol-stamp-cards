@@ -1,5 +1,5 @@
 import 'package:carol/models/stamp_card.dart';
-import 'package:carol/providers/stamp_card_provider.dart';
+import 'package:carol/providers/entity_provider.dart';
 import 'package:carol/screens/card_screen.dart';
 import 'package:carol/utils.dart';
 import 'package:flutter/material.dart';
@@ -7,7 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 class CardsListItemCard extends ConsumerStatefulWidget {
-  final StateNotifierProvider<StampCardNotifier, StampCard> stampCardProvider;
+  final StateNotifierProvider<EntityStateNotifier<StampCard>, StampCard>
+      stampCardProvider;
   const CardsListItemCard({
     super.key,
     required this.stampCardProvider,
@@ -142,7 +143,7 @@ class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
     final stampCard = ref.read(widget.stampCardProvider);
     final notifier = ref.read(widget.stampCardProvider.notifier);
     final updatedFavorite = await _toggleFavorite(stampCard: stampCard);
-    notifier.set(stampCard: stampCard.copyWith(isFavorite: updatedFavorite));
+    notifier.set(entity: stampCard.copyWith(isFavorite: updatedFavorite));
   }
 
   Future<bool> _toggleFavorite({

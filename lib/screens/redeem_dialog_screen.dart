@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'dart:io';
+
 import 'package:carol/main.dart';
-import 'package:carol/providers/stamp_card_provider.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart' as http;
 import 'package:carol/models/redeem_rule.dart';
 import 'package:carol/models/stamp_card.dart';
+import 'package:carol/providers/entity_provider.dart';
 import 'package:carol/utils.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 class RedeemDialogScreen extends ConsumerStatefulWidget {
@@ -17,7 +17,8 @@ class RedeemDialogScreen extends ConsumerStatefulWidget {
     required this.redeemRule,
   });
 
-  final StateNotifierProvider<StampCardNotifier, StampCard> stampCardProvider;
+  final StateNotifierProvider<EntityStateNotifier<StampCard>, StampCard>
+      stampCardProvider;
   final RedeemRule redeemRule;
 
   @override
@@ -130,7 +131,7 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
       final updatedStampCard = stampCard.copyWith(
         numCollectedStamps: updatedNumCollectedStamps,
       );
-      stampCardNotifier.set(stampCard: updatedStampCard);
+      stampCardNotifier.set(entity: updatedStampCard);
     } else {
       // 3-2. If not, redeem failed. (probably because owner didn't allowed or timeout)
       // 3-2.1. Change Progress with to Refresh widget

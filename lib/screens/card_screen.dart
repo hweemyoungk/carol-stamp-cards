@@ -1,5 +1,5 @@
 import 'package:carol/models/stamp_card.dart';
-import 'package:carol/providers/stamp_card_provider.dart';
+import 'package:carol/providers/entity_provider.dart';
 import 'package:carol/utils.dart';
 import 'package:carol/widgets/card/card_info.dart';
 import 'package:carol/widgets/card/redeem_rules_list.dart';
@@ -8,7 +8,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 class CardScreen extends ConsumerStatefulWidget {
-  final StateNotifierProvider<StampCardNotifier, StampCard> stampCardProvider;
+  final StateNotifierProvider<EntityStateNotifier<StampCard>, StampCard>
+      stampCardProvider;
   const CardScreen({
     super.key,
     required this.stampCardProvider,
