@@ -52,4 +52,8 @@ class Utils {
     }
     return false;
   }
+
+  static Future<void> delaySeconds(int seconds) async {
+    return Future.delayed(Duration(seconds: seconds));
+  }
 }

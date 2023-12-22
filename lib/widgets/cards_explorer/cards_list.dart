@@ -91,7 +91,10 @@ class _CardsListState extends ConsumerState<CardsList> {
 
   Future<List<StampCard>> loadStampCards() async {
     await Future.delayed(const Duration(seconds: 2));
-    return genDummyStampCards(numCards: 10);
+    return genDummyStampCards(
+      numCards: 10,
+      customerId: currentUser.id,
+    );
   }
 
   Future<void> _onPressLoadMore() async {

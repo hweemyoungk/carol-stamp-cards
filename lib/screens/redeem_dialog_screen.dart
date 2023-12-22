@@ -14,12 +14,13 @@ class RedeemDialogScreen extends ConsumerStatefulWidget {
   const RedeemDialogScreen({
     super.key,
     required this.stampCardProvider,
-    required this.redeemRule,
+    required this.redeemRuleProvider,
   });
 
   final StateNotifierProvider<EntityStateNotifier<StampCard>, StampCard>
       stampCardProvider;
-  final RedeemRule redeemRule;
+  final StateNotifierProvider<EntityStateNotifier<RedeemRule>, RedeemRule>
+      redeemRuleProvider;
 
   @override
   ConsumerState<RedeemDialogScreen> createState() => _RedeemDialogScreenState();
@@ -31,27 +32,41 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
   String? redeemRequestId;
 
   @override
-  void initState() {
-    super.initState();
-    redeemButton = ElevatedButton(
-      onPressed: _onPressRedeem,
-      child: Text('Consume ${widget.redeemRule.consumes} stamps to get reward'),
-    );
-  }
-
-  @override
   Widget build(BuildContext context) {
-    Widget image = widget.redeemRule.imageUrl == null
+    final stampCard = ref.watch(widget.stampCardProvider);
+    final redeemRule = ref.watch(widget.redeemRuleProvider);
+
+    redeemButton = stampCard.numCollectedStamps < redeemRule.consumes
+        // Very rare case
+        ? ElevatedButton(
+            onPressed: null,
+            style: ElevatedButton.styleFrom(
+                disabledBackgroundColor:
+                    Theme.of(context).colorScheme.errorContainer),
+            child: Text(
+              'Not enough stamps!',
+              style: TextStyle(
+                  color: Theme.of(context).colorScheme.onErrorContainer),
+            ),
+          )
+        // 99% likely case
+        : ElevatedButton(
+            onPressed: _onPressRedeem,
+            child: Text('Consume ${redeemRule.consumes} stamps to get reward'),
+          );
+
+    Widget image = redeemRule.imageUrl == null
         ? Image.memory(
             kTransparentImage,
             fit: BoxFit.contain,
           )
         : Image.asset(
-            widget.redeemRule.imageUrl!,
+            redeemRule.imageUrl!,
             fit: BoxFit.contain,
           );
+
     return AlertDialog(
-      title: Text(widget.redeemRule.displayName),
+      title: Text(redeemRule.displayName),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -60,7 +75,7 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
             image,
             Padding(
               padding: Utils.basicWidgetEdgeInsets(),
-              child: Text(widget.redeemRule.description),
+              child: Text(redeemRule.description),
             ),
             TextButton(
               onPressed: _onPressBack,
@@ -79,6 +94,7 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
   void _onPressRedeem() async {
     final stampCard = ref.read(widget.stampCardProvider);
     final stampCardNotifier = ref.read(widget.stampCardProvider.notifier);
+    final redeemRule = ref.read(widget.redeemRuleProvider);
 
     // 0. Disable Redeem button.
     setState(() {
@@ -90,7 +106,7 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
     if (redeeming) {
       redeemRequestId = await initRedeemRequest(
         stampCardId: stampCard.id,
-        redeemRuleId: widget.redeemRule.id,
+        redeemRuleId: redeemRule.id,
       );
     }
 
@@ -127,7 +143,7 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
         duration: Duration(seconds: 3),
       ));
       final updatedNumCollectedStamps =
-          stampCard.numCollectedStamps - widget.redeemRule.consumes;
+          stampCard.numCollectedStamps - redeemRule.consumes;
       final updatedStampCard = stampCard.copyWith(
         numCollectedStamps: updatedNumCollectedStamps,
       );

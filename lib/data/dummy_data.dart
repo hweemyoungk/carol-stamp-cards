@@ -5,6 +5,7 @@ import 'package:carol/models/stamp_card.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/models/store.dart';
 import 'package:carol/models/store_notice.dart';
+import 'package:carol/models/user.dart';
 import 'package:carol/providers/redeem_rule_provider.dart';
 import 'package:carol/providers/stamp_card_blueprint_provider.dart';
 import 'package:carol/providers/stamp_card_provider.dart';
@@ -46,7 +47,8 @@ List<StampCardBlueprint> genDummyBlueprints({
           DateTime.now().add(Duration(days: -(random.nextInt(50) + 1))),
       expirationDate:
           DateTime.now().add(Duration(days: random.nextInt(50) + 1)),
-      numMaxRedeems: random.nextInt(3) + 1,
+      numMaxRedeems: random.nextInt(4), // 0~3, where 0 is infinite
+      numMaxIssues: random.nextInt(3) + 1, // 1~3
       storeId: storeId ?? uuid.v4(),
       icon: random.nextDouble() < 0.5 ? Icons.breakfast_dining : null,
       bgImageUrl: random.nextDouble() < 1.0
@@ -86,6 +88,8 @@ List<Store> genDummyStores({
 
 List<StampCard> genDummyStampCards({
   int numCards = 3,
+  String? customerId,
+  String? storeId,
 }) {
   return List.generate(
     numCards,
@@ -123,8 +127,8 @@ List<StampCard> genDummyStampCards({
         wasUsedOut: wasUsedOut,
         wasDiscarded: wasDiscarded,
         isInactive: isInactive,
-        customerId: '',
-        storeId: '',
+        customerId: customerId ?? uuid.v4(),
+        storeId: storeId ?? uuid.v4(),
         bgImageUrl: random.nextDouble() < 0.5
             // ? 'https://cdn.pixabay.com/photo/2018/03/31/19/29/schnitzel-3279045_1280.jpg'
             ? 'assets/images/schnitzel-3279045_1280.jpg'
@@ -158,3 +162,5 @@ List<RedeemRule> genDummySortedRedeemRules(StampCard stampCard) {
     return redeemRule;
   });
 }
+
+final currentUser = User(id: uuid.v4());

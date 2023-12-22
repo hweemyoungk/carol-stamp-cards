@@ -7,6 +7,7 @@ class StampCardBlueprint extends BaseModel {
   final String stampGrantCondDescription;
   final int numMaxStamps;
   final int numMaxRedeems;
+  final int numMaxIssues;
   final DateTime lastModifiedDate;
   final DateTime expirationDate;
   final String storeId;
@@ -23,6 +24,7 @@ class StampCardBlueprint extends BaseModel {
     required this.lastModifiedDate,
     required this.expirationDate,
     required this.numMaxRedeems,
+    required this.numMaxIssues,
     required this.storeId,
     required this.icon,
     required this.bgImageUrl,

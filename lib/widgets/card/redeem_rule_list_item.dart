@@ -9,13 +9,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class RedeemRuleListItem extends ConsumerStatefulWidget {
   const RedeemRuleListItem({
     super.key,
-    required this.redeemRule,
+    required this.redeemRuleProvider,
     required this.stampCardProvider,
     required this.style,
     required this.color,
   });
 
-  final RedeemRule redeemRule;
+  final StateNotifierProvider<EntityStateNotifier<RedeemRule>, RedeemRule>
+      redeemRuleProvider;
   final StateNotifierProvider<EntityStateNotifier<StampCard>, StampCard>
       stampCardProvider;
   final TextStyle style;
@@ -29,8 +30,8 @@ class _RedeemRuleListItemState extends ConsumerState<RedeemRuleListItem> {
   @override
   Widget build(BuildContext context) {
     final stampCard = ref.watch(widget.stampCardProvider);
-    final redeemable =
-        widget.redeemRule.consumes <= stampCard.numCollectedStamps;
+    final redeemRule = ref.watch(widget.redeemRuleProvider);
+    final redeemable = redeemRule.consumes <= stampCard.numCollectedStamps;
     final appliedColor =
         redeemable ? widget.color : widget.color.withOpacity(.2);
     return ListTile(
@@ -43,22 +44,22 @@ class _RedeemRuleListItemState extends ConsumerState<RedeemRuleListItem> {
                   return RedeemDialogScreen(
                     stampCardProvider:
                         stampCardProviders.providers[stampCard.id]!,
-                    redeemRule: widget.redeemRule,
+                    redeemRuleProvider: widget.redeemRuleProvider,
                   );
                 },
               );
             },
-      key: ValueKey(widget.redeemRule.id),
-      leading: widget.redeemRule.consumesWidget(
+      key: ValueKey(redeemRule.id),
+      leading: redeemRule.consumesWidget(
         widget.style,
         appliedColor,
       ),
       title: Text(
-        widget.redeemRule.displayName,
+        redeemRule.displayName,
         style: widget.style.copyWith(color: appliedColor),
       ),
       trailing: Icon(
-        widget.redeemRule.icon,
+        redeemRule.icon,
         color: appliedColor,
       ),
     );
