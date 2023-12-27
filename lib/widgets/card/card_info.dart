@@ -21,7 +21,10 @@ class CardInfo extends ConsumerWidget {
       children: [
         Text(
           stampCard.displayName,
-          style: Theme.of(context).textTheme.displayMedium,
+          style: Theme.of(context)
+              .textTheme
+              .displayMedium!
+              .copyWith(color: Theme.of(context).colorScheme.onSecondary),
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -33,11 +36,13 @@ class CardInfo extends ConsumerWidget {
                 children: [
                   Text(
                     'Last used',
-                    style: Theme.of(context).textTheme.labelLarge,
+                    style: Theme.of(context).textTheme.labelLarge!.copyWith(
+                        color: Theme.of(context).colorScheme.onSecondary),
                   ),
                   Text(
                     stampCard.lastModifiedDateLabel,
-                    style: Theme.of(context).textTheme.headlineMedium,
+                    style: Theme.of(context).textTheme.headlineMedium!.copyWith(
+                        color: Theme.of(context).colorScheme.onSecondary),
                   ),
                 ],
               ),
@@ -49,11 +54,13 @@ class CardInfo extends ConsumerWidget {
                 children: [
                   Text(
                     'Expires in',
-                    style: Theme.of(context).textTheme.labelLarge,
+                    style: Theme.of(context).textTheme.labelLarge!.copyWith(
+                        color: Theme.of(context).colorScheme.onSecondary),
                   ),
                   Text(
                     stampCard.expirationDateLabel,
-                    style: Theme.of(context).textTheme.headlineMedium,
+                    style: Theme.of(context).textTheme.headlineMedium!.copyWith(
+                        color: Theme.of(context).colorScheme.onSecondary),
                   ),
                 ],
               ),

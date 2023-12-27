@@ -1,5 +1,7 @@
-import 'package:carol/widgets/cards_explorer/cards_explorer.dart';
-import 'package:carol/widgets/stores_explorer/stores_explorer.dart';
+import 'package:carol/providers/active_drawer_item_provider.dart';
+import 'package:carol/screens/customer_screen.dart';
+import 'package:carol/screens/owner_screen.dart';
+import 'package:carol/widgets/main_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -11,38 +13,19 @@ class DashboardScreen extends ConsumerStatefulWidget {
 }
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
-  int _activeBottomItemIndex = 0;
+  late Widget content;
 
   @override
   Widget build(BuildContext context) {
-    final body = dashboardScreenBodies[_activeBottomItemIndex];
-    return Scaffold(
-      body: body,
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _activeBottomItemIndex,
-        onTap: (value) {
-          if (mounted) {
-            setState(() {
-              _activeBottomItemIndex = value;
-            });
-          }
-        },
-        items: const [
-          BottomNavigationBarItem(
-            label: 'Cards',
-            icon: Icon(Icons.card_giftcard),
-          ),
-          BottomNavigationBarItem(
-            label: 'Stores',
-            icon: Icon(Icons.store),
-          ),
-        ],
-      ),
-    );
+    final activeDrawerItemEnum = ref.watch(activeDrawerItemProvider);
+    if (activeDrawerItemEnum == DrawerItemEnum.customer) {
+      content = CustomerScreen();
+    } else if (activeDrawerItemEnum == DrawerItemEnum.owner) {
+      content = const OwnerScreen();
+    } else {
+      throw UnimplementedError();
+    }
+
+    return content;
   }
 }
-
-const dashboardScreenBodies = {
-  0: CardsExplorer(),
-  1: StoresExplorer(),
-};

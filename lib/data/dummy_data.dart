@@ -62,8 +62,37 @@ List<StampCardBlueprint> genDummyBlueprints({
   });
 }
 
+List<Store> genDummyCustomerStores({
+  int numStores = 3,
+  String? ownerId,
+}) {
+  final stores = genDummyStores(
+    numStores: numStores,
+    ownerId: ownerId,
+  );
+  for (final store in stores) {
+    customerStoreProviders.tryAddProvider(entity: store);
+  }
+  return stores;
+}
+
+List<Store> genDummyOwnerStores({
+  int numStores = 3,
+  String? ownerId,
+}) {
+  final stores = genDummyStores(
+    numStores: numStores,
+    ownerId: ownerId,
+  );
+  for (final store in stores) {
+    ownerStoreProviders.tryAddProvider(entity: store);
+  }
+  return stores;
+}
+
 List<Store> genDummyStores({
   int numStores = 3,
+  String? ownerId,
 }) {
   return List.generate(numStores, (index) {
     final store = Store(
@@ -81,7 +110,6 @@ List<Store> genDummyStores({
           : null,
       ownerId: uuid.v4(),
     );
-    storeProviders.tryAddProvider(entity: store);
     return store;
   });
 }
@@ -133,9 +161,7 @@ List<StampCard> genDummyStampCards({
             // ? 'https://cdn.pixabay.com/photo/2018/03/31/19/29/schnitzel-3279045_1280.jpg'
             ? 'assets/images/schnitzel-3279045_1280.jpg'
             : null,
-        icon: random.nextDouble() < 0.1
-            ? const Icon(Icons.breakfast_dining)
-            : null,
+        icon: random.nextDouble() < 0.1 ? Icons.breakfast_dining : null,
       );
       stampCardProviders.tryAddProvider(entity: stampCard);
       return stampCard;
@@ -163,4 +189,8 @@ List<RedeemRule> genDummySortedRedeemRules(StampCard stampCard) {
   });
 }
 
-final currentUser = User(id: uuid.v4());
+final currentUser = User(
+  id: uuid.v4(),
+  displayName: 'HMK',
+  profileImageUrl: 'assets/images/schnitzel-3279045_1280.jpg',
+);

@@ -35,20 +35,17 @@ class _RedeemRuleListItemState extends ConsumerState<RedeemRuleListItem> {
     final appliedColor =
         redeemable ? widget.color : widget.color.withOpacity(.2);
     return ListTile(
-      onTap: !redeemable
-          ? null
-          : () async {
-              await showDialog(
-                context: context,
-                builder: (ctx) {
-                  return RedeemDialogScreen(
-                    stampCardProvider:
-                        stampCardProviders.providers[stampCard.id]!,
-                    redeemRuleProvider: widget.redeemRuleProvider,
-                  );
-                },
-              );
-            },
+      onTap: () async {
+        await showDialog(
+          context: context,
+          builder: (ctx) {
+            return RedeemDialogScreen(
+              stampCardProvider: stampCardProviders.providers[stampCard.id]!,
+              redeemRuleProvider: widget.redeemRuleProvider,
+            );
+          },
+        );
+      },
       key: ValueKey(redeemRule.id),
       leading: redeemRule.consumesWidget(
         widget.style,

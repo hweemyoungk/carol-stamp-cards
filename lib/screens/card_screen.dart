@@ -47,13 +47,19 @@ class _CardScreenState extends ConsumerState<CardScreen> {
                   padding: Utils.basicWidgetEdgeInsets(.5),
                   child: Text(
                     stampCard.stampsRatio,
-                    style: Theme.of(context).textTheme.headlineLarge,
+                    style: Theme.of(context).textTheme.headlineLarge!.copyWith(
+                        color: Theme.of(context).colorScheme.onSecondary),
                     textAlign: TextAlign.center,
                   ),
                 ),
                 Padding(
                   padding: Utils.basicWidgetEdgeInsets(.5),
-                  child: Text('Max: ${stampCard.numMaxStamps}'),
+                  child: Text(
+                    'Max: ${stampCard.numMaxStamps}',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSecondary,
+                    ),
+                  ),
                 ),
               ],
             ),

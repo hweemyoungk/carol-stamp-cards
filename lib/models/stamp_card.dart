@@ -13,7 +13,7 @@ class StampCard extends BaseModel {
   final int numRedeemed;
   final String customerId;
   final String storeId;
-  final Icon? icon;
+  final IconData? icon;
   final String? bgImageUrl;
   final bool wasDiscarded;
   final bool wasUsedOut;
@@ -52,7 +52,7 @@ class StampCard extends BaseModel {
     int? numRedeemed,
     String? customerId,
     String? ownerId,
-    Icon? icon,
+    IconData? icon,
     String? bgImageUrl,
     bool? wasDiscarded,
     bool? wasUsedOut,

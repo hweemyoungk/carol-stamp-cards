@@ -48,7 +48,10 @@ class _RedeemRulesListState extends ConsumerState<RedeemRulesList> {
       children: [
         Text(
           'Rewards',
-          style: Theme.of(context).textTheme.displaySmall,
+          style: Theme.of(context)
+              .textTheme
+              .displaySmall!
+              .copyWith(color: Theme.of(context).colorScheme.onSecondary),
         ),
         !_redeemRulesInitLoaded
             ? Padding(

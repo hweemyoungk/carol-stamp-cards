@@ -38,7 +38,7 @@ class _CardsListState extends ConsumerState<CardsList> {
   @override
   Widget build(BuildContext context) {
     return !_initLoaded
-        ? CircularProgressIndicator()
+        ? const CircularProgressIndicator()
         : Expanded(
             child: NotificationListener<ScrollNotification>(
               // onNotification: _handleScrollNotification,

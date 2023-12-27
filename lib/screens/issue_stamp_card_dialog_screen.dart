@@ -1,7 +1,10 @@
 import 'package:carol/data/dummy_data.dart';
+import 'package:carol/main.dart';
+import 'package:carol/models/stamp_card.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/models/user.dart';
 import 'package:carol/providers/entity_provider.dart';
+import 'package:carol/providers/stamp_card_provider.dart';
 import 'package:carol/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,60 +26,83 @@ class IssueStampCardDialogScreen extends ConsumerStatefulWidget {
 
 class _IssueStampCardDialogScreenState
     extends ConsumerState<IssueStampCardDialogScreen> {
-  bool? _isIssuable;
-  Widget? _unissuableAlerts;
   final List<Widget> _alertRows = [];
+  Widget? _unissuableAlerts;
   late Widget _issueButton;
-  bool _issuing = false;
+  late TextFormField cardNameTextField;
 
-  @override
-  void initState() {
-    super.initState();
-  }
+  _IssueStatus _issueStatus = _IssueStatus.checkingIssuability;
 
   @override
   Widget build(BuildContext context) {
     final blueprint = ref.watch(widget.blueprintProvider);
 
-    if (_isIssuable == null) {
+    if (_issueStatus == _IssueStatus.checkingIssuability) {
       _checkIssuable(
         user: currentUser,
         blueprint: blueprint,
       );
     }
 
-    _issueButton = _isIssuable == null
-        ? ElevatedButton(
-            onPressed: null,
-            style: ElevatedButton.styleFrom(
-              disabledBackgroundColor:
-                  Theme.of(context).colorScheme.tertiaryContainer,
-            ),
-            child: SizedBox(
-              width: 15,
-              height: 15,
-              child: CircularProgressIndicator(
-                color: Theme.of(context).colorScheme.onTertiaryContainer,
-              ),
-            ),
-          )
-        : !_isIssuable!
-            ? ElevatedButton(
-                onPressed: null,
-                style: ElevatedButton.styleFrom(
-                    disabledBackgroundColor:
-                        Theme.of(context).colorScheme.errorContainer),
-                child: Text(
-                  'Cannot issue this card!',
-                  style: TextStyle(
-                      color: Theme.of(context).colorScheme.onErrorContainer),
-                ),
-              )
-            : ElevatedButton(
-                onPressed: _onPressIssue,
-                child: const Text('Get this card'),
-              );
-    _unissuableAlerts = _isIssuable == null || _isIssuable!
+    if (_issueStatus == _IssueStatus.checkingIssuability ||
+        _issueStatus == _IssueStatus.issuing) {
+      _issueButton = ElevatedButton(
+        onPressed: null,
+        style: ElevatedButton.styleFrom(
+          disabledBackgroundColor:
+              Theme.of(context).colorScheme.tertiaryContainer,
+        ),
+        child: SizedBox(
+          width: 15,
+          height: 15,
+          child: CircularProgressIndicator(
+            color: Theme.of(context).colorScheme.onTertiaryContainer,
+          ),
+        ),
+      );
+    } else if (_issueStatus == _IssueStatus.notIssuable) {
+      _issueButton = ElevatedButton(
+        onPressed: null,
+        style: ElevatedButton.styleFrom(
+            disabledBackgroundColor:
+                Theme.of(context).colorScheme.errorContainer),
+        child: Text(
+          'Cannot issue this card!',
+          style:
+              TextStyle(color: Theme.of(context).colorScheme.onErrorContainer),
+        ),
+      );
+    } else if (_issueStatus == _IssueStatus.issuable) {
+      _issueButton = ElevatedButton(
+        onPressed: _onPressIssue,
+        child: const Text('Get this card'),
+      );
+    } else if (_issueStatus == _IssueStatus.issueFailed) {
+      _issueButton = ElevatedButton(
+        onPressed: null,
+        style: ElevatedButton.styleFrom(
+          disabledBackgroundColor: Theme.of(context).colorScheme.error,
+        ),
+        child: Icon(
+          Icons.done,
+          color: Theme.of(context).colorScheme.onError,
+        ),
+      );
+    } else if (_issueStatus == _IssueStatus.issueSuccessful) {
+      _issueButton = ElevatedButton(
+        onPressed: null,
+        style: ElevatedButton.styleFrom(
+          disabledBackgroundColor: Theme.of(context).colorScheme.primary,
+        ),
+        child: Icon(
+          Icons.done,
+          color: Theme.of(context).colorScheme.onPrimary,
+        ),
+      );
+    }
+
+    _unissuableAlerts = _issueStatus == _IssueStatus.checkingIssuability ||
+            _issueStatus == _IssueStatus.issuable
         ? null
         : Column(children: _alertRows);
     Widget image = blueprint.bgImageUrl == null
@@ -88,6 +114,18 @@ class _IssueStampCardDialogScreenState
             blueprint.bgImageUrl!,
             fit: BoxFit.contain,
           );
+    cardNameTextField = TextFormField(
+      controller: TextEditingController(text: blueprint.displayName),
+      enabled: _issueStatus == _IssueStatus.issuable,
+      decoration: InputDecoration(
+        labelText: 'Card Name',
+        labelStyle: TextStyle(
+          color: Theme.of(context).colorScheme.onSecondary,
+        ),
+      ),
+      // initialValue: blueprint.displayName,
+      style: const TextStyle(fontSize: 24),
+    );
     return AlertDialog(
       title: Text(blueprint.displayName),
       content: SingleChildScrollView(
@@ -118,17 +156,7 @@ class _IssueStampCardDialogScreenState
             ),
             Padding(
               padding: Utils.basicWidgetEdgeInsets(),
-              child: TextFormField(
-                enabled: _isIssuable,
-                decoration: InputDecoration(
-                  labelText: 'Card Name',
-                  labelStyle: TextStyle(
-                    color: Theme.of(context).colorScheme.onSecondary,
-                  ),
-                ),
-                initialValue: blueprint.displayName,
-                style: const TextStyle(fontSize: 24),
-              ),
+              child: cardNameTextField,
             ),
             if (_unissuableAlerts != null) _unissuableAlerts!,
             TextButton(
@@ -165,7 +193,8 @@ class _IssueStampCardDialogScreenState
             if (violated) {
               if (mounted) {
                 setState(() {
-                  _isIssuable = false;
+                  _issueStatus = _IssueStatus.notIssuable;
+                  // _isIssuable = false;
                   _alertRows.add(
                     const AlertRow(text: 'Exceeded max number of issues'),
                   );
@@ -177,12 +206,13 @@ class _IssueStampCardDialogScreenState
 
     // Assume another check
     Future<bool> veryLongTask = Utils.delaySeconds(5).then((value) {
-      if (random.nextDouble() < 0.5) {
+      if (random.nextDouble() < 0.9) {
         return false;
       }
       if (mounted) {
         setState(() {
-          _isIssuable = false;
+          _issueStatus = _IssueStatus.notIssuable;
+          // _isIssuable = false;
           _alertRows.add(
             const AlertRow(text: 'Violated very long check task'),
           );
@@ -199,7 +229,8 @@ class _IssueStampCardDialogScreenState
     if (violations.every((violated) => !violated)) {
       if (mounted) {
         setState(() {
-          _isIssuable = true;
+          _issueStatus = _IssueStatus.issuable;
+          // _isIssuable = true;
         });
       }
     }
@@ -225,9 +256,81 @@ class _IssueStampCardDialogScreenState
     return random.nextInt(3);
   }
 
-  void _onPressIssue() {}
+  void _onPressIssue() async {
+    final blueprint = ref.read(widget.blueprintProvider);
+    if (mounted) {
+      setState(() {
+        _issueStatus = _IssueStatus.issuing;
+        // _issuing = true;
+      });
+    }
+    final newStampCard = await issueCard(
+      user: currentUser,
+      blueprint: blueprint,
+    );
+    if (newStampCard == null) {
+      // failed
+      if (mounted) {
+        setState(() {
+          _issueStatus = _IssueStatus.issueFailed;
+        });
+      }
+    } else {
+      setState(() {
+        _issueStatus = _IssueStatus.issueSuccessful;
+      });
+    }
+    await Utils.delaySeconds(1);
+    if (mounted) {
+      Navigator.of(context).pop();
+    }
+  }
 
-  void _onPressBack() {}
+  Future<StampCard?> issueCard({
+    required User user,
+    required StampCardBlueprint blueprint,
+  }) async {
+    // TODO post stampCard and receive location
+    final stampCardDisplayName = cardNameTextField.controller!.text;
+    await Utils.delaySeconds(1);
+    final String newStampCardId = uuid.v4();
+
+    // TODO get stampCard
+    await Utils.delaySeconds(1);
+    final newStampCard = StampCard(
+      id: newStampCardId,
+      customerId: user.id,
+      displayName: stampCardDisplayName,
+      expirationDate: blueprint.expirationDate,
+      isFavorite: false,
+      lastModifiedDate: DateTime.now(),
+      numCollectedStamps: 0,
+      numMaxStamps: blueprint.numMaxStamps,
+      numGoalStamps: blueprint.numMaxStamps,
+      numRedeemed: 0,
+      numMaxRedeems: blueprint.numMaxRedeems,
+      storeId: blueprint.storeId,
+      wasDiscarded: false,
+      wasUsedOut: false,
+      isInactive: false,
+      bgImageUrl: blueprint.bgImageUrl,
+      icon: blueprint.icon,
+    );
+    stampCardProviders.tryAddProvider(entity: newStampCard);
+
+    ScaffoldMessenger.of(MyApp.materialKey.currentContext!)
+        .showSnackBar(const SnackBar(
+      content: Text('Your stamp card is ready!'),
+      duration: Duration(seconds: 3),
+    ));
+    return newStampCard;
+  }
+
+  void _onPressBack() {
+    if (mounted) {
+      Navigator.of(context).pop();
+    }
+  }
 }
 
 class AlertRow extends StatelessWidget {
@@ -252,4 +355,13 @@ class AlertRow extends StatelessWidget {
       ],
     );
   }
+}
+
+enum _IssueStatus {
+  checkingIssuability,
+  notIssuable,
+  issuable,
+  issuing,
+  issueFailed,
+  issueSuccessful,
 }
