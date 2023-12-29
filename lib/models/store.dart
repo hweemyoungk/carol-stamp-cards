@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart';
 
 class Store extends BaseModel {
   final String displayName;
+  final String description;
   final String zipcode;
   final String address;
   final String phone;
@@ -18,6 +19,7 @@ class Store extends BaseModel {
   Store({
     required super.id,
     required this.displayName,
+    required this.description,
     required this.zipcode,
     required this.address,
     required this.phone,
@@ -30,8 +32,8 @@ class Store extends BaseModel {
   });
 
   double getDistance(double deviceLat, double deviceLng) {
-    final meters = distance(LatLng(lat, lng), LatLng(deviceLat, deviceLng));
     return random.nextDouble() * (random.nextInt(1000) + 1);
+    final meters = distance(LatLng(lat, lng), LatLng(deviceLat, deviceLng));
     return meters;
   }
 

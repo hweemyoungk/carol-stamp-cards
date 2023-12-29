@@ -3,6 +3,7 @@ import 'package:carol/models/store.dart';
 import 'package:carol/providers/active_drawer_item_provider.dart';
 import 'package:carol/providers/entity_provider.dart';
 import 'package:carol/providers/store_provider.dart';
+import 'package:carol/providers/stores_provider.dart';
 import 'package:carol/widgets/common/load_more_button.dart';
 import 'package:carol/widgets/main_drawer.dart';
 import 'package:carol/widgets/stores_explorer/stores_list_item.dart';
@@ -18,9 +19,10 @@ class StoresList extends ConsumerStatefulWidget {
 
 class _StoresListState extends ConsumerState<StoresList> {
   final ScrollController _controller = ScrollController();
-  final List<Store> _stores = [];
+  // final List<Store> _stores = [];
   bool _storesInitLoaded = false;
   late EntityProviders<Store> storeProviders;
+  late StateNotifierProvider<StoresNotifier, List<Store>> storesProvider;
 
   late List<Store> Function({int numStores, String? ownerId}) genDummyStores;
   late int numStores;
@@ -32,43 +34,49 @@ class _StoresListState extends ConsumerState<StoresList> {
     final activeDrawerItemEnum = ref.read(activeDrawerItemProvider);
     if (activeDrawerItemEnum == DrawerItemEnum.customer) {
       storeProviders = customerStoreProviders;
+      storesProvider = customerStoresProvider;
       genDummyStores = genDummyCustomerStores;
       numStores = 10;
     } else if (activeDrawerItemEnum == DrawerItemEnum.owner) {
       storeProviders = ownerStoreProviders;
+      storesProvider = ownerStoresProvider;
       genDummyStores = genDummyOwnerStores;
       numStores = 2;
     } else {
       throw Exception(
           'StoresList can only be reached from customer or owner drawer item');
     }
-
-    if (storeProviders.providers.isNotEmpty) {
-      for (final entry in storeProviders.providers.entries) {
-        final store = ref.read(entry.value);
-        _stores.add(store);
-      }
-      _storesInitLoaded = true;
-    } else {
-      loadMore();
-    }
   }
 
   @override
   Widget build(BuildContext context) {
+    List<Store> stores = ref.watch(storesProvider);
+
+    if (!_storesInitLoaded) {
+      // Initial load
+      if (storeProviders.providers.isNotEmpty) {
+        final loadedStores =
+            storeProviders.providers.entries.map((e) => ref.read(e.value));
+        ref.read(storesProvider.notifier).appendAll(loadedStores);
+        _storesInitLoaded = true;
+      } else {
+        loadMore();
+      }
+    }
+
     return !_storesInitLoaded
         ? const CircularProgressIndicator()
         : Expanded(
             child: ListView.builder(
               controller: _controller,
-              itemCount: _stores.length + 1,
+              itemCount: stores.length + 1,
               itemBuilder: (ctx, index) {
-                return index == _stores.length
+                return index == stores.length
                     ? LoadMoreButton(onPressLoadMore: _onPressLoadMore)
                     : StoresListItem(
-                        key: ValueKey(_stores[index].id),
+                        key: ValueKey(stores[index].id),
                         storeProvider:
-                            storeProviders.providers[_stores[index].id]!,
+                            storeProviders.providers[stores[index].id]!,
                       );
               },
             ),
@@ -79,8 +87,8 @@ class _StoresListState extends ConsumerState<StoresList> {
     try {
       final value = await loadStores(numStores: numStores);
       if (mounted) {
+        ref.read(storesProvider.notifier).appendAll(value);
         setState(() {
-          _stores.addAll(value);
           _storesInitLoaded = true;
         });
       }

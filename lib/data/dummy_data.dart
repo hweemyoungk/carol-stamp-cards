@@ -98,6 +98,8 @@ List<Store> genDummyStores({
     final store = Store(
       id: uuid.v4(),
       displayName: 'H\'s Bakery $index',
+      description:
+          'Commodo irure ad adipisicing anim. Pariatur amet culpa nulla magna deserunt commodo est consequat. Aliqua mollit nostrud mollit reprehenderit enim Lorem veniam adipisicing mollit est. Officia anim aliqua anim ea aliqua laboris.\nUt in nostrud mollit elit exercitation mollit. Minim nulla aliqua commodo mollit. Excepteur cupidatat culpa incididunt esse fugiat magna aliquip consectetur. Enim exercitation cillum pariatur adipisicing. Incididunt ut consectetur commodo elit officia tempor cupidatat irure enim non occaecat reprehenderit. Eiusmod fugiat irure officia nulla aliquip aliqua incididunt nulla laboris in id esse. Est aliquip et culpa deserunt fugiat eiusmod fugiat velit dolor voluptate anim et.',
       zipcode: random.nextInt(100000).toString().padLeft(5, '0'),
       address: 'Bar City, Foo State',
       phone: '0212345678',

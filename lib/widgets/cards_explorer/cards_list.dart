@@ -26,13 +26,25 @@ class _CardsListState extends ConsumerState<CardsList> {
     super.initState();
     if (stampCardProviders.providers.isNotEmpty) {
       _initLoaded = true;
-      for (final entry in stampCardProviders.providers.entries) {
-        final stampCard = ref.read(entry.value);
-        _stampCards.add(stampCard);
-      }
+      final stampCards = stampCardProviders.providers.entries
+          .map((e) => ref.read(e.value))
+          .toList();
+      _stampCards.addAll(stampCards);
+      _sortStampCards();
+      // for (final entry in stampCardProviders.providers.entries) {
+      //   final stampCard = ref.read(entry.value);
+      //   _stampCards.add(stampCard);
+      // }
     } else {
       loadMore();
     }
+  }
+
+  void _sortStampCards() {
+    _stampCards.sort(
+      (card1, card2) =>
+          card2.lastModifiedDate.compareTo(card1.lastModifiedDate),
+    );
   }
 
   @override
@@ -76,6 +88,7 @@ class _CardsListState extends ConsumerState<CardsList> {
       if (mounted) {
         setState(() {
           _stampCards.addAll(value);
+          _sortStampCards();
           _initLoaded = true;
         });
       }

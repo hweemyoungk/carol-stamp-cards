@@ -274,7 +274,7 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
           return false;
         });
       }
-      await Future.delayed(Duration(seconds: 1));
+      await Utils.delaySeconds(1);
       if (completer.isCompleted) {
         try {
           final exists = await completer.future;
