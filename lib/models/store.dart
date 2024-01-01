@@ -1,4 +1,5 @@
 import 'package:carol/models/base_model.dart';
+import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
@@ -15,6 +16,8 @@ class Store extends BaseModel {
   final String? bgImageUrl;
   final String? profileImageUrl;
   final String ownerId;
+  // Assumes Lazy fetch.
+  List<StampCardBlueprint>? blueprints;
 
   Store({
     required super.id,
@@ -29,7 +32,40 @@ class Store extends BaseModel {
     this.bgImageUrl,
     this.profileImageUrl,
     required this.ownerId,
+    this.blueprints,
   });
+
+  Store copyWith({
+    String? id,
+    String? displayName,
+    String? description,
+    String? zipcode,
+    String? address,
+    String? phone,
+    double? lat,
+    double? lng,
+    IconData? icon,
+    String? bgImageUrl,
+    String? profileImageUrl,
+    String? ownerId,
+    List<StampCardBlueprint>? blueprints,
+  }) {
+    return Store(
+      id: id ?? this.id,
+      displayName: displayName ?? this.displayName,
+      description: description ?? this.description,
+      zipcode: zipcode ?? this.zipcode,
+      address: address ?? this.address,
+      phone: phone ?? this.phone,
+      lat: lat ?? this.lat,
+      lng: lng ?? this.lng,
+      icon: icon ?? this.icon,
+      bgImageUrl: bgImageUrl ?? this.bgImageUrl,
+      profileImageUrl: profileImageUrl ?? this.profileImageUrl,
+      ownerId: ownerId ?? this.ownerId,
+      blueprints: blueprints ?? this.blueprints,
+    );
+  }
 
   double getDistance(double deviceLat, double deviceLng) {
     return random.nextDouble() * (random.nextInt(1000) + 1);

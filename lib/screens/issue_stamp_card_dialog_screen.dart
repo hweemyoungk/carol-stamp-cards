@@ -5,6 +5,7 @@ import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/models/user.dart';
 import 'package:carol/providers/entity_provider.dart';
 import 'package:carol/providers/stamp_card_provider.dart';
+import 'package:carol/providers/stamp_cards_provider.dart';
 import 'package:carol/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -276,9 +277,11 @@ class _IssueStampCardDialogScreenState
         });
       }
     } else {
-      setState(() {
-        _issueStatus = _IssueStatus.issueSuccessful;
-      });
+      if (mounted) {
+        setState(() {
+          _issueStatus = _IssueStatus.issueSuccessful;
+        });
+      }
     }
     await Utils.delaySeconds(1);
     if (mounted) {
@@ -290,6 +293,7 @@ class _IssueStampCardDialogScreenState
     required User user,
     required StampCardBlueprint blueprint,
   }) async {
+    final stampCardsNotifier = ref.read(stampCardsProvider.notifier);
     // TODO post stampCard and receive location
     final stampCardDisplayName = cardNameTextField.controller!.text;
     await Utils.delaySeconds(1);
@@ -317,6 +321,7 @@ class _IssueStampCardDialogScreenState
       icon: blueprint.icon,
     );
     stampCardProviders.tryAddProvider(entity: newStampCard);
+    stampCardsNotifier.prepend(newStampCard, sort: false);
 
     ScaffoldMessenger.of(MyApp.materialKey.currentContext!)
         .showSnackBar(const SnackBar(

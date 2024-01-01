@@ -55,9 +55,9 @@ List<StampCardBlueprint> genDummyBlueprints({
           // ? 'https://cdn.pixabay.com/photo/2018/03/31/19/29/schnitzel-3279045_1280.jpg'
           ? 'assets/images/schnitzel-3279045_1280.jpg'
           : null,
-      isInactive: random.nextDouble() < 0.5,
+      isPublishing: random.nextDouble() < 0.5,
     );
-    stampCardBlueprintProviders.tryAddProvider(entity: blueprint);
+    blueprintProviders.tryAddProvider(entity: blueprint);
     return blueprint;
   });
 }

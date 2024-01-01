@@ -189,6 +189,7 @@ class _OwnerDesignStoreScreenState
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // double _lat;
                         Padding(

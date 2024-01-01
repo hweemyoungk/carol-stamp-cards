@@ -6,6 +6,7 @@ import 'package:carol/providers/active_drawer_item_provider.dart';
 import 'package:carol/providers/entity_provider.dart';
 import 'package:carol/providers/stamp_card_blueprint_provider.dart';
 import 'package:carol/screens/issue_stamp_card_dialog_screen.dart';
+import 'package:carol/screens/owner_design_blueprint_screen.dart';
 import 'package:carol/screens/owner_design_store_screen.dart';
 import 'package:carol/utils.dart';
 import 'package:carol/widgets/main_drawer.dart';
@@ -26,9 +27,9 @@ class StoreScreen extends ConsumerStatefulWidget {
 
 class _StoreScreenState extends ConsumerState<StoreScreen> {
   final List<StampCardBlueprint> _blueprints = [];
-  final List<StoreNotice> _storeNotices = [];
   bool _blueprintsInitLoaded = false;
-  bool _storeNoticesInitLoaded = false;
+  // final List<StoreNotice> _storeNotices = [];
+  // bool _storeNoticesInitLoaded = false;
   late StoreScreenMode _mode;
 
   @override
@@ -45,32 +46,52 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     }
 
     final store = ref.read(widget.storeProvider);
+    if (store.blueprints != null) {
+      // Already fetched. No need to load blueprints
+      setState(() {
+        _blueprints.addAll(store.blueprints!);
+        _blueprintsInitLoaded = true;
+      });
+      return;
+    }
+
+    final storeNotifier = ref.read(widget.storeProvider.notifier);
+
     loadBlueprints(
       numBps: 3,
       storeId: store.id,
     ).then((value) {
       setState(() {
+        // Bind blueprints to store
+        storeNotifier.set(entity: store.copyWith(blueprints: value));
         _blueprints.addAll(value);
         _blueprintsInitLoaded = true;
       });
     });
-    loadNotices(
-      numNotices: 5,
-      storeId: store.id,
-    ).then((value) {
-      setState(() {
-        _storeNotices.addAll(value);
-        _storeNoticesInitLoaded = true;
-      });
-    });
+    // loadNotices(
+    //   numNotices: 5,
+    //   storeId: store.id,
+    // ).then((value) {
+    //   setState(() {
+    //     storeNotifier.set(entity: store.copyWith(notices: value));
+    //     _storeNotices.addAll(value);
+    //     _storeNoticesInitLoaded = true;
+    //   });
+    // });
   }
 
   @override
   Widget build(BuildContext context) {
     final store = ref.watch(widget.storeProvider);
-    final watchedBlueprints = _blueprints.map((blueprint) {
-      return ref.watch(stampCardBlueprintProviders.providers[blueprint.id]!);
-    }).toList();
+    // final watchedBlueprints = _blueprints.map((blueprint) {
+    //   return ref.watch(blueprintProviders.tryGetProvider(entity: blueprint)!);
+    // }).toList();
+    final watchedBlueprints = store.blueprints == null
+        ? <StampCardBlueprint>[]
+        : store.blueprints!
+            .map((blueprint) => ref
+                .watch(blueprintProviders.tryGetProvider(entity: blueprint)!))
+            .toList();
 
     final bgImage = store.bgImageUrl == null
         ? Image.memory(
@@ -122,11 +143,18 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         ),
       ],
     );
+    final Widget description = Padding(
+      padding: Utils.basicWidgetEdgeInsets(),
+      child: Text(store.description),
+    );
     final storeName = Padding(
       padding: Utils.basicWidgetEdgeInsets(),
       child: Text(
         store.displayName,
-        style: Theme.of(context).textTheme.displayMedium,
+        style: Theme.of(context)
+            .textTheme
+            .displayMedium!
+            .copyWith(color: Theme.of(context).colorScheme.onSecondary),
       ),
     );
     final bpsListTitle = Row(
@@ -177,8 +205,8 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                         context: context,
                         builder: (ctx) {
                           return IssueStampCardDialogScreen(
-                            blueprintProvider: stampCardBlueprintProviders
-                                .providers[blueprint.id]!,
+                            blueprintProvider:
+                                blueprintProviders.providers[blueprint.id]!,
                           );
                         },
                       );
@@ -188,55 +216,56 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
               ),
       ],
     );
-    var noticesListTitle = Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          'Notices',
-          style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                color: Theme.of(context).colorScheme.onSecondary,
-              ),
-          textAlign: TextAlign.left,
-        ),
-        if (_mode == StoreScreenMode.owner)
-          IconButton(
-            onPressed: _onPressNewNotice,
-            icon: const Icon(Icons.add_box),
-          ),
-      ],
-    );
-    final noticesExplorer = Column(
-      children: [
-        Padding(
-          padding: Utils.basicWidgetEdgeInsets(),
-          child: noticesListTitle,
-        ),
-        !_storeNoticesInitLoaded
-            ? Padding(
-                padding: Utils.basicWidgetEdgeInsets(5),
-                child: const CircularProgressIndicator(),
-              )
-            : ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: _storeNotices.length,
-                itemBuilder: (ctx, index) {
-                  final notice = _storeNotices[index];
-                  return ListTile(
-                    leading: Icon(
-                      notice.icon,
-                      color: Theme.of(context).colorScheme.onSecondary,
-                    ),
-                    title: Text(
-                      notice.displayName,
-                      style: Theme.of(context).textTheme.bodyLarge,
-                    ),
-                  );
-                },
-              ),
-      ],
-    );
-    ;
+
+    // Skip Notice now
+    // final noticesListTitle = Row(
+    //   mainAxisAlignment: MainAxisAlignment.center,
+    //   children: [
+    //     Text(
+    //       'Notices',
+    //       style: Theme.of(context).textTheme.titleLarge!.copyWith(
+    //             color: Theme.of(context).colorScheme.onSecondary,
+    //           ),
+    //       textAlign: TextAlign.left,
+    //     ),
+    //     if (_mode == StoreScreenMode.owner)
+    //       IconButton(
+    //         onPressed: _onPressNewNotice,
+    //         icon: const Icon(Icons.add_box),
+    //       ),
+    //   ],
+    // );
+    // final noticesExplorer = Column(
+    //   children: [
+    //     Padding(
+    //       padding: Utils.basicWidgetEdgeInsets(),
+    //       child: noticesListTitle,
+    //     ),
+    //     !_storeNoticesInitLoaded
+    //         ? Padding(
+    //             padding: Utils.basicWidgetEdgeInsets(5),
+    //             child: const CircularProgressIndicator(),
+    //           )
+    //         : ListView.builder(
+    //             shrinkWrap: true,
+    //             physics: const NeverScrollableScrollPhysics(),
+    //             itemCount: _storeNotices.length,
+    //             itemBuilder: (ctx, index) {
+    //               final notice = _storeNotices[index];
+    //               return ListTile(
+    //                 leading: Icon(
+    //                   notice.icon,
+    //                   color: Theme.of(context).colorScheme.onSecondary,
+    //                 ),
+    //                 title: Text(
+    //                   notice.displayName,
+    //                   style: Theme.of(context).textTheme.bodyLarge,
+    //                 ),
+    //               );
+    //             },
+    //           ),
+    //   ],
+    // );
     final mainContent = Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -245,7 +274,8 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         phone,
         googleMap,
         bpsExplorer,
-        noticesExplorer,
+        description,
+        // noticesExplorer,
       ],
     );
     final contentOnBgImage = SingleChildScrollView(
@@ -337,9 +367,18 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     ));
   }
 
-  void _onPressNewBlueprint() {}
+  void _onPressNewBlueprint() {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) {
+        return OwnerDesignBlueprintScreen(
+          designMode: BlueprintDesignMode.create,
+          storeProvider: widget.storeProvider,
+        );
+      },
+    ));
+  }
 
-  void _onPressNewNotice() {}
+  // void _onPressNewNotice() {}
 }
 
 enum StoreScreenMode {

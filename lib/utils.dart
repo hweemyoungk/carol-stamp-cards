@@ -1,12 +1,14 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:uuid/uuid.dart';
 
 const uuid = Uuid();
 final random = Random();
 const distance = Distance();
+final formatter = DateFormat.yMd();
 
 class Utils {
   static EdgeInsets basicWidgetEdgeInsets([double scale = 1.0]) {

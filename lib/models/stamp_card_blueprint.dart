@@ -13,7 +13,7 @@ class StampCardBlueprint extends BaseModel {
   final String storeId;
   final IconData? icon;
   final String? bgImageUrl;
-  final bool isInactive;
+  final bool isPublishing;
 
   StampCardBlueprint({
     required super.id,
@@ -28,6 +28,6 @@ class StampCardBlueprint extends BaseModel {
     required this.storeId,
     required this.icon,
     required this.bgImageUrl,
-    required this.isInactive,
+    required this.isPublishing,
   });
 }
