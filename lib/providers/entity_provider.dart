@@ -12,6 +12,11 @@ class EntityProviders<T extends BaseModel> {
         (ref) => EntityStateNotifier<T>(entity: entity));
     return true;
   }
+
+  StateNotifierProvider<EntityStateNotifier<T>, T>? tryGetProvider(
+      {required T entity}) {
+    return providers[entity.id];
+  }
 }
 
 class EntityStateNotifier<T extends BaseModel> extends StateNotifier<T> {

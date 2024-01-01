@@ -1,4 +1,4 @@
-import 'package:carol/screens/owner_new_store_screen.dart';
+import 'package:carol/screens/owner_design_store_screen.dart';
 import 'package:carol/widgets/main_drawer.dart';
 import 'package:carol/widgets/stores_explorer/stores_explorer.dart';
 import 'package:flutter/material.dart';
@@ -27,7 +27,9 @@ class _OwnerScreenState extends State<OwnerScreen> {
 
   void _onPressNewStore() {
     Navigator.of(context).push(MaterialPageRoute(
-      builder: (context) => const OwnerNewStoreScreen(),
+      builder: (context) => const OwnerDesignStoreScreen(
+        designMode: StoreDesignMode.create,
+      ),
     ));
   }
 }

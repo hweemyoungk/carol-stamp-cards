@@ -7,16 +7,23 @@ import 'package:carol/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class OwnerNewStoreScreen extends ConsumerStatefulWidget {
-  const OwnerNewStoreScreen({super.key});
+class OwnerDesignStoreScreen extends ConsumerStatefulWidget {
+  const OwnerDesignStoreScreen({
+    super.key,
+    required this.designMode,
+    this.store,
+  });
+  final StoreDesignMode designMode;
+  final Store? store;
 
   @override
-  ConsumerState<OwnerNewStoreScreen> createState() =>
-      _OwnerNewStoreScreenState();
+  ConsumerState<OwnerDesignStoreScreen> createState() =>
+      _OwnerDesignStoreScreenState();
 }
 
-class _OwnerNewStoreScreenState extends ConsumerState<OwnerNewStoreScreen> {
-  var _status = _NewStoreStatus.userInput;
+class _OwnerDesignStoreScreenState
+    extends ConsumerState<OwnerDesignStoreScreen> {
+  var _status = StoreDesignStatus.userInput;
   final _formKey = GlobalKey<FormState>();
   late String _displayName;
   late String _description;
@@ -34,9 +41,11 @@ class _OwnerNewStoreScreenState extends ConsumerState<OwnerNewStoreScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('New Store'),
+        title: Text(widget.designMode == StoreDesignMode.create
+            ? 'New Store'
+            : 'Modify Store'),
         actions: [
-          _status == _NewStoreStatus.userInput
+          _status == StoreDesignStatus.userInput
               ? IconButton(
                   onPressed: _saveStore,
                   icon: const Icon(Icons.check),
@@ -62,6 +71,7 @@ class _OwnerNewStoreScreenState extends ConsumerState<OwnerNewStoreScreen> {
                     Padding(
                       padding: Utils.basicWidgetEdgeInsets(),
                       child: TextFormField(
+                        initialValue: widget.store?.displayName,
                         style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                             color: Theme.of(context).colorScheme.onBackground),
                         maxLength: 50,
@@ -84,19 +94,20 @@ class _OwnerNewStoreScreenState extends ConsumerState<OwnerNewStoreScreen> {
                     Padding(
                       padding: Utils.basicWidgetEdgeInsets(),
                       child: TextFormField(
+                        initialValue: widget.store?.description,
                         keyboardType: TextInputType.multiline,
                         maxLines: null,
                         style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                             color: Theme.of(context).colorScheme.onBackground),
-                        maxLength: 300,
+                        maxLength: 1000,
                         decoration: const InputDecoration(
                           label: Text('Description'),
                         ),
                         validator: (value) {
                           if (value == null ||
                               value.trim().length <= 1 ||
-                              value.trim().length > 300) {
-                            return 'Must be between 1 and 300 characters long';
+                              value.trim().length > 1000) {
+                            return 'Must be between 1 and 1000 characters long';
                           }
                           return null;
                         },
@@ -108,6 +119,7 @@ class _OwnerNewStoreScreenState extends ConsumerState<OwnerNewStoreScreen> {
                     Padding(
                       padding: Utils.basicWidgetEdgeInsets(),
                       child: TextFormField(
+                        initialValue: widget.store?.zipcode,
                         style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                             color: Theme.of(context).colorScheme.onBackground),
                         maxLength: 8,
@@ -130,6 +142,7 @@ class _OwnerNewStoreScreenState extends ConsumerState<OwnerNewStoreScreen> {
                     Padding(
                       padding: Utils.basicWidgetEdgeInsets(),
                       child: TextFormField(
+                        initialValue: widget.store?.address,
                         style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                             color: Theme.of(context).colorScheme.onBackground),
                         maxLength: 100,
@@ -153,6 +166,7 @@ class _OwnerNewStoreScreenState extends ConsumerState<OwnerNewStoreScreen> {
                     Padding(
                       padding: Utils.basicWidgetEdgeInsets(),
                       child: TextFormField(
+                        initialValue: widget.store?.phone,
                         style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                             color: Theme.of(context).colorScheme.onBackground),
                         maxLength: 15,
@@ -182,6 +196,7 @@ class _OwnerNewStoreScreenState extends ConsumerState<OwnerNewStoreScreen> {
                           child: SizedBox(
                             width: 150,
                             child: TextFormField(
+                              initialValue: widget.store?.lat.toString(),
                               style: Theme.of(context)
                                   .textTheme
                                   .bodyLarge!
@@ -213,6 +228,7 @@ class _OwnerNewStoreScreenState extends ConsumerState<OwnerNewStoreScreen> {
                           child: SizedBox(
                             width: 150,
                             child: TextFormField(
+                              initialValue: widget.store?.lng.toString(),
                               style: Theme.of(context)
                                   .textTheme
                                   .bodyLarge!
@@ -262,42 +278,81 @@ class _OwnerNewStoreScreenState extends ConsumerState<OwnerNewStoreScreen> {
     }
 
     setState(() {
-      _status = _NewStoreStatus.creating;
+      _status = StoreDesignStatus.sending;
     });
     _formKey.currentState!.save();
 
-    // POST Store
-    await Utils.delaySeconds(2);
-    final location = uuid.v4();
-    final newStore = Store(
-      address: _address,
-      description: _description,
-      displayName: _displayName,
-      id: location,
-      lat: _lat,
-      lng: _lng,
-      ownerId: currentUser.id,
-      phone: _phone,
-      zipcode: _zipcode,
-      bgImageUrl: null,
-      icon: null,
-      profileImageUrl: null,
-    );
-    ownerStoreProviders.tryAddProvider(entity: newStore);
-    ownerStoresNotifier.prepend(newStore);
+    if (widget.designMode == StoreDesignMode.create) {
+      // TODO POST Store
+      await Utils.delaySeconds(2);
+      final location = uuid.v4();
+      final newStore = Store(
+        address: _address,
+        description: _description,
+        displayName: _displayName,
+        id: location,
+        lat: _lat,
+        lng: _lng,
+        ownerId: currentUser.id,
+        phone: _phone,
+        zipcode: _zipcode,
+        bgImageUrl: null,
+        icon: null,
+        profileImageUrl: null,
+      );
+      ownerStoreProviders.tryAddProvider(entity: newStore);
+      ownerStoresNotifier.prepend(newStore);
+      ScaffoldMessenger.of(MyApp.materialKey.currentContext!)
+          .showSnackBar(const SnackBar(
+        content: Text('New Store Created!'),
+        duration: Duration(seconds: 3),
+      ));
+    } else {
+      // TODO PUT Store
+      await Utils.delaySeconds(2);
+      final modifiedStore = Store(
+        address: _address,
+        description: _description,
+        displayName: _displayName,
+        id: widget.store!.id,
+        lat: _lat,
+        lng: _lng,
+        ownerId: currentUser.id,
+        phone: _phone,
+        zipcode: _zipcode,
+        bgImageUrl: null,
+        icon: null,
+        profileImageUrl: null,
+      );
+      final provider =
+          ownerStoreProviders.tryGetProvider(entity: modifiedStore);
+      if (provider == null) {
+        ScaffoldMessenger.of(MyApp.materialKey.currentContext!)
+            .showSnackBar(const SnackBar(
+          content: Text('Error: Invalid Store'),
+          duration: Duration(seconds: 3),
+        ));
+      }
+      ref.read(provider!.notifier).set(entity: modifiedStore);
+      ScaffoldMessenger.of(MyApp.materialKey.currentContext!)
+          .showSnackBar(const SnackBar(
+        content: Text('Store Modified!'),
+        duration: Duration(seconds: 3),
+      ));
+    }
 
     if (mounted) {
       Navigator.of(context).pop();
     }
-    ScaffoldMessenger.of(MyApp.materialKey.currentContext!)
-        .showSnackBar(const SnackBar(
-      content: Text('New Store Created!'),
-      duration: Duration(seconds: 3),
-    ));
   }
 }
 
-enum _NewStoreStatus {
+enum StoreDesignStatus {
   userInput,
-  creating,
+  sending,
+}
+
+enum StoreDesignMode {
+  create,
+  modify,
 }

@@ -6,6 +6,7 @@ import 'package:carol/providers/active_drawer_item_provider.dart';
 import 'package:carol/providers/entity_provider.dart';
 import 'package:carol/providers/stamp_card_blueprint_provider.dart';
 import 'package:carol/screens/issue_stamp_card_dialog_screen.dart';
+import 'package:carol/screens/owner_design_store_screen.dart';
 import 'package:carol/utils.dart';
 import 'package:carol/widgets/main_drawer.dart';
 import 'package:flutter/material.dart';
@@ -325,7 +326,16 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     );
   }
 
-  void _onPressModifyStore() {}
+  void _onPressModifyStore() {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) {
+        return OwnerDesignStoreScreen(
+          designMode: StoreDesignMode.modify,
+          store: ref.read(widget.storeProvider),
+        );
+      },
+    ));
+  }
 
   void _onPressNewBlueprint() {}
 
