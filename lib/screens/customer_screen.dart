@@ -27,13 +27,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _activeBottomItemIndex,
-        onTap: (value) {
-          if (mounted) {
-            setState(() {
-              _activeBottomItemIndex = value;
-            });
-          }
-        },
+        onTap: _onTapBottomItem,
         items: const [
           BottomNavigationBarItem(
             label: 'Cards',
@@ -47,5 +41,13 @@ class _CustomerScreenState extends State<CustomerScreen> {
       ),
       drawer: const MainDrawer(),
     );
+  }
+
+  void _onTapBottomItem(value) {
+    if (mounted) {
+      setState(() {
+        _activeBottomItemIndex = value;
+      });
+    }
   }
 }

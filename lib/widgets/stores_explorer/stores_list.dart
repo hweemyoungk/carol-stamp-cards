@@ -20,9 +20,10 @@ class StoresList extends ConsumerStatefulWidget {
 class _StoresListState extends ConsumerState<StoresList> {
   final ScrollController _controller = ScrollController();
   // final List<Store> _stores = [];
-  bool _storesInitLoaded = false;
   late EntityProviders<Store> storeProviders;
   late StateNotifierProvider<StoresNotifier, List<Store>> storesProvider;
+  late StateNotifierProvider<StoresInitLoadedNotifier, bool>
+      storesInitLoadedProvider;
 
   late List<Store> Function({int numStores, String? ownerId}) genDummyStores;
   late int numStores;
@@ -35,36 +36,44 @@ class _StoresListState extends ConsumerState<StoresList> {
     if (activeDrawerItemEnum == DrawerItemEnum.customer) {
       storeProviders = customerStoreProviders;
       storesProvider = customerStoresProvider;
+      storesInitLoadedProvider = customerStoresInitLoadedProvider;
       genDummyStores = genDummyCustomerStores;
       numStores = 10;
     } else if (activeDrawerItemEnum == DrawerItemEnum.owner) {
       storeProviders = ownerStoreProviders;
       storesProvider = ownerStoresProvider;
+      storesInitLoadedProvider = ownerStoresInitLoadedProvider;
       genDummyStores = genDummyOwnerStores;
       numStores = 2;
     } else {
       throw Exception(
           'StoresList can only be reached from customer or owner drawer item');
     }
-  }
 
-  @override
-  Widget build(BuildContext context) {
-    List<Store> stores = ref.watch(storesProvider);
-
-    if (!_storesInitLoaded) {
+    final storesInitLoaded = ref.read(storesInitLoadedProvider);
+    final storesInitLoadedNotifier =
+        ref.read(storesInitLoadedProvider.notifier);
+    if (!storesInitLoaded) {
       // Initial load
       if (storeProviders.providers.isNotEmpty) {
         final loadedStores =
             storeProviders.providers.entries.map((e) => ref.read(e.value));
         ref.read(storesProvider.notifier).appendAll(loadedStores);
-        _storesInitLoaded = true;
+        storesInitLoadedNotifier.set(true);
       } else {
-        loadMore();
+        loadMore().then((value) {
+          storesInitLoadedNotifier.set(true);
+        });
       }
     }
+  }
 
-    return !_storesInitLoaded
+  @override
+  Widget build(BuildContext context) {
+    List<Store> stores = ref.watch(storesProvider);
+    final storesInitLoaded = ref.watch(storesInitLoadedProvider);
+
+    return !storesInitLoaded
         ? const CircularProgressIndicator()
         : Expanded(
             child: ListView.builder(
@@ -84,14 +93,10 @@ class _StoresListState extends ConsumerState<StoresList> {
   }
 
   Future<void> loadMore() async {
+    final storesNotifier = ref.read(storesProvider.notifier);
     try {
       final value = await loadStores(numStores: numStores);
-      if (mounted) {
-        ref.read(storesProvider.notifier).appendAll(value);
-        setState(() {
-          _storesInitLoaded = true;
-        });
-      }
+      storesNotifier.appendAll(value);
     } on Exception catch (e) {
       // TODO
     }

@@ -2,6 +2,7 @@ import 'package:carol/data/dummy_data.dart';
 import 'package:carol/main.dart';
 import 'package:carol/models/stamp_card.dart';
 import 'package:carol/providers/stamp_card_provider.dart';
+import 'package:carol/providers/stamp_cards_provider.dart';
 import 'package:carol/widgets/cards_explorer/cards_list_item_card.dart';
 import 'package:carol/widgets/common/load_more_button.dart';
 import 'package:flutter/material.dart';
@@ -18,57 +19,57 @@ class CardsList extends ConsumerStatefulWidget {
 
 class _CardsListState extends ConsumerState<CardsList> {
   final ScrollController _controller = ScrollController();
-  final List<StampCard> _stampCards = [];
-  bool _initLoaded = false;
+  // final List<StampCard> _stampCards = [];
 
   @override
   void initState() {
     super.initState();
-    if (stampCardProviders.providers.isNotEmpty) {
-      _initLoaded = true;
-      final stampCards = stampCardProviders.providers.entries
-          .map((e) => ref.read(e.value))
-          .toList();
-      _stampCards.addAll(stampCards);
-      _sortStampCards();
-      // for (final entry in stampCardProviders.providers.entries) {
-      //   final stampCard = ref.read(entry.value);
-      //   _stampCards.add(stampCard);
-      // }
-    } else {
-      loadMore();
+    final stampCardsInitLoaded = ref.read(stampCardsInitLoadedProvider);
+    final stampCardsInitLoadedNotifier =
+        ref.read(stampCardsInitLoadedProvider.notifier);
+    if (!stampCardsInitLoaded) {
+      if (stampCardProviders.providers.isNotEmpty) {
+        loadFromEntityProviders();
+        stampCardsInitLoadedNotifier.set(true);
+      } else {
+        loadMore().then((value) {
+          stampCardsInitLoadedNotifier.set(true);
+        });
+      }
     }
-  }
-
-  void _sortStampCards() {
-    _stampCards.sort(
-      (card1, card2) =>
-          card2.lastModifiedDate.compareTo(card1.lastModifiedDate),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return !_initLoaded
+    final stampCards = ref.watch(stampCardsProvider);
+    final stampCardsInitLoaded = ref.watch(stampCardsInitLoadedProvider);
+
+    return !stampCardsInitLoaded
         ? const CircularProgressIndicator()
         : Expanded(
             child: NotificationListener<ScrollNotification>(
               // onNotification: _handleScrollNotification,
               child: ListView.builder(
                 controller: _controller,
-                itemCount: _stampCards.length + 1,
+                itemCount: stampCards.length + 1,
                 itemBuilder: (ctx, index) {
-                  return index == _stampCards.length
+                  return index == stampCards.length
                       ? LoadMoreButton(onPressLoadMore: _onPressLoadMore)
                       : CardsListItemCard(
-                          key: ValueKey(_stampCards[index].id),
+                          key: ValueKey(stampCards[index].id),
                           stampCardProvider: stampCardProviders
-                              .providers[_stampCards[index].id]!,
+                              .providers[stampCards[index].id]!,
                         );
                 },
               ),
             ),
           );
+  }
+
+  void loadFromEntityProviders() {
+    final loadedStampCards =
+        stampCardProviders.providers.entries.map((e) => ref.read(e.value));
+    ref.read(stampCardsProvider.notifier).appendAll(loadedStampCards);
   }
 
   bool _handleScrollNotification(ScrollNotification notification) {
@@ -83,15 +84,10 @@ class _CardsListState extends ConsumerState<CardsList> {
   }
 
   Future<void> loadMore() async {
+    final stampCardsNotifier = ref.read(stampCardsProvider.notifier);
     try {
       final value = await loadStampCards();
-      if (mounted) {
-        setState(() {
-          _stampCards.addAll(value);
-          _sortStampCards();
-          _initLoaded = true;
-        });
-      }
+      stampCardsNotifier.appendAll(value);
     } on Exception catch (e) {
       ScaffoldMessenger.of(MyApp.materialKey.currentContext!).showSnackBar(
         SnackBar(

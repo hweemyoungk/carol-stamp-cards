@@ -2,10 +2,12 @@ import 'package:carol/data/dummy_data.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/models/store.dart';
 import 'package:carol/models/store_notice.dart';
+import 'package:carol/providers/active_drawer_item_provider.dart';
 import 'package:carol/providers/entity_provider.dart';
 import 'package:carol/providers/stamp_card_blueprint_provider.dart';
 import 'package:carol/screens/issue_stamp_card_dialog_screen.dart';
 import 'package:carol/utils.dart';
+import 'package:carol/widgets/main_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:transparent_image/transparent_image.dart';
@@ -26,10 +28,21 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   final List<StoreNotice> _storeNotices = [];
   bool _blueprintsInitLoaded = false;
   bool _storeNoticesInitLoaded = false;
+  late StoreScreenMode _mode;
 
   @override
   void initState() {
     super.initState();
+    final activeDrawerItemEnum = ref.read(activeDrawerItemProvider);
+    if (activeDrawerItemEnum == DrawerItemEnum.customer) {
+      _mode = StoreScreenMode.customer;
+    } else if (activeDrawerItemEnum == DrawerItemEnum.owner) {
+      _mode = StoreScreenMode.owner;
+    } else {
+      throw Exception(
+          'StoreScreen can only be reached from customer or owner drawer item');
+    }
+
     final store = ref.read(widget.storeProvider);
     loadBlueprints(
       numBps: 3,
@@ -115,17 +128,28 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         style: Theme.of(context).textTheme.displayMedium,
       ),
     );
+    final bpsListTitle = Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          'Stamp Cards being Published',
+          style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                color: Theme.of(context).colorScheme.onSecondary,
+              ),
+          textAlign: TextAlign.left,
+        ),
+        if (_mode == StoreScreenMode.owner)
+          IconButton(
+            onPressed: _onPressNewBlueprint,
+            icon: const Icon(Icons.add_box),
+          ),
+      ],
+    );
     final bpsExplorer = Column(
       children: [
         Padding(
           padding: Utils.basicWidgetEdgeInsets(),
-          child: Text(
-            'Stamp Cards being Published',
-            style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                  color: Theme.of(context).colorScheme.onSecondary,
-                ),
-            textAlign: TextAlign.left,
-          ),
+          child: bpsListTitle,
         ),
         !_blueprintsInitLoaded
             ? Padding(
@@ -163,17 +187,28 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
               ),
       ],
     );
+    var noticesListTitle = Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          'Notices',
+          style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                color: Theme.of(context).colorScheme.onSecondary,
+              ),
+          textAlign: TextAlign.left,
+        ),
+        if (_mode == StoreScreenMode.owner)
+          IconButton(
+            onPressed: _onPressNewNotice,
+            icon: const Icon(Icons.add_box),
+          ),
+      ],
+    );
     final noticesExplorer = Column(
       children: [
         Padding(
           padding: Utils.basicWidgetEdgeInsets(),
-          child: Text(
-            'Notices',
-            style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                  color: Theme.of(context).colorScheme.onSecondary,
-                ),
-            textAlign: TextAlign.left,
-          ),
+          child: noticesListTitle,
         ),
         !_storeNoticesInitLoaded
             ? Padding(
@@ -231,6 +266,15 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       ),
     );
     return Scaffold(
+      appBar: _mode == StoreScreenMode.customer
+          ? null
+          : AppBar(
+              actions: [
+                IconButton(
+                    onPressed: _onPressModifyStore,
+                    icon: const Icon(Icons.construction))
+              ],
+            ),
       backgroundColor: Theme.of(context).colorScheme.secondary,
       body: LayoutBuilder(
         builder: (ctx, constraints) {
@@ -280,4 +324,15 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       storeId: storeId,
     );
   }
+
+  void _onPressModifyStore() {}
+
+  void _onPressNewBlueprint() {}
+
+  void _onPressNewNotice() {}
+}
+
+enum StoreScreenMode {
+  customer,
+  owner,
 }
