@@ -1,11 +1,8 @@
-import 'package:carol/data/dummy_data.dart';
 import 'package:carol/main.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/models/store.dart';
 import 'package:carol/providers/entity_provider.dart';
 import 'package:carol/providers/stamp_card_blueprint_provider.dart';
-import 'package:carol/providers/store_provider.dart';
-import 'package:carol/providers/stores_provider.dart';
 import 'package:carol/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

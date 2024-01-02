@@ -3,6 +3,7 @@ import 'package:carol/models/store.dart';
 import 'package:carol/providers/active_drawer_item_provider.dart';
 import 'package:carol/providers/entity_provider.dart';
 import 'package:carol/providers/store_provider.dart';
+import 'package:carol/providers/stores_init_loaded_provider.dart';
 import 'package:carol/providers/stores_provider.dart';
 import 'package:carol/widgets/common/load_more_button.dart';
 import 'package:carol/widgets/main_drawer.dart';
