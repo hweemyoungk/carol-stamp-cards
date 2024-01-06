@@ -1,7 +1,3 @@
-# expense_tracker
-
-A new Flutter project.
-
 ## Getting Started
 
 This project is a starting point for a Flutter application.
@@ -15,7 +11,7 @@ For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
 
-## Lecture Mote
+## Lecture Note
 
 ### *class* Icon
 
@@ -472,6 +468,9 @@ Utilizes `...FormField` widgets.
 Use this under `Form` instead of `TextField`
 
 - `TextFormField.validator`: returns message if validation failed, otherwise null.
+- `TextFormField.autocorrect`: Set to `false` when entering email address etc.
+- `TextFormField.textCapitalization`: Set to `false` when entering email address etc.
+- `TextFormField.obscureText`: Hide input (like password)
 
 #### *class* DropdownButtonFormField
 
@@ -504,4 +503,143 @@ Use this under `Form` instead of `DropdownButton`
 - `AsyncSnapshot.hasError` & `AsyncSnapshot.error`
 - `AsyncSnapshot.hasData` & `AsyncSnapshot.data`
 
+### *package* image_picker
 
+Install by `flutter pub add image_picker`
+
+#### *class* ImagePicker
+
+- `XFile pickedImage = await ImagePicker.pickImage(ImageSource source, int? imageQuality, double? maxWidth, double? maxHeight)`
+- To convert `XFile` to `File`: `File(XFile.path)`
+
+### *class* GestureDetector
+
+### *package* location
+
+### *API* google maps geocoding api
+
+reverse geocoding: lat,lng -> formatted address
+
+https://maps.googleapis.com/maps/api/geocode/json?latlng=$lat,$lng&key=$apiKey
+
+### *API* google maps static api
+
+https://maps.googleapis.com/maps/api/staticmap?center=$lat,$lng&zoom=13&size=600x300&maptype=roadmap&markers=color:green%7Clabel:A%7C$lat,$lng&key=$apiKey
+
+### *package* google_maps_flutter
+
+#### *class* GoogleMap
+
+- GoogleMap.initialCameraPosition: Accepts `CameraPosition`.
+  - CameraPosition.target: Accepts `LatLng`.
+- GoogleMap.markers: Accepts Set of `Marker`
+  - Marker.markerId: Accepts `MarkerId`
+  - Marker.position: Accepts `LatLng`
+- GoogleMap.onTap: Accepts (LatLng) => void. You can make use of selected marker data
+
+### *package* path_provider
+
+Helps finding commonly used locations on the filesystem **on different OS**.
+
+- `Future<Directory> getApplicationDocumentsDirectory()`: place data that is user-generated. e.g., `/data/user/0/com.example.favorite_places/app_flutter`
+
+### *package* path
+
+Helps constructing path.
+
+- `String basename(String path)`: get filename from path. e.g., `scaled_02a68ba9-bf74-4dee-8907-c12943ffb3c72116744201613747093.jpg`
+- `String join(String, ...)`: join paths
+  - `join(getApplicationDocumentsDirectory(), basename(tmpPath))` returns persistance filepath.
+
+### *package* sqflite
+
+SQLite for flutter.
+Alternative has `shared_preferences`(KV database)
+
+- `Future<String> getDatabasesPath()`: get directory path for databases.
+- `Future<Database> openDatabase(String path, ...)`: (Create and) open db.
+  - onCreate
+  - version: find specific version. create one if not found
+
+#### *class* Database
+
+- Database.query
+- Database.insert
+
+## Section 14: Push Notifications & More: Building a Chat App with Flutter & Firebase
+
+### Email Regex
+
+`RegExp(r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$')`
+
+### Firebase CLI
+
+[Add Firebase to your Flutter app](https://firebase.google.com/docs/flutter/setup)
+
+1. Install Firebase CLI
+2. firebase login
+3. dart pub global activate flutterfire_cli
+4. flutterfire configure
+5. flutter pub add firebase_core
+6. flutter pub add firebase_auth (Auth features)
+7. flutterfire configure (Again)
+8. Fix `main.dart`
+```
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+// ...
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  runApp(const App());
+}
+// ...
+```
+
+### *package* firebase_auth
+
+SDK for Firebase Authentication
+
+#### *class* FirebaseAuth
+
+- FirebaseAuth.instance: Get singleton.
+- FirebaseAuth.signInWithEmailAndPassword(...): Credentials are stored and managed in device. (Kept signed in)
+- FirebaseAuth.createUserWithEmailAndPassword(...)
+- FirebaseAuth.authStateChanges(): returns `Stream<User?>`. Can be used as `StreamBuilder.stream`
+
+### *package* firebase_storage
+
+SDK for Firebase Storage
+
+#### *class* FirebaseStorage
+
+- FirebaseStorage.instance
+- Reference FirebaseStorage.ref(): references root of bucket
+- Reference.child(...): explore relative path.
+- Reference.putFile(File): upload file.
+- Referece.getDownloadURL(): get download url
+
+### *package* cloud_firestore
+
+SDK for Firebase Firestore (NoSQL)
+
+#### *class* FirebaseFirestore
+
+- FirebaseFirestore.instance
+- FirebaseFirestore.collection(String): get collection of docs
+- CollectionReference.doc(String): get doc (create if not exists)
+- CollectionReference.add(Map): create doc with timestamp+uid
+- DocumentReference.set(Map, SetOption): write doc
+
+### *package* firebase_messaging
+
+SDK for firebase cloud messaging (push notification)
+
+#### *class* FirebaseMessaging
+
+- FirebaseMessaging.instance
+- FirebaseMessaging.requestPermission()
+- FirebaseMessaging.getToken(): token specifies device
+- FirebaseMessaging.subscribeToTopic(String): can push notification to every device subscribing to topic

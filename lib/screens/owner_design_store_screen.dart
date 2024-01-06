@@ -303,7 +303,7 @@ class _OwnerDesignStoreScreenState
       );
       ownerStoreProviders.tryAddProvider(entity: newStore);
       ownerStoresNotifier.prepend(newStore);
-      ScaffoldMessenger.of(MyApp.materialKey.currentContext!)
+      ScaffoldMessenger.of(Carol.materialKey.currentContext!)
           .showSnackBar(const SnackBar(
         content: Text('New Store Created!'),
         duration: Duration(seconds: 3),
@@ -311,31 +311,27 @@ class _OwnerDesignStoreScreenState
     } else {
       // TODO PUT Store
       await Utils.delaySeconds(2);
-      final modifiedStore = Store(
+      final modifiedStore = widget.store!.copyWith(
         address: _address,
         description: _description,
         displayName: _displayName,
-        id: widget.store!.id,
         lat: _lat,
         lng: _lng,
-        ownerId: currentUser.id,
         phone: _phone,
         zipcode: _zipcode,
-        bgImageUrl: null,
-        icon: null,
-        profileImageUrl: null,
       );
+
       final provider =
           ownerStoreProviders.tryGetProvider(entity: modifiedStore);
       if (provider == null) {
-        ScaffoldMessenger.of(MyApp.materialKey.currentContext!)
+        ScaffoldMessenger.of(Carol.materialKey.currentContext!)
             .showSnackBar(const SnackBar(
           content: Text('Error: Invalid Store'),
           duration: Duration(seconds: 3),
         ));
       }
       ref.read(provider!.notifier).set(entity: modifiedStore);
-      ScaffoldMessenger.of(MyApp.materialKey.currentContext!)
+      ScaffoldMessenger.of(Carol.materialKey.currentContext!)
           .showSnackBar(const SnackBar(
         content: Text('Store Modified!'),
         duration: Duration(seconds: 3),

@@ -6,45 +6,190 @@ import 'package:carol/models/user.dart';
 import 'package:carol/providers/entity_provider.dart';
 import 'package:carol/providers/stamp_card_provider.dart';
 import 'package:carol/providers/stamp_cards_provider.dart';
+import 'package:carol/providers/store_provider.dart';
+import 'package:carol/providers/stores_provider.dart';
+import 'package:carol/screens/owner_design_blueprint_screen.dart';
 import 'package:carol/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:transparent_image/transparent_image.dart';
+import 'package:carol/apis.dart' as apis;
 
-class IssueStampCardDialogScreen extends ConsumerStatefulWidget {
-  const IssueStampCardDialogScreen({
+class BlueprintDialogScreen extends ConsumerStatefulWidget {
+  const BlueprintDialogScreen({
     super.key,
     required this.blueprintProvider,
+    required this.blueprintDialogMode,
   });
 
   final StateNotifierProvider<EntityStateNotifier<StampCardBlueprint>,
       StampCardBlueprint> blueprintProvider;
+  final BlueprintDialogMode blueprintDialogMode;
 
   @override
-  ConsumerState<IssueStampCardDialogScreen> createState() =>
-      _IssueStampCardDialogScreenState();
+  ConsumerState<BlueprintDialogScreen> createState() =>
+      _BlueprintDialogScreenState();
 }
 
-class _IssueStampCardDialogScreenState
-    extends ConsumerState<IssueStampCardDialogScreen> {
+class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
   final List<Widget> _alertRows = [];
   Widget? _unissuableAlerts;
   late Widget _issueButton;
   late TextFormField cardNameTextField;
 
   _IssueStatus _issueStatus = _IssueStatus.checkingIssuability;
+  bool _isFetchingRedeemRules = false;
 
   @override
   Widget build(BuildContext context) {
     final blueprint = ref.watch(widget.blueprintProvider);
 
-    if (_issueStatus == _IssueStatus.checkingIssuability) {
-      _checkIssuable(
-        user: currentUser,
-        blueprint: blueprint,
+    Widget image = blueprint.bgImageUrl == null
+        ? Image.memory(
+            kTransparentImage,
+            fit: BoxFit.contain,
+          )
+        : Image.asset(
+            blueprint.bgImageUrl!,
+            fit: BoxFit.contain,
+          );
+    final backButton = TextButton(
+      style: TextButton.styleFrom(
+          backgroundColor: Theme.of(context).colorScheme.background),
+      onPressed: _onPressBack,
+      child: Text(
+        'Back',
+        textAlign: TextAlign.end,
+        style: TextStyle(color: Theme.of(context).colorScheme.onBackground),
+      ),
+    );
+
+    if (widget.blueprintDialogMode == BlueprintDialogMode.customer) {
+      // Customer mode
+      if (_issueStatus == _IssueStatus.checkingIssuability) {
+        _checkIssuable(
+          user: currentUser,
+          blueprint: blueprint,
+        );
+      }
+      _setIssueButton();
+      _unissuableAlerts = _issueStatus == _IssueStatus.checkingIssuability ||
+              _issueStatus == _IssueStatus.issuable
+          ? null
+          : Column(children: _alertRows);
+      cardNameTextField = TextFormField(
+        controller: TextEditingController(text: blueprint.displayName),
+        enabled: _issueStatus == _IssueStatus.issuable,
+        decoration: InputDecoration(
+          labelText: 'Card Name',
+          labelStyle: TextStyle(
+            color: Theme.of(context).colorScheme.onSecondary,
+          ),
+        ),
+        // initialValue: blueprint.displayName,
+        style: const TextStyle(fontSize: 24),
+      );
+      return AlertDialog(
+        title: Text(blueprint.displayName),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              image,
+              Padding(
+                padding: Utils.basicWidgetEdgeInsets(),
+                child: Text(
+                  blueprint.description,
+                ),
+              ),
+              Padding(
+                padding: Utils.basicWidgetEdgeInsets(),
+                child: Text(
+                  'Stamp Grant Conditions',
+                  style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                      color: Theme.of(context).colorScheme.onSecondary),
+                ),
+              ),
+              Padding(
+                padding: Utils.basicWidgetEdgeInsets(),
+                child: Text(blueprint.stampGrantCondDescription),
+              ),
+              Padding(
+                padding: Utils.basicWidgetEdgeInsets(),
+                child: cardNameTextField,
+              ),
+              if (_unissuableAlerts != null) _unissuableAlerts!,
+              backButton,
+              _issueButton,
+            ],
+          ),
+        ),
+      );
+    } else {
+      // Owner mode
+
+      return AlertDialog(
+        title: Text(blueprint.displayName),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              image,
+              Padding(
+                padding: Utils.basicWidgetEdgeInsets(),
+                child: Text(
+                  blueprint.description,
+                ),
+              ),
+              Padding(
+                padding: Utils.basicWidgetEdgeInsets(),
+                child: Text(
+                  'Stamp Grant Conditions',
+                  style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                      color: Theme.of(context).colorScheme.onSecondary),
+                ),
+              ),
+              Padding(
+                padding: Utils.basicWidgetEdgeInsets(),
+                child: Text(blueprint.stampGrantCondDescription),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor:
+                      Theme.of(context).colorScheme.tertiaryContainer,
+                  disabledBackgroundColor:
+                      Theme.of(context).colorScheme.tertiaryContainer,
+                ),
+                onPressed: _isFetchingRedeemRules ? null : _onPressModify,
+                child: _isFetchingRedeemRules
+                    ? SizedBox(
+                        width: 15,
+                        height: 15,
+                        child: CircularProgressIndicator(
+                          color:
+                              Theme.of(context).colorScheme.onTertiaryContainer,
+                        ),
+                      )
+                    : Text(
+                        'Modify',
+                        textAlign: TextAlign.end,
+                        style: TextStyle(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onTertiaryContainer),
+                      ),
+              ),
+              backButton,
+            ],
+          ),
+        ),
       );
     }
+  }
 
+  void _setIssueButton() {
     if (_issueStatus == _IssueStatus.checkingIssuability ||
         _issueStatus == _IssueStatus.issuing) {
       _issueButton = ElevatedButton(
@@ -101,77 +246,6 @@ class _IssueStampCardDialogScreenState
         ),
       );
     }
-
-    _unissuableAlerts = _issueStatus == _IssueStatus.checkingIssuability ||
-            _issueStatus == _IssueStatus.issuable
-        ? null
-        : Column(children: _alertRows);
-    Widget image = blueprint.bgImageUrl == null
-        ? Image.memory(
-            kTransparentImage,
-            fit: BoxFit.contain,
-          )
-        : Image.asset(
-            blueprint.bgImageUrl!,
-            fit: BoxFit.contain,
-          );
-    cardNameTextField = TextFormField(
-      controller: TextEditingController(text: blueprint.displayName),
-      enabled: _issueStatus == _IssueStatus.issuable,
-      decoration: InputDecoration(
-        labelText: 'Card Name',
-        labelStyle: TextStyle(
-          color: Theme.of(context).colorScheme.onSecondary,
-        ),
-      ),
-      // initialValue: blueprint.displayName,
-      style: const TextStyle(fontSize: 24),
-    );
-    return AlertDialog(
-      title: Text(blueprint.displayName),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            image,
-            Padding(
-              padding: Utils.basicWidgetEdgeInsets(),
-              child: Text(
-                blueprint.description,
-              ),
-            ),
-            Padding(
-              padding: Utils.basicWidgetEdgeInsets(),
-              child: Text(
-                'Stamp Grant Conditions',
-                style: Theme.of(context)
-                    .textTheme
-                    .titleLarge!
-                    .copyWith(color: Theme.of(context).colorScheme.onSecondary),
-              ),
-            ),
-            Padding(
-              padding: Utils.basicWidgetEdgeInsets(),
-              child: Text(blueprint.stampGrantCondDescription),
-            ),
-            Padding(
-              padding: Utils.basicWidgetEdgeInsets(),
-              child: cardNameTextField,
-            ),
-            if (_unissuableAlerts != null) _unissuableAlerts!,
-            TextButton(
-              onPressed: _onPressBack,
-              child: const Text(
-                'Back',
-                textAlign: TextAlign.end,
-              ),
-            ),
-            _issueButton,
-          ],
-        ),
-      ),
-    );
   }
 
   Future<void> _checkIssuable({
@@ -182,6 +256,18 @@ class _IssueStampCardDialogScreenState
       setState(() {
         _alertRows.clear();
       });
+    }
+
+    // Check publishing (Very unlikely to happen)
+    if (!blueprint.isPublishing) {
+      if (mounted) {
+        setState(() {
+          _issueStatus = _IssueStatus.notIssuable;
+          _alertRows.add(
+            const AlertRow(text: 'Currently not publishing'),
+          );
+        });
+      }
     }
 
     // Check max issues
@@ -314,6 +400,7 @@ class _IssueStampCardDialogScreenState
       numRedeemed: 0,
       numMaxRedeems: blueprint.numMaxRedeems,
       storeId: blueprint.storeId,
+      blueprintId: blueprint.id,
       wasDiscarded: false,
       wasUsedOut: false,
       isInactive: false,
@@ -323,7 +410,7 @@ class _IssueStampCardDialogScreenState
     stampCardProviders.tryAddProvider(entity: newStampCard);
     stampCardsNotifier.prepend(newStampCard, sort: false);
 
-    ScaffoldMessenger.of(MyApp.materialKey.currentContext!)
+    ScaffoldMessenger.of(Carol.materialKey.currentContext!)
         .showSnackBar(const SnackBar(
       content: Text('Your stamp card is ready!'),
       duration: Duration(seconds: 3),
@@ -334,6 +421,45 @@ class _IssueStampCardDialogScreenState
   void _onPressBack() {
     if (mounted) {
       Navigator.of(context).pop();
+    }
+  }
+
+  Future<void> _onPressModify() async {
+    var blueprint = ref.read(widget.blueprintProvider);
+    final blueprintNotifier = ref.read(widget.blueprintProvider.notifier);
+    // Set _redeemRules
+    if (blueprint.redeemRules == null) {
+      setState(() {
+        _isFetchingRedeemRules = true;
+      });
+      // TODO Fetch redeemRules
+      // Await: Fetch redeemRules first
+      // apis.listRedeemRules(blueprintId: blueprint.id);
+      await apis.listDummyRedeemRules(blueprint: blueprint).then((value) {
+        final fetchedBlueprint = blueprint.copyWith(redeemRules: value);
+        blueprintNotifier.set(entity: fetchedBlueprint);
+        blueprint = fetchedBlueprint;
+      });
+      if (mounted) {
+        setState(() {
+          _isFetchingRedeemRules = false;
+        });
+      }
+    }
+    if (mounted) {
+      Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) {
+          final storeProvider =
+              ownerStoreProviders.tryGetProviderById(id: blueprint.storeId)!;
+          blueprint.storeId;
+          ownerStoreProviders;
+          return OwnerDesignBlueprintScreen(
+            designMode: BlueprintDesignMode.modify,
+            storeProvider: storeProvider,
+            blueprint: blueprint,
+          );
+        },
+      ));
     }
   }
 }
@@ -369,4 +495,9 @@ enum _IssueStatus {
   issuing,
   issueFailed,
   issueSuccessful,
+}
+
+enum BlueprintDialogMode {
+  customer,
+  owner,
 }

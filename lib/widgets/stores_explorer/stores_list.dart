@@ -51,22 +51,22 @@ class _StoresListState extends ConsumerState<StoresList> {
           'StoresList can only be reached from customer or owner drawer item');
     }
 
-    final storesInitLoaded = ref.read(storesInitLoadedProvider);
-    final storesInitLoadedNotifier =
-        ref.read(storesInitLoadedProvider.notifier);
-    if (!storesInitLoaded) {
-      // Initial load
-      if (storeProviders.providers.isNotEmpty) {
-        final loadedStores =
-            storeProviders.providers.entries.map((e) => ref.read(e.value));
-        ref.read(storesProvider.notifier).appendAll(loadedStores);
-        storesInitLoadedNotifier.set(true);
-      } else {
-        loadMore().then((value) {
-          storesInitLoadedNotifier.set(true);
-        });
-      }
-    }
+    // final storesInitLoaded = ref.read(storesInitLoadedProvider);
+    // final storesInitLoadedNotifier =
+    //     ref.read(storesInitLoadedProvider.notifier);
+    // if (!storesInitLoaded) {
+    //   // Initial load
+    //   if (storeProviders.providers.isNotEmpty) {
+    //     final loadedStores =
+    //         storeProviders.providers.entries.map((e) => ref.read(e.value));
+    //     ref.read(storesProvider.notifier).appendAll(loadedStores);
+    //     storesInitLoadedNotifier.set(true);
+    //   } else {
+    //     loadMore().then((value) {
+    //       storesInitLoadedNotifier.set(true);
+    //     });
+    //   }
+    // }
   }
 
   @override
@@ -79,36 +79,34 @@ class _StoresListState extends ConsumerState<StoresList> {
         : Expanded(
             child: ListView.builder(
               controller: _controller,
-              itemCount: stores.length + 1,
+              itemCount: stores.length,
               itemBuilder: (ctx, index) {
-                return index == stores.length
-                    ? LoadMoreButton(onPressLoadMore: _onPressLoadMore)
-                    : StoresListItem(
-                        key: ValueKey(stores[index].id),
-                        storeProvider:
-                            storeProviders.providers[stores[index].id]!,
-                      );
+                return StoresListItem(
+                  key: ValueKey(stores[index].id),
+                  storeProvider: storeProviders.providers[stores[index].id]!,
+                );
               },
             ),
           );
   }
 
-  Future<void> loadMore() async {
-    final storesNotifier = ref.read(storesProvider.notifier);
-    try {
-      final value = await loadStores(numStores: numStores);
-      storesNotifier.appendAll(value);
-    } on Exception catch (e) {
-      // TODO
-    }
-  }
+  // Skip in phase 1
+  // Future<void> loadMore() async {
+  //   final storesNotifier = ref.read(storesProvider.notifier);
+  //   try {
+  //     final value = await loadStores(numStores: numStores);
+  //     storesNotifier.appendAll(value);
+  //   } on Exception catch (e) {
+  //     // TODO
+  //   }
+  // }
 
   Future<List<Store>> loadStores({required int numStores}) async {
     await Future.delayed(const Duration(seconds: 1));
     return genDummyStores(numStores: numStores, ownerId: currentUser.id);
   }
 
-  Future<void> _onPressLoadMore() async {
-    await loadMore();
-  }
+  // Future<void> _onPressLoadMore() async {
+  //   await loadMore();
+  // }
 }

@@ -1,3 +1,5 @@
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:carol/screens/auth_screen.dart';
 import 'package:carol/screens/dashboard_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,11 +29,11 @@ final theme = ThemeData().copyWith(
 );
 
 void main() {
-  runApp(const ProviderScope(child: MyApp()));
+  runApp(const ProviderScope(child: Carol()));
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+class Carol extends StatelessWidget {
+  const Carol({Key? key}) : super(key: key);
 
   static GlobalKey<NavigatorState> materialKey = GlobalKey();
 
@@ -40,8 +42,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Carol Cards',
       theme: theme,
-      home: const DashboardScreen(),
-      navigatorKey: MyApp.materialKey,
+      home: const AuthScreen(),
+      navigatorKey: Carol.materialKey,
     );
   }
 }

@@ -6,7 +6,7 @@ class RedeemRule extends BaseModel {
   final String displayName;
   final String description;
   final int consumes;
-  final String stampCardId;
+  final String blueprintId;
   final IconData? icon;
   final String? imageUrl;
 
@@ -15,7 +15,7 @@ class RedeemRule extends BaseModel {
     required this.displayName,
     required this.description,
     required this.consumes,
-    required this.stampCardId,
+    required this.blueprintId,
     this.icon,
     this.imageUrl,
   });

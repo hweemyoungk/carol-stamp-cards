@@ -31,15 +31,15 @@ List<StoreNotice> genDummyNotices({
 }
 
 List<StampCardBlueprint> genDummyBlueprints({
-  int numBps = 3,
+  int numBlueprints = 3,
   String? storeId,
 }) {
-  return List.generate(numBps, (index) {
+  return List.generate(numBlueprints, (index) {
     final blueprint = StampCardBlueprint(
       id: uuid.v4(),
       displayName: 'Blueprint ${index + 1}',
       description:
-          'Enim nisi magna ex duis aute eiusmod proident ex anim deserunt ea in elit. Ad elit do irure reprehenderit ut esse commodo sunt adipisicing sunt elit eu. Officia sit nisi sit dolor aliquip exercitation nisi et excepteur. Proident proident commodo velit dolore anim mollit tempor magna ipsum esse irure eiusmod. Laborum excepteur et veniam pariatur aliqua ea culpa sit tempor. Tempor fugiat aute deserunt in voluptate ad pariatur. Nisi est dolore exercitation ipsum deserunt reprehenderit Lorem. Exercitation et cillum quis id. Duis ipsum ut occaecat officia ea pariatur ex laboris id. Et culpa consequat occaecat veniam Lorem aute. Nulla in dolor quis veniam occaecat. Quis eu enim amet ullamco ipsum pariatur pariatur excepteur ea dolore ipsum mollit fugiat. Minim anim qui consectetur laboris in ea aliqua minim sit consectetur aliquip. Fugiat laborum exercitation minim dolor. Proident amet nulla sit deserunt ad est est est cillum cupidatat tempor reprehenderit. In cupidatat cillum aute culpa ex magna nisi do reprehenderit magna consectetur reprehenderit. Enim nisi magna ex duis aute eiusmod proident ex anim deserunt ea in elit. Ad elit do irure reprehenderit ut esse commodo sunt adipisicing sunt elit eu. Officia sit nisi sit dolor aliquip exercitation nisi et excepteur. Proident proident commodo velit dolore anim mollit tempor magna ipsum esse irure eiusmod. Laborum excepteur et veniam pariatur aliqua ea culpa sit tempor. Tempor fugiat aute deserunt in voluptate ad pariatur. Nisi est dolore exercitation ipsum deserunt reprehenderit Lorem. Exercitation et cillum quis id. Duis ipsum ut occaecat officia ea pariatur ex laboris id. Et culpa consequat occaecat veniam Lorem aute. Nulla in dolor quis veniam occaecat. Quis eu enim amet ullamco ipsum pariatur pariatur excepteur ea dolore ipsum mollit fugiat. Minim anim qui consectetur laboris in ea aliqua minim sit consectetur aliquip. Fugiat laborum exercitation minim dolor. Proident amet nulla sit deserunt ad est est est cillum cupidatat tempor reprehenderit. In cupidatat cillum aute culpa ex magna nisi do reprehenderit magna consectetur reprehenderit.',
+          'Dolor incididunt ipsum labore incididunt reprehenderit laborum quis ut Lorem enim mollit nisi velit. Fugiat occaecat et quis duis labore et et. Cupidatat et eu fugiat tempor nostrud. Cupidatat cupidatat aliquip aliquip quis. In minim officia irure qui eiusmod incididunt minim sunt reprehenderit.',
       stampGrantCondDescription:
           'Proident cillum reprehenderit cupidatat cupidatat sint enim in.',
       numMaxStamps: random.nextInt(50) + 1,
@@ -55,7 +55,8 @@ List<StampCardBlueprint> genDummyBlueprints({
           // ? 'https://cdn.pixabay.com/photo/2018/03/31/19/29/schnitzel-3279045_1280.jpg'
           ? 'assets/images/schnitzel-3279045_1280.jpg'
           : null,
-      isPublishing: random.nextDouble() < 0.5,
+      isPublishing: random.nextDouble() < 0.8,
+      redeemRules: null,
     );
     blueprintProviders.tryAddProvider(entity: blueprint);
     return blueprint;
@@ -111,6 +112,7 @@ List<Store> genDummyStores({
           ? 'assets/images/schnitzel-3279045_1280.jpg'
           : null,
       ownerId: uuid.v4(),
+      blueprints: null,
     );
     return store;
   });
@@ -119,7 +121,7 @@ List<Store> genDummyStores({
 List<StampCard> genDummyStampCards({
   int numCards = 3,
   String? customerId,
-  String? storeId,
+  StampCardBlueprint? blueprint,
 }) {
   return List.generate(
     numCards,
@@ -158,7 +160,8 @@ List<StampCard> genDummyStampCards({
         wasDiscarded: wasDiscarded,
         isInactive: isInactive,
         customerId: customerId ?? uuid.v4(),
-        storeId: storeId ?? uuid.v4(),
+        storeId: blueprint?.storeId ?? uuid.v4(),
+        blueprintId: blueprint?.id ?? uuid.v4(),
         bgImageUrl: random.nextDouble() < 0.5
             // ? 'https://cdn.pixabay.com/photo/2018/03/31/19/29/schnitzel-3279045_1280.jpg'
             ? 'assets/images/schnitzel-3279045_1280.jpg'
@@ -171,15 +174,17 @@ List<StampCard> genDummyStampCards({
   );
 }
 
-List<RedeemRule> genDummySortedRedeemRules(StampCard stampCard) {
-  const numRules = 10;
+List<RedeemRule> genDummySortedRedeemRules({
+  required StampCardBlueprint blueprint,
+  int numRules = 10,
+}) {
   return List.generate(numRules, (index) {
     final redeemRule = RedeemRule(
       id: uuid.v4(),
-      consumes: (stampCard.numMaxStamps / (numRules - index)).ceil(),
+      consumes: (blueprint.numMaxStamps / (numRules - index)).ceil(),
       displayName: '${index + 1} Cookies',
       description: 'Presents ${index + 1} cookies.',
-      stampCardId: stampCard.id,
+      blueprintId: blueprint.id,
       imageUrl: random.nextDouble() < 0.5
           // ? 'https://cdn.pixabay.com/photo/2018/03/31/19/29/schnitzel-3279045_1280.jpg'
           ? 'assets/images/schnitzel-3279045_1280.jpg'
@@ -191,8 +196,4 @@ List<RedeemRule> genDummySortedRedeemRules(StampCard stampCard) {
   });
 }
 
-final currentUser = User(
-  id: uuid.v4(),
-  displayName: 'HMK',
-  profileImageUrl: 'assets/images/schnitzel-3279045_1280.jpg',
-);
+late final User currentUser;

@@ -1,5 +1,8 @@
+import 'package:carol/data/dummy_data.dart';
 import 'package:carol/models/stamp_card.dart';
+import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/providers/entity_provider.dart';
+import 'package:carol/providers/stamp_card_blueprint_provider.dart';
 import 'package:carol/screens/card_screen.dart';
 import 'package:carol/utils.dart';
 import 'package:flutter/material.dart';
@@ -9,9 +12,12 @@ import 'package:transparent_image/transparent_image.dart';
 class CardsListItemCard extends ConsumerStatefulWidget {
   final StateNotifierProvider<EntityStateNotifier<StampCard>, StampCard>
       stampCardProvider;
+  final StateNotifierProvider<EntityStateNotifier<StampCardBlueprint>,
+      StampCardBlueprint> blueprintProvider;
   const CardsListItemCard({
     super.key,
     required this.stampCardProvider,
+    required this.blueprintProvider,
   });
 
   @override
@@ -123,6 +129,16 @@ class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
                 onPressed: _onPressFavoriteIcon,
               ),
             ),
+            if (stampCard.isInactive)
+              Positioned(
+                top: 0,
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  color: const Color.fromRGBO(255, 255, 255, 0.7),
+                ),
+              ),
           ],
         ),
       ),
@@ -130,19 +146,62 @@ class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
   }
 
   void _onTapCardItem() {
+    _loadRedeemRules();
+
     Navigator.of(context).push(MaterialPageRoute(
       builder: (ctx) {
         return CardScreen(
           stampCardProvider: widget.stampCardProvider,
+          blueprintProvider: widget.blueprintProvider,
         );
       },
     ));
   }
 
+  Future<void> _loadRedeemRules() async {
+    final stampCard = ref.read(widget.stampCardProvider);
+    var blueprintProvider =
+        blueprintProviders.tryGetProviderById(id: stampCard.blueprintId);
+    final StampCardBlueprint blueprint;
+    if (blueprintProvider == null) {
+      // Fetch Blueprint
+      // apis.getBlueprint(blueprintId: stampCard.blueprintId,);
+      await Utils.delaySeconds(1);
+      blueprint = genDummyBlueprints(
+        numBlueprints: 1,
+        storeId: stampCard.storeId,
+      )[0];
+      blueprintProvider =
+          blueprintProviders.tryGetProviderById(id: stampCard.blueprintId)!;
+    } else {
+      blueprint = ref.read(blueprintProvider);
+    }
+
+    if (blueprint.redeemRules == null) {
+      // Fetch RedeemRules
+      if (mounted) {
+        final blueprintNotifier = ref.read(blueprintProvider.notifier);
+        // apis.listRedeemRule(blueprintId: blueprint.id,);
+        await Future.delayed(const Duration(seconds: 1));
+        final redeemRules = genDummySortedRedeemRules(
+          blueprint: blueprint,
+          numRules: random.nextInt(3) + 1, // 1~3
+        );
+        blueprintNotifier.set(
+            entity: blueprint.copyWith(
+          redeemRules: redeemRules,
+        ));
+      }
+    }
+  }
+
   Future<void> _onPressFavoriteIcon() async {
     final stampCard = ref.read(widget.stampCardProvider);
     final notifier = ref.read(widget.stampCardProvider.notifier);
+    // React first
+    notifier.set(entity: stampCard.copyWith(isFavorite: !stampCard.isFavorite));
     final updatedFavorite = await _toggleFavorite(stampCard: stampCard);
+    // Apply backend response
     notifier.set(entity: stampCard.copyWith(isFavorite: updatedFavorite));
   }
 

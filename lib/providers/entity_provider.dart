@@ -17,6 +17,11 @@ class EntityProviders<T extends BaseModel> {
       {required T entity}) {
     return providers[entity.id];
   }
+
+  StateNotifierProvider<EntityStateNotifier<T>, T>? tryGetProviderById(
+      {required String id}) {
+    return providers[id];
+  }
 }
 
 class EntityStateNotifier<T extends BaseModel> extends StateNotifier<T> {

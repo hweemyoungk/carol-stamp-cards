@@ -5,7 +5,7 @@ import 'package:carol/models/store_notice.dart';
 import 'package:carol/providers/active_drawer_item_provider.dart';
 import 'package:carol/providers/entity_provider.dart';
 import 'package:carol/providers/stamp_card_blueprint_provider.dart';
-import 'package:carol/screens/issue_stamp_card_dialog_screen.dart';
+import 'package:carol/screens/blueprint_dialog_screen.dart';
 import 'package:carol/screens/owner_design_blueprint_screen.dart';
 import 'package:carol/screens/owner_design_store_screen.dart';
 import 'package:carol/utils.dart';
@@ -92,7 +92,11 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
             .map((blueprint) => ref
                 .watch(blueprintProviders.tryGetProvider(entity: blueprint)!))
             .toList();
-
+    final publishedBlueprints = watchedBlueprints
+        .where(
+          (blueprint) => blueprint.isPublishing,
+        )
+        .toList();
     final bgImage = store.bgImageUrl == null
         ? Image.memory(
             kTransparentImage,
@@ -185,35 +189,44 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                 padding: Utils.basicWidgetEdgeInsets(5),
                 child: const CircularProgressIndicator(),
               )
-            : ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: watchedBlueprints.length,
-                itemBuilder: (ctx, index) {
-                  final blueprint = watchedBlueprints[index];
-                  return ListTile(
-                    leading: Icon(
-                      blueprint.icon,
-                      color: Theme.of(context).colorScheme.onSecondary,
-                    ),
-                    title: Text(
-                      blueprint.displayName,
-                      style: Theme.of(context).textTheme.bodyLarge,
-                    ),
-                    onTap: () async {
-                      await showDialog(
-                        context: context,
-                        builder: (ctx) {
-                          return IssueStampCardDialogScreen(
-                            blueprintProvider:
-                                blueprintProviders.providers[blueprint.id]!,
+            : publishedBlueprints.isEmpty
+                ? Padding(
+                    padding: Utils.basicWidgetEdgeInsets(),
+                    child: const Text('No publishing cards!'),
+                  )
+                : ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: publishedBlueprints.length,
+                    itemBuilder: (ctx, index) {
+                      final blueprint = publishedBlueprints[index];
+                      return ListTile(
+                        leading: Icon(
+                          blueprint.icon,
+                          color: Theme.of(context).colorScheme.onSecondary,
+                        ),
+                        title: Text(
+                          blueprint.displayName,
+                          style: Theme.of(context).textTheme.bodyLarge,
+                        ),
+                        onTap: () async {
+                          await showDialog(
+                            context: context,
+                            builder: (ctx) {
+                              return BlueprintDialogScreen(
+                                blueprintProvider:
+                                    blueprintProviders.providers[blueprint.id]!,
+                                blueprintDialogMode:
+                                    _mode == StoreScreenMode.customer
+                                        ? BlueprintDialogMode.customer
+                                        : BlueprintDialogMode.owner,
+                              );
+                            },
                           );
                         },
                       );
                     },
-                  );
-                },
-              ),
+                  ),
       ],
     );
 
@@ -340,7 +353,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   }) async {
     await Future.delayed(const Duration(seconds: 1));
     return genDummyBlueprints(
-      numBps: numBps,
+      numBlueprints: numBps,
       storeId: storeId,
     );
   }

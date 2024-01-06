@@ -1,4 +1,6 @@
+import 'package:carol/data/dummy_data.dart';
 import 'package:carol/main.dart';
+import 'package:carol/models/redeem_rule.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/models/store.dart';
 import 'package:carol/providers/entity_provider.dart';
@@ -34,11 +36,27 @@ class _OwnerDesignStoreScreenState
   late int _numMaxRedeems;
   late int _numMaxIssues;
   // late DateTime _lastModifiedDate;
+  final List<RedeemRule> _redeemRules = [];
   DateTime? _expirationDate;
   // late String _storeId;
   // late IconData? _icon;
   // late String? _bgImageUrl;
   bool _isPublishing = true;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.blueprint != null) {
+      final blueprint = widget.blueprint!;
+      // Set _isPublishing
+      _isPublishing = blueprint.isPublishing;
+      // Set _expirationDate
+      _expirationDate = blueprint.expirationDate;
+      // Set _redeemRules
+      // RedeemRules must be fetched in _BlueprintDialogScreenState._onPressModify
+      _redeemRules.addAll(blueprint.redeemRules!);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -264,6 +282,58 @@ class _OwnerDesignStoreScreenState
                         Padding(
                           padding: Utils.basicWidgetEdgeInsets(),
                           child: Text(
+                            'Redeem Rules',
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelLarge!
+                                .copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onBackground),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: _onPressAddRedeemRule,
+                          icon: Icon(
+                            Icons.add_box,
+                            color: Theme.of(context).colorScheme.onBackground,
+                          ),
+                        ),
+                        Expanded(
+                          child: Container(
+                            margin: Utils.basicWidgetEdgeInsets(),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.rectangle,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                width: 1,
+                                color:
+                                    Theme.of(context).colorScheme.onBackground,
+                              ),
+                            ),
+                            child: ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: _redeemRules.length,
+                              itemBuilder: (ctx, index) {
+                                final redeemRule = _redeemRules[index];
+                                return ListTile(
+                                  dense: true,
+                                  visualDensity:
+                                      const VisualDensity(vertical: -3),
+                                  title: Text(redeemRule.displayName),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Padding(
+                          padding: Utils.basicWidgetEdgeInsets(),
+                          child: Text(
                             'Expiration Date',
                             style: Theme.of(context)
                                 .textTheme
@@ -292,22 +362,22 @@ class _OwnerDesignStoreScreenState
                         Padding(
                           padding: Utils.basicWidgetEdgeInsets(),
                           child: IconButton(
-                            onPressed: _onPressSelectExpDate,
+                            onPressed:
+                                widget.designMode == BlueprintDesignMode.modify
+                                    ? null
+                                    : _onPressSelectExpDate,
                             icon: Icon(Icons.calendar_month,
-                                color:
-                                    Theme.of(context).colorScheme.onBackground),
+                                color: widget.designMode ==
+                                        BlueprintDesignMode.modify
+                                    ? Theme.of(context)
+                                        .colorScheme
+                                        .onBackground
+                                        .withOpacity(0.3)
+                                    : Theme.of(context)
+                                        .colorScheme
+                                        .onBackground),
                           ),
                         ),
-                        // SizedBox(
-                        //   width: 100,
-                        //   child: SwitchListTile(
-                        //     value: true,
-                        //     title: const Text('Publish Now'),
-                        //     onChanged: (value) {
-                        //       _isPublishing = value;
-                        //     },
-                        //   ),
-                        // ),
                       ],
                     ),
                     Row(
@@ -325,6 +395,7 @@ class _OwnerDesignStoreScreenState
                                         .onBackground),
                           ),
                         ),
+                        const SizedBox(width: 25),
                         Switch(
                           value: _isPublishing,
                           onChanged: (value) {
@@ -375,6 +446,7 @@ class _OwnerDesignStoreScreenState
         icon: null,
         bgImageUrl: null,
         isPublishing: _isPublishing,
+        redeemRules: null, // TODO Assign from input
       );
       blueprintProviders.tryAddProvider(entity: newBlueprint);
       if (store.blueprints == null) {
@@ -384,16 +456,21 @@ class _OwnerDesignStoreScreenState
             entity: store
                 .copyWith(blueprints: [newBlueprint, ...store.blueprints!]));
       }
-      ScaffoldMessenger.of(MyApp.materialKey.currentContext!)
+      ScaffoldMessenger.of(Carol.materialKey.currentContext!)
           .showSnackBar(const SnackBar(
         content: Text('New Blueprint Created!'),
         duration: Duration(seconds: 3),
       ));
     } else {
       // TODO PUT Store
+      final blueprintProvider =
+          blueprintProviders.tryGetProviderById(id: widget.blueprint!.id);
+      final blueprint = ref.read(blueprintProvider!);
+      final blueprintNotifier = ref.read(blueprintProvider!.notifier);
       await Utils.delaySeconds(2);
-      final modifiedBlueprint = StampCardBlueprint(
-        id: widget.blueprint!.id,
+      // TODO: Create, modify, or delete redeemRules
+
+      final modifiedBlueprint = blueprint.copyWith(
         displayName: _displayName,
         description: _description,
         stampGrantCondDescription: _stampGrantCondDescription,
@@ -402,26 +479,25 @@ class _OwnerDesignStoreScreenState
         expirationDate: _expirationDate!,
         numMaxRedeems: _numMaxRedeems,
         numMaxIssues: _numMaxIssues,
-        storeId: store.id,
-        icon: null,
-        bgImageUrl: null,
-        isPublishing: true,
+        isPublishing: _isPublishing,
+        redeemRules: _redeemRules,
       );
-      final provider =
-          blueprintProviders.tryGetProvider(entity: modifiedBlueprint);
-      if (provider == null) {
-        ScaffoldMessenger.of(MyApp.materialKey.currentContext!)
+      if (blueprintProviders.tryGetProviderById(id: widget.blueprint!.id) !=
+          null) {
+        blueprintNotifier.set(entity: modifiedBlueprint);
+        ScaffoldMessenger.of(Carol.materialKey.currentContext!)
             .showSnackBar(const SnackBar(
-          content: Text('Error: Invalid Blueprint'),
+          content: Text('Blueprint Modified!'),
+          duration: Duration(seconds: 3),
+        ));
+      } else {
+        // Very unlikely but what if blueprint was deleted while modifying?
+        ScaffoldMessenger.of(Carol.materialKey.currentContext!)
+            .showSnackBar(const SnackBar(
+          content: Text('Error: Invalid Blueprint. Please refresh.'),
           duration: Duration(seconds: 3),
         ));
       }
-      ref.read(provider!.notifier).set(entity: modifiedBlueprint);
-      ScaffoldMessenger.of(MyApp.materialKey.currentContext!)
-          .showSnackBar(const SnackBar(
-        content: Text('Blueprint Modified!'),
-        duration: Duration(seconds: 3),
-      ));
     }
 
     if (mounted) {
@@ -447,6 +523,20 @@ class _OwnerDesignStoreScreenState
 
   bool _validateInput() {
     return _formKey.currentState!.validate() && _expirationDate != null;
+  }
+
+  void _onPressAddRedeemRule() {
+    // TODO Implement
+  }
+
+  Future<List<RedeemRule>> loadRedeemRules(
+      {required StampCardBlueprint blueprint}) async {
+    final redeemRules =
+        await Utils.delaySeconds(1).then((value) => genDummySortedRedeemRules(
+              blueprint: widget.blueprint!,
+              numRules: 3,
+            ));
+    return redeemRules;
   }
 }
 

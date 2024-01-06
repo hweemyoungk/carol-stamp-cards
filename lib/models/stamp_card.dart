@@ -13,6 +13,7 @@ class StampCard extends BaseModel {
   final int numRedeemed;
   final String customerId;
   final String storeId;
+  final String blueprintId;
   final IconData? icon;
   final String? bgImageUrl;
   final bool wasDiscarded;
@@ -32,6 +33,7 @@ class StampCard extends BaseModel {
     required this.numRedeemed,
     required this.customerId,
     required this.storeId,
+    required this.blueprintId,
     this.icon,
     this.bgImageUrl,
     required this.wasDiscarded,
@@ -51,7 +53,8 @@ class StampCard extends BaseModel {
     int? numMaxRedeems,
     int? numRedeemed,
     String? customerId,
-    String? ownerId,
+    String? storeId,
+    String? blueprintId,
     IconData? icon,
     String? bgImageUrl,
     bool? wasDiscarded,
@@ -70,7 +73,8 @@ class StampCard extends BaseModel {
       numMaxRedeems: numMaxRedeems ?? this.numMaxRedeems,
       numRedeemed: numRedeemed ?? this.numRedeemed,
       customerId: customerId ?? this.customerId,
-      storeId: ownerId ?? this.storeId,
+      storeId: storeId ?? this.storeId,
+      blueprintId: blueprintId ?? this.blueprintId,
       icon: icon ?? this.icon,
       bgImageUrl: bgImageUrl ?? this.bgImageUrl,
       wasDiscarded: wasDiscarded ?? this.wasDiscarded,

@@ -23,7 +23,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     } else if (activeDrawerItemEnum == DrawerItemEnum.owner) {
       content = const OwnerScreen();
     } else {
-      throw UnimplementedError();
+      content = const Scaffold(
+        body: Center(child: Text('Not implemented yet...')),
+      );
     }
 
     return content;

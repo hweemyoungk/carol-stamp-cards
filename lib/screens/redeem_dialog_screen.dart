@@ -44,6 +44,8 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
   @override
   Widget build(BuildContext context) {
     final redeemRule = ref.watch(widget.redeemRuleProvider);
+    final stampCard = ref.watch(widget.stampCardProvider);
+
     if (_redeemStatus == RedeemStatus.notRedeemable) {
       redeemButton = ElevatedButton(
         onPressed: null,
@@ -86,13 +88,17 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
               child: Text(redeemRule.description),
             ),
             TextButton(
+              style: TextButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.background),
               onPressed: _onPressBack,
-              child: const Text(
+              child: Text(
                 'Back',
                 textAlign: TextAlign.end,
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.onBackground),
               ),
             ),
-            redeemButton,
+            if (!stampCard.isInactive) redeemButton,
           ],
         ),
       ),
@@ -150,7 +156,7 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
       }
 
       // 3-1.2. Close Dialog and refresh CardScreen
-      ScaffoldMessenger.of(MyApp.materialKey.currentContext!)
+      ScaffoldMessenger.of(Carol.materialKey.currentContext!)
           .showSnackBar(const SnackBar(
         content: Text('Request success'),
         duration: Duration(seconds: 3),
@@ -180,7 +186,7 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
         });
         await Utils.delaySeconds(1);
       }
-      ScaffoldMessenger.of(MyApp.materialKey.currentContext!)
+      ScaffoldMessenger.of(Carol.materialKey.currentContext!)
           .showSnackBar(const SnackBar(
         content: Text('Request canceled'),
         duration: Duration(seconds: 3),

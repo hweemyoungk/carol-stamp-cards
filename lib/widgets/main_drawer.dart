@@ -1,5 +1,8 @@
 import 'package:carol/data/dummy_data.dart';
 import 'package:carol/providers/active_drawer_item_provider.dart';
+import 'package:carol/providers/store_provider.dart';
+import 'package:carol/providers/stores_init_loaded_provider.dart';
+import 'package:carol/providers/stores_provider.dart';
 import 'package:carol/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -94,7 +97,7 @@ class MainDrawer extends StatelessWidget {
   }
 }
 
-class DrawerItem extends ConsumerWidget {
+class DrawerItem extends ConsumerStatefulWidget {
   const DrawerItem({
     super.key,
     required this.text,
@@ -104,22 +107,67 @@ class DrawerItem extends ConsumerWidget {
   final DrawerItemEnum drawerItemEnum;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DrawerItem> createState() => _DrawerItemState();
+}
+
+class _DrawerItemState extends ConsumerState<DrawerItem> {
+  @override
+  Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        ref.read(activeDrawerItemProvider.notifier).set(drawerItemEnum);
+        ref.read(activeDrawerItemProvider.notifier).set(widget.drawerItemEnum);
+        _initLoadEntities();
         Navigator.of(context).pop();
       },
       child: Padding(
         padding: Utils.basicWidgetEdgeInsets(),
         child: Text(
-          text,
+          widget.text,
           style: Theme.of(context).textTheme.titleLarge!.copyWith(
                 color: Theme.of(context).colorScheme.onPrimaryContainer,
               ),
         ),
       ),
     );
+  }
+
+  Future<void> _initLoadEntities() async {
+    if (widget.drawerItemEnum == DrawerItemEnum.owner &&
+        ref.read(ownerStoresInitLoadedProvider) == false) {
+      _loadOwnerStores();
+    }
+  }
+
+  Future<void> _loadOwnerStores() async {
+    final storesInitLoadedNotifier =
+        ref.read(ownerStoresInitLoadedProvider.notifier);
+    final storesNotifier = ref.read(ownerStoresProvider.notifier);
+    // Initial load
+    if (ownerStoreProviders.providers.isNotEmpty) {
+      final loadedStores =
+          ownerStoreProviders.providers.entries.map((e) => ref.read(e.value));
+      storesNotifier.appendAll(loadedStores);
+      storesInitLoadedNotifier.set(true);
+    } else {
+      // apis.listOwnerStores(ownerId: currentUser.id,);
+
+      // Dummy: Top down
+      await Utils.delaySeconds(2);
+      // Stores
+      final stores = genDummyOwnerStores(
+        numStores: 2,
+        ownerId: currentUser.id,
+      );
+      // Blueprints
+      stores.forEach((store) {
+        final blueprints = genDummyBlueprints(
+          numBlueprints: 2,
+          storeId: store.id,
+        );
+      });
+      storesNotifier.appendAll(stores);
+      storesInitLoadedNotifier.set(true);
+    }
   }
 }
 
