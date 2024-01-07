@@ -92,11 +92,13 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
             .map((blueprint) => ref
                 .watch(blueprintProviders.tryGetProvider(entity: blueprint)!))
             .toList();
-    final publishedBlueprints = watchedBlueprints
-        .where(
-          (blueprint) => blueprint.isPublishing,
-        )
-        .toList();
+    final blueprintsToDisplay = _mode == StoreScreenMode.owner
+        ? watchedBlueprints
+        : watchedBlueprints
+            .where(
+              (blueprint) => blueprint.isPublishing,
+            )
+            .toList();
     final bgImage = store.bgImageUrl == null
         ? Image.memory(
             kTransparentImage,
@@ -189,7 +191,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                 padding: Utils.basicWidgetEdgeInsets(5),
                 child: const CircularProgressIndicator(),
               )
-            : publishedBlueprints.isEmpty
+            : blueprintsToDisplay.isEmpty
                 ? Padding(
                     padding: Utils.basicWidgetEdgeInsets(),
                     child: const Text('No publishing cards!'),
@@ -197,9 +199,9 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                 : ListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    itemCount: publishedBlueprints.length,
+                    itemCount: blueprintsToDisplay.length,
                     itemBuilder: (ctx, index) {
-                      final blueprint = publishedBlueprints[index];
+                      final blueprint = blueprintsToDisplay[index];
                       return ListTile(
                         leading: Icon(
                           blueprint.icon,
@@ -209,6 +211,13 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                           blueprint.displayName,
                           style: Theme.of(context).textTheme.bodyLarge,
                         ),
+                        trailing: blueprint.isPublishing
+                            ? null
+                            : Icon(
+                                Icons.visibility_off,
+                                color:
+                                    Theme.of(context).colorScheme.onSecondary,
+                              ),
                         onTap: () async {
                           await showDialog(
                             context: context,

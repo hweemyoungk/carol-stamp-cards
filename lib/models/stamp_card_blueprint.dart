@@ -34,6 +34,10 @@ class StampCardBlueprint extends BaseModel {
     required this.redeemRules,
   });
 
+  bool get wasExpired {
+    return DateTime.now().isAfter(expirationDate);
+  }
+
   StampCardBlueprint copyWith({
     String? id,
     String? displayName,

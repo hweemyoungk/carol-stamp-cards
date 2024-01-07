@@ -309,6 +309,17 @@ class _OwnerDesignStoreScreenState
         duration: Duration(seconds: 3),
       ));
     } else {
+      final storeProvider =
+          ownerStoreProviders.tryGetProviderById(id: widget.store!.id);
+      if (storeProvider == null) {
+        ScaffoldMessenger.of(Carol.materialKey.currentContext!)
+            .showSnackBar(const SnackBar(
+          content: Text('Error: Invalid Store'),
+          duration: Duration(seconds: 3),
+        ));
+      }
+      final storeNotifier = ref.read(storeProvider!.notifier);
+
       // TODO PUT Store
       await Utils.delaySeconds(2);
       final modifiedStore = widget.store!.copyWith(
@@ -320,17 +331,8 @@ class _OwnerDesignStoreScreenState
         phone: _phone,
         zipcode: _zipcode,
       );
+      storeNotifier.set(entity: modifiedStore);
 
-      final provider =
-          ownerStoreProviders.tryGetProvider(entity: modifiedStore);
-      if (provider == null) {
-        ScaffoldMessenger.of(Carol.materialKey.currentContext!)
-            .showSnackBar(const SnackBar(
-          content: Text('Error: Invalid Store'),
-          duration: Duration(seconds: 3),
-        ));
-      }
-      ref.read(provider!.notifier).set(entity: modifiedStore);
       ScaffoldMessenger.of(Carol.materialKey.currentContext!)
           .showSnackBar(const SnackBar(
         content: Text('Store Modified!'),

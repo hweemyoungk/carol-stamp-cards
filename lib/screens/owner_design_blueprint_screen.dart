@@ -1,10 +1,11 @@
-import 'package:carol/data/dummy_data.dart';
 import 'package:carol/main.dart';
 import 'package:carol/models/redeem_rule.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/models/store.dart';
 import 'package:carol/providers/entity_provider.dart';
+import 'package:carol/providers/redeem_rule_provider.dart';
 import 'package:carol/providers/stamp_card_blueprint_provider.dart';
+import 'package:carol/screens/owner_design_redeem_rule_screen.dart';
 import 'package:carol/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -32,11 +33,13 @@ class _OwnerDesignStoreScreenState
   late String _displayName;
   late String _description;
   late String _stampGrantCondDescription;
+  late TextEditingController _maxStampController;
   late int _numMaxStamps;
   late int _numMaxRedeems;
   late int _numMaxIssues;
   // late DateTime _lastModifiedDate;
   final List<RedeemRule> _redeemRules = [];
+  List<bool>? _illegalRedeemRules;
   DateTime? _expirationDate;
   // late String _storeId;
   // late IconData? _icon;
@@ -46,6 +49,8 @@ class _OwnerDesignStoreScreenState
   @override
   void initState() {
     super.initState();
+    _maxStampController =
+        TextEditingController(text: widget.blueprint?.numMaxStamps.toString());
     if (widget.blueprint != null) {
       final blueprint = widget.blueprint!;
       // Set _isPublishing
@@ -59,7 +64,16 @@ class _OwnerDesignStoreScreenState
   }
 
   @override
+  void dispose() {
+    _maxStampController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final onBackgroundTernary = widget.designMode == BlueprintDesignMode.modify
+        ? Theme.of(context).colorScheme.onBackground.withOpacity(0.4)
+        : Theme.of(context).colorScheme.onBackground;
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.designMode == BlueprintDesignMode.create
@@ -152,7 +166,7 @@ class _OwnerDesignStoreScreenState
                         ),
                         validator: (value) {
                           if (value == null ||
-                              value.trim().length <= 1 ||
+                              value.trim().isEmpty ||
                               value.trim().length > 1000) {
                             return 'Must be between 1 and 1000 characters long';
                           }
@@ -173,8 +187,7 @@ class _OwnerDesignStoreScreenState
                           child: SizedBox(
                             width: 100,
                             child: TextFormField(
-                              initialValue:
-                                  widget.blueprint?.numMaxStamps.toString(),
+                              // initialValue: widget.blueprint?.numMaxStamps.toString(),
                               style: Theme.of(context)
                                   .textTheme
                                   .bodyLarge!
@@ -196,6 +209,7 @@ class _OwnerDesignStoreScreenState
                                 return null;
                               },
                               keyboardType: TextInputType.number,
+                              controller: _maxStampController,
                               onSaved: (newValue) {
                                 _numMaxStamps = int.parse(newValue!);
                               },
@@ -317,11 +331,67 @@ class _OwnerDesignStoreScreenState
                               itemCount: _redeemRules.length,
                               itemBuilder: (ctx, index) {
                                 final redeemRule = _redeemRules[index];
+                                final isIllegal = _illegalRedeemRules?[index];
                                 return ListTile(
                                   dense: true,
                                   visualDensity:
                                       const VisualDensity(vertical: -3),
-                                  title: Text(redeemRule.displayName),
+                                  leading: Icon(redeemRule.icon),
+                                  title: Text(
+                                    redeemRule.displayName,
+                                    style: isIllegal != null && isIllegal
+                                        ? TextStyle(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .error,
+                                          )
+                                        : redeemRule.id != ''
+                                            ? null
+                                            : TextStyle(
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .primary,
+                                              ),
+                                  ),
+                                  trailing: isIllegal != null && isIllegal
+                                      ? Icon(
+                                          Icons.error,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .error,
+                                        )
+                                      : null,
+                                  onTap: () async {
+                                    final outputRedeemRule =
+                                        await Navigator.of(context)
+                                            .push<RedeemRule>(MaterialPageRoute(
+                                      builder: (context) =>
+                                          OwnerDesignRedeemRuleScreen(
+                                        designMode: RedeemRuleDesignMode.modify,
+                                        blueprint: widget.blueprint,
+                                        redeemRule: redeemRule,
+                                      ),
+                                    ));
+                                    if (outputRedeemRule == null) {
+                                      return;
+                                    }
+                                    if (outputRedeemRule.blueprintId == '') {
+                                      // Deleted
+                                      if (mounted) {
+                                        setState(() {
+                                          _illegalRedeemRules = null;
+                                          _redeemRules.removeAt(index);
+                                        });
+                                      }
+                                      return;
+                                    }
+                                    if (mounted) {
+                                      setState(() {
+                                        _illegalRedeemRules = null;
+                                        _redeemRules[index] = outputRedeemRule;
+                                      });
+                                    }
+                                  },
                                 );
                               },
                             ),
@@ -338,10 +408,7 @@ class _OwnerDesignStoreScreenState
                             style: Theme.of(context)
                                 .textTheme
                                 .labelLarge!
-                                .copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onBackground),
+                                .copyWith(color: onBackgroundTernary),
                           ),
                         ),
                         Padding(
@@ -353,10 +420,7 @@ class _OwnerDesignStoreScreenState
                             style: Theme.of(context)
                                 .textTheme
                                 .bodyLarge!
-                                .copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onBackground),
+                                .copyWith(color: onBackgroundTernary),
                           ),
                         ),
                         Padding(
@@ -367,15 +431,7 @@ class _OwnerDesignStoreScreenState
                                     ? null
                                     : _onPressSelectExpDate,
                             icon: Icon(Icons.calendar_month,
-                                color: widget.designMode ==
-                                        BlueprintDesignMode.modify
-                                    ? Theme.of(context)
-                                        .colorScheme
-                                        .onBackground
-                                        .withOpacity(0.3)
-                                    : Theme.of(context)
-                                        .colorScheme
-                                        .onBackground),
+                                color: onBackgroundTernary),
                           ),
                         ),
                       ],
@@ -414,7 +470,7 @@ class _OwnerDesignStoreScreenState
     );
   }
 
-  void _saveBlueprint() async {
+  Future<void> _saveBlueprint() async {
     // final ownerStoresNotifier = ref.read(ownerStoresProvider.notifier);
     final store = ref.read(widget.storeProvider);
     final storeNotifier = ref.read(widget.storeProvider.notifier);
@@ -422,16 +478,26 @@ class _OwnerDesignStoreScreenState
     if (!_validateInput()) {
       return;
     }
+    _formKey.currentState!.save();
 
     setState(() {
       _status = BlueprintDesignStatus.sending;
     });
-    _formKey.currentState!.save();
 
     if (widget.designMode == BlueprintDesignMode.create) {
-      // TODO POST Store
-      await Utils.delaySeconds(2);
+      // TODO POST blueprint and get location
+      await Utils.delaySeconds(1);
       final location = uuid.v4();
+      final redeemRuleTasks = _redeemRules.map((redeemRule) async {
+        // TODO: POST every RedeemRule and get location
+        await Utils.delaySeconds(1);
+        final location = uuid.v4();
+        final postedRedeemRule = redeemRule.copyWith(id: location);
+        redeemRuleProviders.tryAddProvider(entity: postedRedeemRule);
+        return postedRedeemRule;
+      });
+      final processedRedeemRules = await Future.wait(redeemRuleTasks);
+
       final newBlueprint = StampCardBlueprint(
         id: location,
         displayName: _displayName,
@@ -446,29 +512,60 @@ class _OwnerDesignStoreScreenState
         icon: null,
         bgImageUrl: null,
         isPublishing: _isPublishing,
-        redeemRules: null, // TODO Assign from input
+        redeemRules: processedRedeemRules,
       );
       blueprintProviders.tryAddProvider(entity: newBlueprint);
       if (store.blueprints == null) {
-        storeNotifier.set(entity: store.copyWith(blueprints: [newBlueprint]));
+        // Should not happen: Blueprints must be fetched already.
+        throw Exception('Blueprints must be fetched already for store');
       } else {
         storeNotifier.set(
             entity: store
                 .copyWith(blueprints: [newBlueprint, ...store.blueprints!]));
       }
+
       ScaffoldMessenger.of(Carol.materialKey.currentContext!)
           .showSnackBar(const SnackBar(
         content: Text('New Blueprint Created!'),
         duration: Duration(seconds: 3),
       ));
     } else {
-      // TODO PUT Store
       final blueprintProvider =
           blueprintProviders.tryGetProviderById(id: widget.blueprint!.id);
       final blueprint = ref.read(blueprintProvider!);
       final blueprintNotifier = ref.read(blueprintProvider!.notifier);
-      await Utils.delaySeconds(2);
-      // TODO: Create, modify, or delete redeemRules
+
+      // TODO PUT blueprint
+      final putBlueprintTask = Utils.delaySeconds(2);
+
+      final redeemRuleTasks = _redeemRules.map((redeemRule) async {
+        if (redeemRule.id == '') {
+          // TODO: POST redeemRule and get location
+          await Utils.delaySeconds(1);
+          final postedRedeemRule = redeemRule.copyWith(id: uuid.v4());
+          redeemRuleProviders.tryAddProvider(entity: postedRedeemRule);
+          return postedRedeemRule;
+        } else {
+          final redeemRuleProvider =
+              redeemRuleProviders.tryGetProviderById(id: redeemRule.id)!;
+          final redeemRuleNotifier = ref.read(redeemRuleProvider.notifier);
+          final putRedeemRule = await putBlueprintTask.then(
+            (value) {
+              // TODO: PUT redeemRule
+              Utils.delaySeconds(2);
+              return redeemRule.copyWith();
+            },
+          );
+          if (redeemRuleProviders.tryGetProviderById(id: putRedeemRule.id) ==
+              null) {
+            // RedeemRule can't be deleted. Should not happen.
+            throw Exception('Yeah we are fxcked...');
+          }
+          redeemRuleNotifier.set(entity: putRedeemRule);
+          return putRedeemRule;
+        }
+      });
+      final processedRedeemRules = await Future.wait(redeemRuleTasks);
 
       final modifiedBlueprint = blueprint.copyWith(
         displayName: _displayName,
@@ -480,21 +577,21 @@ class _OwnerDesignStoreScreenState
         numMaxRedeems: _numMaxRedeems,
         numMaxIssues: _numMaxIssues,
         isPublishing: _isPublishing,
-        redeemRules: _redeemRules,
+        redeemRules: processedRedeemRules,
       );
-      if (blueprintProviders.tryGetProviderById(id: widget.blueprint!.id) !=
+      if (blueprintProviders.tryGetProviderById(id: widget.blueprint!.id) ==
           null) {
-        blueprintNotifier.set(entity: modifiedBlueprint);
-        ScaffoldMessenger.of(Carol.materialKey.currentContext!)
-            .showSnackBar(const SnackBar(
-          content: Text('Blueprint Modified!'),
-          duration: Duration(seconds: 3),
-        ));
-      } else {
         // Very unlikely but what if blueprint was deleted while modifying?
         ScaffoldMessenger.of(Carol.materialKey.currentContext!)
             .showSnackBar(const SnackBar(
           content: Text('Error: Invalid Blueprint. Please refresh.'),
+          duration: Duration(seconds: 3),
+        ));
+      } else {
+        blueprintNotifier.set(entity: modifiedBlueprint);
+        ScaffoldMessenger.of(Carol.materialKey.currentContext!)
+            .showSnackBar(const SnackBar(
+          content: Text('Blueprint Modified!'),
           duration: Duration(seconds: 3),
         ));
       }
@@ -522,21 +619,44 @@ class _OwnerDesignStoreScreenState
   }
 
   bool _validateInput() {
-    return _formKey.currentState!.validate() && _expirationDate != null;
+    // Form validate
+    if (!_formKey.currentState!.validate()) {
+      return false;
+    }
+    // expiration date
+    if (_expirationDate == null) {
+      return false;
+    }
+    // every redeem rule's 'consumes' must be less or equal to blueprint's 'max stamps'
+    setState(() {
+      _illegalRedeemRules = _redeemRules
+          .map((redeemRule) =>
+              int.parse(_maxStampController.text) < redeemRule.consumes)
+          .toList();
+    });
+    if (_illegalRedeemRules!.any((isIllegal) => isIllegal)) {
+      return false;
+    }
+
+    return true;
   }
 
-  void _onPressAddRedeemRule() {
-    // TODO Implement
-  }
-
-  Future<List<RedeemRule>> loadRedeemRules(
-      {required StampCardBlueprint blueprint}) async {
-    final redeemRules =
-        await Utils.delaySeconds(1).then((value) => genDummySortedRedeemRules(
-              blueprint: widget.blueprint!,
-              numRules: 3,
-            ));
-    return redeemRules;
+  Future<void> _onPressAddRedeemRule() async {
+    final newRedeemRule =
+        await Navigator.of(context).push<RedeemRule>(MaterialPageRoute(
+      builder: (context) => OwnerDesignRedeemRuleScreen(
+        designMode: RedeemRuleDesignMode.create,
+        blueprint: widget.blueprint,
+      ),
+    ));
+    if (newRedeemRule == null) {
+      return;
+    }
+    if (mounted) {
+      setState(() {
+        _redeemRules.add(newRedeemRule);
+      });
+    }
   }
 }
 
