@@ -303,20 +303,12 @@ class _OwnerDesignStoreScreenState
       );
       ownerStoreProviders.tryAddProvider(entity: newStore);
       ownerStoresNotifier.prepend(newStore);
-      ScaffoldMessenger.of(Carol.materialKey.currentContext!)
-          .showSnackBar(const SnackBar(
-        content: Text('New Store Created!'),
-        duration: Duration(seconds: 3),
-      ));
+      Carol.showTextSnackBar(text: 'New store created!');
     } else {
       final storeProvider =
           ownerStoreProviders.tryGetProviderById(id: widget.store!.id);
       if (storeProvider == null) {
-        ScaffoldMessenger.of(Carol.materialKey.currentContext!)
-            .showSnackBar(const SnackBar(
-          content: Text('Error: Invalid Store'),
-          duration: Duration(seconds: 3),
-        ));
+        Carol.showTextSnackBar(text: 'Error: Invalid Store');
       }
       final storeNotifier = ref.read(storeProvider!.notifier);
 
@@ -333,11 +325,7 @@ class _OwnerDesignStoreScreenState
       );
       storeNotifier.set(entity: modifiedStore);
 
-      ScaffoldMessenger.of(Carol.materialKey.currentContext!)
-          .showSnackBar(const SnackBar(
-        content: Text('Store Modified!'),
-        duration: Duration(seconds: 3),
-      ));
+      Carol.showTextSnackBar(text: 'Store modified!');
     }
 
     if (mounted) {

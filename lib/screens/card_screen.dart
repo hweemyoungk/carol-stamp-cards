@@ -1,7 +1,9 @@
+import 'package:carol/main.dart';
 import 'package:carol/models/stamp_card.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/providers/entity_provider.dart';
 import 'package:carol/providers/store_provider.dart';
+import 'package:carol/screens/customer_design_stamp_card_screen.dart';
 import 'package:carol/screens/store_screen.dart';
 import 'package:carol/utils.dart';
 import 'package:carol/widgets/card/card_info.dart';
@@ -136,38 +138,42 @@ class _CardScreenState extends ConsumerState<CardScreen> {
             ),
           );
           return SingleChildScrollView(
-            child: Container(
-              alignment: Alignment.center,
-              margin: Utils.basicScreenEdgeInsets(ctx, constraints),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  if (hasNotices) notices,
-                  Padding(
-                    padding: Utils.basicWidgetEdgeInsets(1.5),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        qrImageView,
-                        stampsRatioText,
-                      ],
-                    ),
+            child: Column(
+              children: [
+                if (hasNotices) notices,
+                Container(
+                  alignment: Alignment.center,
+                  margin: Utils.basicScreenEdgeInsets(ctx, constraints),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Padding(
+                        padding: Utils.basicWidgetEdgeInsets(1.5),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            qrImageView,
+                            stampsRatioText,
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: Utils.basicWidgetEdgeInsets(1.5),
+                        child: cardInfo,
+                      ),
+                      Padding(
+                        padding: Utils.basicWidgetEdgeInsets(1.5),
+                        child: RedeemRulesList(
+                          stampCardProvider: widget.stampCardProvider,
+                          blueprintProvider: widget.blueprintProvider,
+                        ),
+                      ),
+                      storeInfoButton,
+                      if (!stampCard.wasDiscarded) deleteButton,
+                    ],
                   ),
-                  Padding(
-                    padding: Utils.basicWidgetEdgeInsets(1.5),
-                    child: cardInfo,
-                  ),
-                  Padding(
-                    padding: Utils.basicWidgetEdgeInsets(1.5),
-                    child: RedeemRulesList(
-                      stampCardProvider: widget.stampCardProvider,
-                      blueprintProvider: widget.blueprintProvider,
-                    ),
-                  ),
-                  storeInfoButton,
-                  if (!stampCard.wasDiscarded) deleteButton,
-                ],
-              ),
+                ),
+              ],
             ),
           );
         },
@@ -249,10 +255,19 @@ class _CardScreenState extends ConsumerState<CardScreen> {
   }
 
   void _onPressModifyCard() {
-    // TODO Implement
+    final stampCard = ref.read(widget.stampCardProvider);
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) => CustomerDesignStampCardScreen(
+        stampCard: stampCard,
+        blueprintProvider: widget.blueprintProvider,
+      ),
+    ));
   }
 
   Future<void> _deleteCard() async {
+    if (mounted) {
+      Navigator.of(context).pop();
+    }
     final stampCard = ref.read(widget.stampCardProvider);
     final stampCardNotifier = ref.read(widget.stampCardProvider.notifier);
     // TODO Implement
@@ -262,6 +277,11 @@ class _CardScreenState extends ConsumerState<CardScreen> {
         entity: stampCard.copyWith(
       wasDiscarded: true,
       isInactive: true,
+    ));
+    ScaffoldMessenger.of(Carol.materialKey.currentContext!)
+        .showSnackBar(const SnackBar(
+      content: Text('Deleted card!'),
+      duration: Duration(seconds: 3),
     ));
   }
 }

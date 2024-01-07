@@ -156,7 +156,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                                   const CircularProgressIndicator(),
                                 if (!_isAuthenticating)
                                   ElevatedButton(
-                                    onPressed: _onPressSignInUp,
+                                    onPressed: _isLogin
+                                        ? _onPressSignIn
+                                        : _onPressSignUp,
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Theme.of(context)
                                           .colorScheme
@@ -253,8 +255,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     }
   } */
 
-  void _onPressSignInUp() {
+  void _onPressSignUp() {}
+
+  Future<void> _onPressSignIn() async {
     // TODO Implement
+    // await apis.signInWithPassword(email: _enteredEmail, password: _enteredPassword);
 
     // Dummy
     // Set User

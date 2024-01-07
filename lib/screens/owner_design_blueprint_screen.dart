@@ -290,7 +290,6 @@ class _OwnerDesignStoreScreenState
                         ),
                       ],
                     ),
-                    // DateTime? _expirationDate;
                     Row(
                       children: [
                         Padding(
@@ -399,6 +398,7 @@ class _OwnerDesignStoreScreenState
                         ),
                       ],
                     ),
+                    // DateTime? _expirationDate;
                     Row(
                       children: [
                         Padding(
@@ -413,15 +413,24 @@ class _OwnerDesignStoreScreenState
                         ),
                         Padding(
                           padding: Utils.basicWidgetEdgeInsets(),
-                          child: Text(
-                            _expirationDate == null
-                                ? 'No date selected'
-                                : formatter.format(_expirationDate!),
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyLarge!
-                                .copyWith(color: onBackgroundTernary),
-                          ),
+                          child: _expirationDate == null
+                              ? Text(
+                                  'No date selected',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyLarge!
+                                      .copyWith(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .error),
+                                )
+                              : Text(
+                                  formatter.format(_expirationDate!),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyLarge!
+                                      .copyWith(color: onBackgroundTernary),
+                                ),
                         ),
                         Padding(
                           padding: Utils.basicWidgetEdgeInsets(),
@@ -524,11 +533,7 @@ class _OwnerDesignStoreScreenState
                 .copyWith(blueprints: [newBlueprint, ...store.blueprints!]));
       }
 
-      ScaffoldMessenger.of(Carol.materialKey.currentContext!)
-          .showSnackBar(const SnackBar(
-        content: Text('New Blueprint Created!'),
-        duration: Duration(seconds: 3),
-      ));
+      Carol.showTextSnackBar(text: 'New Blueprint Created!');
     } else {
       final blueprintProvider =
           blueprintProviders.tryGetProviderById(id: widget.blueprint!.id);
@@ -582,18 +587,11 @@ class _OwnerDesignStoreScreenState
       if (blueprintProviders.tryGetProviderById(id: widget.blueprint!.id) ==
           null) {
         // Very unlikely but what if blueprint was deleted while modifying?
-        ScaffoldMessenger.of(Carol.materialKey.currentContext!)
-            .showSnackBar(const SnackBar(
-          content: Text('Error: Invalid Blueprint. Please refresh.'),
-          duration: Duration(seconds: 3),
-        ));
+        Carol.showTextSnackBar(
+            text: 'Error: Invalid Blueprint. Please refresh.');
       } else {
         blueprintNotifier.set(entity: modifiedBlueprint);
-        ScaffoldMessenger.of(Carol.materialKey.currentContext!)
-            .showSnackBar(const SnackBar(
-          content: Text('Blueprint Modified!'),
-          duration: Duration(seconds: 3),
-        ));
+        Carol.showTextSnackBar(text: 'Blueprint Modified!');
       }
     }
 
@@ -624,7 +622,7 @@ class _OwnerDesignStoreScreenState
       return false;
     }
     // expiration date
-    if (_expirationDate == null) {
+    if (_expirationDate == null || _expirationDate!.isBefore(DateTime.now())) {
       return false;
     }
     // every redeem rule's 'consumes' must be less or equal to blueprint's 'max stamps'

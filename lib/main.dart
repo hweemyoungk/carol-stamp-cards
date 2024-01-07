@@ -1,7 +1,6 @@
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:carol/screens/auth_screen.dart';
-import 'package:carol/screens/dashboard_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -29,7 +28,12 @@ final theme = ThemeData().copyWith(
 );
 
 void main() {
-  runApp(const ProviderScope(child: Carol()));
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+  ]).then((value) {
+    runApp(const ProviderScope(child: Carol()));
+  });
 }
 
 class Carol extends StatelessWidget {
@@ -45,5 +49,13 @@ class Carol extends StatelessWidget {
       home: const AuthScreen(),
       navigatorKey: Carol.materialKey,
     );
+  }
+
+  static void showTextSnackBar({required String text, int seconds = 3}) {
+    ScaffoldMessenger.of(Carol.materialKey.currentContext!)
+        .showSnackBar(SnackBar(
+      content: Text(text),
+      duration: Duration(seconds: seconds),
+    ));
   }
 }

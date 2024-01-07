@@ -1,3 +1,4 @@
+import 'package:carol/apis.dart' as apis;
 import 'package:carol/data/dummy_data.dart';
 import 'package:carol/main.dart';
 import 'package:carol/models/stamp_card.dart';
@@ -7,13 +8,11 @@ import 'package:carol/providers/entity_provider.dart';
 import 'package:carol/providers/stamp_card_provider.dart';
 import 'package:carol/providers/stamp_cards_provider.dart';
 import 'package:carol/providers/store_provider.dart';
-import 'package:carol/providers/stores_provider.dart';
 import 'package:carol/screens/owner_design_blueprint_screen.dart';
 import 'package:carol/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:transparent_image/transparent_image.dart';
-import 'package:carol/apis.dart' as apis;
 
 class BlueprintDialogScreen extends ConsumerStatefulWidget {
   const BlueprintDialogScreen({
@@ -63,6 +62,13 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
         style: TextStyle(color: Theme.of(context).colorScheme.onBackground),
       ),
     );
+    final dialogTitle = Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(blueprint.displayName),
+        if (!blueprint.isPublishing) const Icon(Icons.visibility_off),
+      ],
+    );
 
     if (widget.blueprintDialogMode == BlueprintDialogMode.customer) {
       // Customer mode
@@ -90,7 +96,7 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
         style: const TextStyle(fontSize: 24),
       );
       return AlertDialog(
-        title: Text(blueprint.displayName),
+        title: dialogTitle,
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -128,9 +134,8 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
       );
     } else {
       // Owner mode
-
       return AlertDialog(
-        title: Text(blueprint.displayName),
+        title: dialogTitle,
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -327,14 +332,14 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
     required User user,
     required StampCardBlueprint blueprint,
   }) async {
-    final numIssuedCards = await getNumIssuedCards(
+    final numIssuedCards = await _getNumIssuedCards(
       userId: user.id,
       blueprintId: blueprint.id,
     );
     return blueprint.numMaxIssues <= numIssuedCards;
   }
 
-  Future<int> getNumIssuedCards({
+  Future<int> _getNumIssuedCards({
     required String userId,
     required String blueprintId,
   }) async {
@@ -410,11 +415,7 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
     stampCardProviders.tryAddProvider(entity: newStampCard);
     stampCardsNotifier.prepend(newStampCard, sort: false);
 
-    ScaffoldMessenger.of(Carol.materialKey.currentContext!)
-        .showSnackBar(const SnackBar(
-      content: Text('Your stamp card is ready!'),
-      duration: Duration(seconds: 3),
-    ));
+    Carol.showTextSnackBar(text: 'Your stamp card is ready!');
     return newStampCard;
   }
 

@@ -156,11 +156,7 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
       }
 
       // 3-1.2. Close Dialog and refresh CardScreen
-      ScaffoldMessenger.of(Carol.materialKey.currentContext!)
-          .showSnackBar(const SnackBar(
-        content: Text('Request success'),
-        duration: Duration(seconds: 3),
-      ));
+      Carol.showTextSnackBar(text: 'Request success');
       final updatedNumCollectedStamps =
           stampCard.numCollectedStamps - redeemRule.consumes;
       final updatedStampCard = stampCard.copyWith(
@@ -186,11 +182,7 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
         });
         await Utils.delaySeconds(1);
       }
-      ScaffoldMessenger.of(Carol.materialKey.currentContext!)
-          .showSnackBar(const SnackBar(
-        content: Text('Request canceled'),
-        duration: Duration(seconds: 3),
-      ));
+      Carol.showTextSnackBar(text: 'Request CANCELED!');
     }
 
     if (mounted) {

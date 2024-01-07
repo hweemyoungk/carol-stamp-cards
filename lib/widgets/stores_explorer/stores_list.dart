@@ -5,7 +5,6 @@ import 'package:carol/providers/entity_provider.dart';
 import 'package:carol/providers/store_provider.dart';
 import 'package:carol/providers/stores_init_loaded_provider.dart';
 import 'package:carol/providers/stores_provider.dart';
-import 'package:carol/widgets/common/load_more_button.dart';
 import 'package:carol/widgets/main_drawer.dart';
 import 'package:carol/widgets/stores_explorer/stores_list_item.dart';
 import 'package:flutter/material.dart';

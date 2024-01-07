@@ -136,7 +136,7 @@ class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
                 left: 0,
                 right: 0,
                 child: Container(
-                  color: const Color.fromRGBO(255, 255, 255, 0.7),
+                  color: const Color.fromRGBO(0, 0, 0, 0.7),
                 ),
               ),
           ],
