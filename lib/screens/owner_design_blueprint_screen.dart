@@ -204,6 +204,14 @@ class _OwnerDesignStoreScreenState
                                     int.tryParse(value) == null ||
                                     int.parse(value) < 1 ||
                                     100 < int.parse(value)) {
+                                  return 'Must be integer';
+                                }
+                                final input = int.parse(value);
+                                if (widget.blueprint != null &&
+                                    input < widget.blueprint!.numMaxStamps) {
+                                  return 'Cannot reduce max stamps';
+                                }
+                                if (input < 1 || 100 < input) {
                                   return 'Must be in 1~100';
                                 }
                                 return null;

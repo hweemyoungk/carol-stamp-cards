@@ -41,6 +41,26 @@ class StampCard extends BaseModel {
     required this.isInactive,
   });
 
+  StampCard.fromJson(Map<String, dynamic> json)
+      : displayName = json['displayName'] as String,
+        numCollectedStamps = json['numCollectedStamps'] as int,
+        numGoalStamps = json['numGoalStamps'] as int,
+        numMaxStamps = json['numMaxStamps'] as int,
+        lastModifiedDate = json['lastModifiedDate'] as DateTime,
+        expirationDate = json['expirationDate'] as DateTime,
+        isFavorite = json['isFavorite'] as bool,
+        numMaxRedeems = json['numMaxRedeems'] as int,
+        numRedeemed = json['numRedeemed'] as int,
+        customerId = json['customerId'] as String,
+        storeId = json['storeId'] as String,
+        blueprintId = json['blueprintId'] as String,
+        icon = json['icon'] as IconData?,
+        bgImageUrl = json['bgImageUrl'] as String?,
+        wasDiscarded = json['wasDiscarded'] as bool,
+        wasUsedOut = json['wasUsedOut'] as bool,
+        isInactive = json['isInactive'] as bool,
+        super(id: json['id'] as String);
+
   StampCard copyWith({
     String? id,
     String? displayName,
@@ -113,4 +133,55 @@ class StampCard extends BaseModel {
       return '${(diff.inDays % 365).floor()}Y left';
     }
   }
+}
+
+class StampCardQr {
+  final String type = 'StampCardQr';
+  final StampCard stampCard;
+
+  StampCardQr({required this.stampCard});
+}
+
+class SimpleStampCardQr {
+  final String type = 'SimpleStampCardQr';
+  final String stampCardId;
+  final String blueprintId;
+  final bool wasDiscarded;
+  final bool wasUsedOut;
+  final bool isInactive;
+
+  SimpleStampCardQr({
+    required this.stampCardId,
+    required this.blueprintId,
+    required this.wasDiscarded,
+    required this.wasUsedOut,
+    required this.isInactive,
+  });
+
+  SimpleStampCardQr.fromJson(Map<String, dynamic> json)
+      : stampCardId = json['stampCardId'] as String,
+        blueprintId = json['blueprintId'] as String,
+        wasDiscarded = json['wasDiscarded'] as bool,
+        wasUsedOut = json['wasUsedOut'] as bool,
+        isInactive = json['isInactive'] as bool {
+    if (json['type'] != 'SimpleStampCardQr') {
+      throw const FormatException('Not valid SimpleStampCardQr');
+    }
+  }
+
+  SimpleStampCardQr.fromStampCard(StampCard stampCard)
+      : stampCardId = stampCard.id,
+        blueprintId = stampCard.blueprintId,
+        wasDiscarded = stampCard.wasDiscarded,
+        wasUsedOut = stampCard.wasUsedOut,
+        isInactive = stampCard.isInactive;
+
+  Map<String, dynamic> toJson() => {
+        'type': type,
+        'stampCardId': stampCardId,
+        'blueprintId': blueprintId,
+        'wasDiscarded': wasDiscarded,
+        'wasUsedOut': wasUsedOut,
+        'isInactive': isInactive,
+      };
 }

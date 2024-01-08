@@ -4,6 +4,7 @@ import 'package:carol/data/dummy_data.dart';
 import 'package:carol/models/user.dart';
 import 'package:carol/providers/stamp_cards_init_loaded_provider.dart';
 import 'package:carol/providers/stamp_cards_provider.dart';
+import 'package:carol/providers/store_provider.dart';
 import 'package:carol/screens/dashboard_screen.dart';
 import 'package:carol/utils.dart';
 import 'package:flutter/material.dart';
@@ -263,19 +264,21 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
     // Dummy
     // Set User
-    currentUser = User(
-      id: uuid.v4(),
-      displayName: 'HMK',
-      profileImageUrl: 'assets/images/schnitzel-3279045_1280.jpg',
-    );
+    currentUser = await Utils.delaySeconds(1).then((value) => User(
+          id: uuid.v4(),
+          displayName: 'HMK',
+          profileImageUrl: 'assets/images/schnitzel-3279045_1280.jpg',
+        ));
 
     // Load Init Entities
-    _loadInitEntities();
+    await _loadInitEntities();
 
     // Next Screen
-    Navigator.of(context).pushReplacement(MaterialPageRoute(
-      builder: (context) => const DashboardScreen(),
-    ));
+    if (mounted) {
+      Navigator.of(context).pushReplacement(MaterialPageRoute(
+        builder: (context) => const DashboardScreen(),
+      ));
+    }
   }
 
   Future<void> _loadInitEntities() async {
@@ -294,13 +297,21 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     // Dummy: Top down
     await Utils.delaySeconds(2);
     // Stores
-    final stores = genDummyCustomerStores(numStores: 2);
+    final stores = genDummyCustomerStores(
+      numStores: 2,
+      ownerId: currentUser.id,
+    );
     // Blueprints and RedeemRules
     stores.forEach((store) {
+      final storeProvider =
+          customerStoreProviders.tryGetProviderById(id: store.id)!;
+      final storeNotifier = ref.read(storeProvider.notifier);
       final blueprints = genDummyBlueprints(
         numBlueprints: 2,
         storeId: store.id,
       );
+      storeNotifier.set(entity: store.copyWith(blueprints: blueprints));
+
       blueprints.forEach((blueprint) {
         // StampCards
         final stampCards = genDummyStampCards(

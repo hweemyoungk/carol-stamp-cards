@@ -49,23 +49,6 @@ class _StoresListState extends ConsumerState<StoresList> {
       throw Exception(
           'StoresList can only be reached from customer or owner drawer item');
     }
-
-    // final storesInitLoaded = ref.read(storesInitLoadedProvider);
-    // final storesInitLoadedNotifier =
-    //     ref.read(storesInitLoadedProvider.notifier);
-    // if (!storesInitLoaded) {
-    //   // Initial load
-    //   if (storeProviders.providers.isNotEmpty) {
-    //     final loadedStores =
-    //         storeProviders.providers.entries.map((e) => ref.read(e.value));
-    //     ref.read(storesProvider.notifier).appendAll(loadedStores);
-    //     storesInitLoadedNotifier.set(true);
-    //   } else {
-    //     loadMore().then((value) {
-    //       storesInitLoadedNotifier.set(true);
-    //     });
-    //   }
-    // }
   }
 
   @override

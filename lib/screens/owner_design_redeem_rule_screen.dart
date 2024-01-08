@@ -61,92 +61,79 @@ class _OwnerDesignRedeemRuleScreenState
         ],
       ),
       body: Form(
-          key: _formKey,
-          child: LayoutBuilder(
-            builder: (ctx, constraints) {
-              // final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
-              final editConsumesEnabled =
-                  widget.designMode == RedeemRuleDesignMode.create ||
-                      widget.redeemRule!.id == '';
-              return SingleChildScrollView(
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: Utils.basicWidgetEdgeInsets(),
-                      child: TextFormField(
-                        initialValue: widget.redeemRule?.displayName,
-                        style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                            color: Theme.of(context).colorScheme.onBackground),
-                        maxLength: 50,
-                        decoration: const InputDecoration(
-                          label: Text('Display Name'),
-                        ),
-                        validator: (value) {
-                          if (value == null ||
-                              value.trim().isEmpty ||
-                              value.trim().length > 50) {
-                            return 'Must be between 1 and 50 characters long';
-                          }
-                          return null;
-                        },
-                        onSaved: (newValue) {
-                          _displayName = newValue!;
-                        },
+        key: _formKey,
+        child: LayoutBuilder(
+          builder: (ctx, constraints) {
+            // final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+            final editConsumesEnabled =
+                widget.designMode == RedeemRuleDesignMode.create ||
+                    widget.redeemRule!.id == '';
+            return SingleChildScrollView(
+              child: Column(
+                children: [
+                  Padding(
+                    padding: Utils.basicWidgetEdgeInsets(),
+                    child: TextFormField(
+                      initialValue: widget.redeemRule?.displayName,
+                      style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                          color: Theme.of(context).colorScheme.onBackground),
+                      maxLength: 50,
+                      decoration: const InputDecoration(
+                        label: Text('Display Name'),
                       ),
+                      validator: (value) {
+                        if (value == null ||
+                            value.trim().isEmpty ||
+                            value.trim().length > 50) {
+                          return 'Must be between 1 and 50 characters long';
+                        }
+                        return null;
+                      },
+                      onSaved: (newValue) {
+                        _displayName = newValue!;
+                      },
                     ),
-                    Padding(
-                      padding: Utils.basicWidgetEdgeInsets(),
-                      child: TextFormField(
-                        initialValue: widget.redeemRule?.description,
-                        keyboardType: TextInputType.multiline,
-                        maxLines: null,
-                        style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                            color: Theme.of(context).colorScheme.onBackground),
-                        maxLength: 1000,
-                        decoration: const InputDecoration(
-                          label: Text('Description'),
-                        ),
-                        validator: (value) {
-                          if (value == null ||
-                              value.trim().isEmpty ||
-                              value.trim().length > 1000) {
-                            return 'Must be between 1 and 1000 characters long';
-                          }
-                          return null;
-                        },
-                        onSaved: (newValue) {
-                          _description = newValue!;
-                        },
+                  ),
+                  Padding(
+                    padding: Utils.basicWidgetEdgeInsets(),
+                    child: TextFormField(
+                      initialValue: widget.redeemRule?.description,
+                      keyboardType: TextInputType.multiline,
+                      maxLines: null,
+                      style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                          color: Theme.of(context).colorScheme.onBackground),
+                      maxLength: 1000,
+                      decoration: const InputDecoration(
+                        label: Text('Description'),
                       ),
+                      validator: (value) {
+                        if (value == null ||
+                            value.trim().isEmpty ||
+                            value.trim().length > 1000) {
+                          return 'Must be between 1 and 1000 characters long';
+                        }
+                        return null;
+                      },
+                      onSaved: (newValue) {
+                        _description = newValue!;
+                      },
                     ),
-                    // late int _consumes; // Should't be modified
-                    Padding(
-                      padding: Utils.basicWidgetEdgeInsets(),
-                      child: Container(
-                        width: double.infinity,
-                        alignment: Alignment.centerLeft,
-                        child: SizedBox(
-                          width: 100,
-                          child: TextFormField(
-                            enabled: editConsumesEnabled,
-                            initialValue:
-                                widget.redeemRule?.consumes.toString(),
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyLarge!
-                                .copyWith(
-                                    color: editConsumesEnabled
-                                        ? Theme.of(context)
-                                            .colorScheme
-                                            .onBackground
-                                        : Theme.of(context)
-                                            .colorScheme
-                                            .onBackground
-                                            .withOpacity(0.4)),
-                            decoration: InputDecoration(
-                              label: const Text('Consumes'),
-                              suffixText: 'stamps',
-                              suffixStyle: TextStyle(
+                  ),
+                  // late int _consumes; // Should't be modified
+                  Padding(
+                    padding: Utils.basicWidgetEdgeInsets(),
+                    child: Container(
+                      width: double.infinity,
+                      alignment: Alignment.centerLeft,
+                      child: SizedBox(
+                        width: 100,
+                        child: TextFormField(
+                          enabled: editConsumesEnabled,
+                          initialValue: widget.redeemRule?.consumes.toString(),
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyLarge!
+                              .copyWith(
                                   color: editConsumesEnabled
                                       ? Theme.of(context)
                                           .colorScheme
@@ -155,31 +142,42 @@ class _OwnerDesignRedeemRuleScreenState
                                           .colorScheme
                                           .onBackground
                                           .withOpacity(0.4)),
-                            ),
-                            validator: (value) {
-                              if (value == null ||
-                                  int.tryParse(value) == null ||
-                                  int.parse(value) < 0) {
-                                return 'Must be 0+ integer';
-                              }
-                              return null;
-                            },
-                            keyboardType: TextInputType.number,
-                            onSaved: (newValue) {
-                              _consumes = int.parse(newValue!);
-                            },
+                          decoration: InputDecoration(
+                            label: const Text('Consumes'),
+                            suffixText: 'stamps',
+                            suffixStyle: TextStyle(
+                                color: editConsumesEnabled
+                                    ? Theme.of(context).colorScheme.onBackground
+                                    : Theme.of(context)
+                                        .colorScheme
+                                        .onBackground
+                                        .withOpacity(0.4)),
                           ),
+                          validator: (value) {
+                            if (value == null ||
+                                int.tryParse(value) == null ||
+                                int.parse(value) < 0) {
+                              return 'Must be 0+ integer';
+                            }
+                            return null;
+                          },
+                          keyboardType: TextInputType.number,
+                          onSaved: (newValue) {
+                            _consumes = int.parse(newValue!);
+                          },
                         ),
                       ),
                     ),
-                    // late String _blueprintId;
-                    // late IconData? _icon;
-                    // late String? _imageUrl;
-                  ],
-                ),
-              );
-            },
-          )),
+                  ),
+                  // late String _blueprintId;
+                  // late IconData? _icon;
+                  // late String? _imageUrl;
+                ],
+              ),
+            );
+          },
+        ),
+      ),
     );
   }
 

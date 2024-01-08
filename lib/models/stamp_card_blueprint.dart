@@ -34,6 +34,22 @@ class StampCardBlueprint extends BaseModel {
     required this.redeemRules,
   });
 
+  StampCardBlueprint.fromJson(Map<String, dynamic> json)
+      : displayName = json['displayName'] as String,
+        description = json['description'] as String,
+        stampGrantCondDescription = json['stampGrantCondDescription'] as String,
+        numMaxStamps = json['numMaxStamps'] as int,
+        numMaxRedeems = json['numMaxRedeems'] as int,
+        numMaxIssues = json['numMaxIssues'] as int,
+        lastModifiedDate = json['lastModifiedDate'] as DateTime,
+        expirationDate = json['expirationDate'] as DateTime,
+        storeId = json['storeId'] as String,
+        icon = json['icon'] as IconData?,
+        bgImageUrl = json['bgImageUrl'] as String?,
+        isPublishing = json['isPublishing'] as bool,
+        redeemRules = json['redeemRules'] as List<RedeemRule>?,
+        super(id: json['id'] as String);
+
   bool get wasExpired {
     return DateTime.now().isAfter(expirationDate);
   }

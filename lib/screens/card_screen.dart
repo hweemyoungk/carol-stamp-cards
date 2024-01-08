@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:carol/main.dart';
 import 'package:carol/models/stamp_card.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
@@ -8,6 +10,7 @@ import 'package:carol/screens/store_screen.dart';
 import 'package:carol/utils.dart';
 import 'package:carol/widgets/card/card_info.dart';
 import 'package:carol/widgets/card/redeem_rules_list.dart';
+import 'package:carol/widgets/common/circular_progress_indicator_in_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -28,6 +31,8 @@ class CardScreen extends ConsumerStatefulWidget {
 }
 
 class _CardScreenState extends ConsumerState<CardScreen> {
+  var _isDeleting = false;
+
   @override
   Widget build(BuildContext context) {
     final stampCard = ref.watch(widget.stampCardProvider);
@@ -81,18 +86,22 @@ class _CardScreenState extends ConsumerState<CardScreen> {
     final deleteButton = ElevatedButton.icon(
       style: ElevatedButton.styleFrom(
         backgroundColor: Theme.of(context).colorScheme.errorContainer,
+        disabledBackgroundColor: Theme.of(context).colorScheme.errorContainer,
       ),
-      onPressed: _onPressDeleteCard,
+      onPressed: _isDeleting ? null : _onPressDeleteCard,
       icon: Icon(
         Icons.delete,
         color: Theme.of(context).colorScheme.onErrorContainer,
       ),
-      label: Text(
-        'Delete Card',
-        style: TextStyle(
-          color: Theme.of(context).colorScheme.onErrorContainer,
-        ),
-      ),
+      label: _isDeleting
+          ? CircularProgressIndicatorInButton(
+              color: Theme.of(context).colorScheme.onErrorContainer)
+          : Text(
+              'Delete Card',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onErrorContainer,
+              ),
+            ),
     );
     final cardInfo = CardInfo(stampCardProvider: widget.stampCardProvider);
     return Scaffold(
@@ -107,8 +116,9 @@ class _CardScreenState extends ConsumerState<CardScreen> {
       backgroundColor: Theme.of(context).colorScheme.secondary,
       body: LayoutBuilder(
         builder: (ctx, constraints) {
+          final qr = SimpleStampCardQr.fromStampCard(stampCard);
           final qrImageView = QrImageView(
-            data: stampCard.id,
+            data: json.encode(qr.toJson()),
             version: QrVersions.auto,
             size: constraints.maxWidth * 0.4,
           );
@@ -268,6 +278,10 @@ class _CardScreenState extends ConsumerState<CardScreen> {
     if (mounted) {
       Navigator.of(context).pop();
     }
+    setState(() {
+      _isDeleting = true;
+    });
+
     final stampCard = ref.read(widget.stampCardProvider);
     final stampCardNotifier = ref.read(widget.stampCardProvider.notifier);
     // TODO Implement

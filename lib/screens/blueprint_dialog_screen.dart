@@ -10,6 +10,8 @@ import 'package:carol/providers/stamp_cards_provider.dart';
 import 'package:carol/providers/store_provider.dart';
 import 'package:carol/screens/owner_design_blueprint_screen.dart';
 import 'package:carol/utils.dart';
+import 'package:carol/widgets/blueprint/blueprint_info.dart';
+import 'package:carol/widgets/common/circular_progress_indicator_in_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:transparent_image/transparent_image.dart';
@@ -43,15 +45,10 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
   Widget build(BuildContext context) {
     final blueprint = ref.watch(widget.blueprintProvider);
 
-    Widget image = blueprint.bgImageUrl == null
-        ? Image.memory(
-            kTransparentImage,
-            fit: BoxFit.contain,
-          )
-        : Image.asset(
-            blueprint.bgImageUrl!,
-            fit: BoxFit.contain,
-          );
+    final blueprintInfo = BlueprintInfo(
+      blueprint: blueprint,
+      textColor: Theme.of(context).colorScheme.onSecondary,
+    );
     final backButton = TextButton(
       style: TextButton.styleFrom(
           backgroundColor: Theme.of(context).colorScheme.background),
@@ -102,25 +99,7 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              image,
-              Padding(
-                padding: Utils.basicWidgetEdgeInsets(),
-                child: Text(
-                  blueprint.description,
-                ),
-              ),
-              Padding(
-                padding: Utils.basicWidgetEdgeInsets(),
-                child: Text(
-                  'Stamp Grant Conditions',
-                  style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                      color: Theme.of(context).colorScheme.onSecondary),
-                ),
-              ),
-              Padding(
-                padding: Utils.basicWidgetEdgeInsets(),
-                child: Text(blueprint.stampGrantCondDescription),
-              ),
+              blueprintInfo,
               Padding(
                 padding: Utils.basicWidgetEdgeInsets(),
                 child: cardNameTextField,
@@ -141,25 +120,7 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              image,
-              Padding(
-                padding: Utils.basicWidgetEdgeInsets(),
-                child: Text(
-                  blueprint.description,
-                ),
-              ),
-              Padding(
-                padding: Utils.basicWidgetEdgeInsets(),
-                child: Text(
-                  'Stamp Grant Conditions',
-                  style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                      color: Theme.of(context).colorScheme.onSecondary),
-                ),
-              ),
-              Padding(
-                padding: Utils.basicWidgetEdgeInsets(),
-                child: Text(blueprint.stampGrantCondDescription),
-              ),
+              blueprintInfo,
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor:
@@ -169,13 +130,9 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
                 ),
                 onPressed: _isFetchingRedeemRules ? null : _onPressModify,
                 child: _isFetchingRedeemRules
-                    ? SizedBox(
-                        width: 15,
-                        height: 15,
-                        child: CircularProgressIndicator(
-                          color:
-                              Theme.of(context).colorScheme.onTertiaryContainer,
-                        ),
+                    ? CircularProgressIndicatorInButton(
+                        color:
+                            Theme.of(context).colorScheme.onTertiaryContainer,
                       )
                     : Text(
                         'Modify',
