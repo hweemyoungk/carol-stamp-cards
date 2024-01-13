@@ -1,6 +1,7 @@
 import 'package:carol/data/dummy_data.dart';
 import 'package:carol/main.dart';
 import 'package:carol/models/store.dart';
+import 'package:carol/params.dart';
 import 'package:carol/providers/store_provider.dart';
 import 'package:carol/providers/stores_provider.dart';
 import 'package:carol/utils.dart';
@@ -51,7 +52,7 @@ class _OwnerDesignStoreScreenState
                   icon: const Icon(Icons.check),
                 )
               : Padding(
-                  padding: Utils.basicWidgetEdgeInsets(),
+                  padding: DesignUtils.basicWidgetEdgeInsets(),
                   child: const SizedBox(
                     width: 16,
                     height: 16,
@@ -69,7 +70,7 @@ class _OwnerDesignStoreScreenState
                 child: Column(
                   children: [
                     Padding(
-                      padding: Utils.basicWidgetEdgeInsets(),
+                      padding: DesignUtils.basicWidgetEdgeInsets(),
                       child: TextFormField(
                         initialValue: widget.store?.displayName,
                         style: Theme.of(context).textTheme.bodyLarge!.copyWith(
@@ -92,7 +93,7 @@ class _OwnerDesignStoreScreenState
                       ),
                     ),
                     Padding(
-                      padding: Utils.basicWidgetEdgeInsets(),
+                      padding: DesignUtils.basicWidgetEdgeInsets(),
                       child: TextFormField(
                         initialValue: widget.store?.description,
                         keyboardType: TextInputType.multiline,
@@ -117,7 +118,7 @@ class _OwnerDesignStoreScreenState
                       ),
                     ),
                     Padding(
-                      padding: Utils.basicWidgetEdgeInsets(),
+                      padding: DesignUtils.basicWidgetEdgeInsets(),
                       child: TextFormField(
                         initialValue: widget.store?.zipcode,
                         style: Theme.of(context).textTheme.bodyLarge!.copyWith(
@@ -140,7 +141,7 @@ class _OwnerDesignStoreScreenState
                       ),
                     ),
                     Padding(
-                      padding: Utils.basicWidgetEdgeInsets(),
+                      padding: DesignUtils.basicWidgetEdgeInsets(),
                       child: TextFormField(
                         initialValue: widget.store?.address,
                         style: Theme.of(context).textTheme.bodyLarge!.copyWith(
@@ -164,7 +165,7 @@ class _OwnerDesignStoreScreenState
                     ),
                     // String _phone;
                     Padding(
-                      padding: Utils.basicWidgetEdgeInsets(),
+                      padding: DesignUtils.basicWidgetEdgeInsets(),
                       child: TextFormField(
                         initialValue: widget.store?.phone,
                         style: Theme.of(context).textTheme.bodyLarge!.copyWith(
@@ -193,7 +194,7 @@ class _OwnerDesignStoreScreenState
                       children: [
                         // double _lat;
                         Padding(
-                          padding: Utils.basicWidgetEdgeInsets(),
+                          padding: DesignUtils.basicWidgetEdgeInsets(),
                           child: SizedBox(
                             width: 150,
                             child: TextFormField(
@@ -225,7 +226,7 @@ class _OwnerDesignStoreScreenState
                           ),
                         ),
                         Padding(
-                          padding: Utils.basicWidgetEdgeInsets(),
+                          padding: DesignUtils.basicWidgetEdgeInsets(),
                           child: SizedBox(
                             width: 150,
                             child: TextFormField(
@@ -285,7 +286,7 @@ class _OwnerDesignStoreScreenState
 
     if (widget.designMode == StoreDesignMode.create) {
       // TODO POST Store
-      await Utils.delaySeconds(2);
+      await DesignUtils.delaySeconds(2);
       final location = uuid.v4();
       final newStore = Store(
         address: _address,
@@ -313,7 +314,7 @@ class _OwnerDesignStoreScreenState
       final storeNotifier = ref.read(storeProvider!.notifier);
 
       // TODO PUT Store
-      await Utils.delaySeconds(2);
+      await DesignUtils.delaySeconds(2);
       final modifiedStore = widget.store!.copyWith(
         address: _address,
         description: _description,

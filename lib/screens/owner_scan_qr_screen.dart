@@ -57,7 +57,7 @@ class _OwnerScanQrScreenState extends ConsumerState<OwnerScanQrScreen> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Padding(
-                        padding: Utils.basicWidgetEdgeInsets(),
+                        padding: DesignUtils.basicWidgetEdgeInsets(),
                         child: ElevatedButton(
                           onPressed: () async {
                             await _controller?.toggleFlash();
@@ -72,7 +72,7 @@ class _OwnerScanQrScreenState extends ConsumerState<OwnerScanQrScreen> {
                         ),
                       ),
                       Padding(
-                        padding: Utils.basicWidgetEdgeInsets(),
+                        padding: DesignUtils.basicWidgetEdgeInsets(),
                         child: ElevatedButton(
                           onPressed: () async {
                             await _controller?.flipCamera();

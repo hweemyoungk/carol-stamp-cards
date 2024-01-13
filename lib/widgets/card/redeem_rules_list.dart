@@ -46,7 +46,7 @@ class _RedeemRulesListState extends ConsumerState<RedeemRulesList> {
         ),
         watchedRedeemRules == null
             ? Padding(
-                padding: Utils.basicWidgetEdgeInsets(5.0),
+                padding: DesignUtils.basicWidgetEdgeInsets(5.0),
                 child: CircularProgressIndicator(
                   semanticsLabel: 'Loading rewards...',
                   color: Theme.of(context).colorScheme.onSecondary,

@@ -1,16 +1,19 @@
+import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:uuid/uuid.dart';
+import 'package:http/http.dart' as http;
 
 const uuid = Uuid();
 final random = Random();
 const distance = Distance();
 final formatter = DateFormat.yMd();
 
-class Utils {
+class DesignUtils {
   static EdgeInsets basicWidgetEdgeInsets([double scale = 1.0]) {
     return EdgeInsets.all(8.0 * scale);
   }
@@ -60,4 +63,17 @@ class Utils {
   static Future<void> delaySeconds(int seconds) async {
     return Future.delayed(Duration(seconds: seconds));
   }
+}
+
+Map<String, dynamic> getStaleRefreshOidc(Map<String, dynamic> oidc) {
+  final String refreshToken = oidc['refresh_token'];
+  final split = refreshToken.split('.');
+  final refreshTokenPayload = json
+      .decode(String.fromCharCodes(base64.decode(base64.normalize(split[1]))));
+  refreshTokenPayload['exp'] = 1;
+  final stalePayload =
+      base64.encode(json.encode(refreshTokenPayload).codeUnits);
+  final staleToken = [split[0], stalePayload, split[2]].join('.');
+  oidc['refresh_token'] = staleToken;
+  return oidc;
 }

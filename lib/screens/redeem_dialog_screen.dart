@@ -84,7 +84,7 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
           children: [
             image,
             Padding(
-              padding: Utils.basicWidgetEdgeInsets(),
+              padding: DesignUtils.basicWidgetEdgeInsets(),
               child: Text(redeemRule.description),
             ),
             TextButton(
@@ -152,7 +152,7 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
             ),
           );
         });
-        await Utils.delaySeconds(1);
+        await DesignUtils.delaySeconds(1);
       }
 
       // 3-1.2. Close Dialog and refresh CardScreen
@@ -180,7 +180,7 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
             ),
           );
         });
-        await Utils.delaySeconds(1);
+        await DesignUtils.delaySeconds(1);
       }
       Carol.showTextSnackBar(text: 'Request CANCELED!');
     }
@@ -272,7 +272,7 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
           return false;
         });
       }
-      await Utils.delaySeconds(1);
+      await DesignUtils.delaySeconds(1);
       if (completer.isCompleted) {
         try {
           final exists = await completer.future;

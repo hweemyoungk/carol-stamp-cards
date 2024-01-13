@@ -25,14 +25,14 @@ class BlueprintInfo extends StatelessWidget {
             fit: BoxFit.contain,
           );
     final blueprintDescText = Padding(
-      padding: Utils.basicWidgetEdgeInsets(),
+      padding: DesignUtils.basicWidgetEdgeInsets(),
       child: Text(
         blueprint.description,
         style: TextStyle(color: textColor),
       ),
     );
     final stampGrantCondTitle = Padding(
-      padding: Utils.basicWidgetEdgeInsets(),
+      padding: DesignUtils.basicWidgetEdgeInsets(),
       child: Text(
         'Stamp Grant Conditions',
         style:
@@ -40,7 +40,7 @@ class BlueprintInfo extends StatelessWidget {
       ),
     );
     final stampGrantCondDescText = Padding(
-      padding: Utils.basicWidgetEdgeInsets(),
+      padding: DesignUtils.basicWidgetEdgeInsets(),
       child: Text(
         blueprint.stampGrantCondDescription,
         style: TextStyle(color: textColor),

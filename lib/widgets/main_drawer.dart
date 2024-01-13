@@ -1,4 +1,5 @@
 import 'package:carol/data/dummy_data.dart';
+import 'package:carol/params.dart';
 import 'package:carol/providers/active_drawer_item_provider.dart';
 import 'package:carol/providers/store_provider.dart';
 import 'package:carol/providers/stores_init_loaded_provider.dart';
@@ -32,7 +33,7 @@ class MainDrawer extends StatelessWidget {
             ),
     );
     final profileIcon = Padding(
-      padding: Utils.basicWidgetEdgeInsets(),
+      padding: DesignUtils.basicWidgetEdgeInsets(),
       child: avatar,
     );
     return Drawer(
@@ -44,7 +45,7 @@ class MainDrawer extends StatelessWidget {
               children: [
                 profileIcon,
                 Padding(
-                  padding: Utils.basicWidgetEdgeInsets(),
+                  padding: DesignUtils.basicWidgetEdgeInsets(),
                   child: Text(
                     currentUser.displayName,
                     style: Theme.of(context).textTheme.headlineLarge!.copyWith(
@@ -120,7 +121,7 @@ class _DrawerItemState extends ConsumerState<DrawerItem> {
         Navigator.of(context).pop();
       },
       child: Padding(
-        padding: Utils.basicWidgetEdgeInsets(),
+        padding: DesignUtils.basicWidgetEdgeInsets(),
         child: Text(
           widget.text,
           style: Theme.of(context).textTheme.titleLarge!.copyWith(
@@ -152,7 +153,7 @@ class _DrawerItemState extends ConsumerState<DrawerItem> {
       // apis.listOwnerStores(ownerId: currentUser.id,);
 
       // Dummy: Top down
-      await Utils.delaySeconds(2);
+      await DesignUtils.delaySeconds(2);
       // Stores
       final stores = genDummyOwnerStores(
         numStores: 2,

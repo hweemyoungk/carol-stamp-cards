@@ -34,6 +34,20 @@ class Store extends BaseModel {
     required this.ownerId,
     this.blueprints,
   });
+  Store.fromJson(Map<String, dynamic> json)
+      : displayName = json['displayName'] as String,
+        description = json['description'] as String,
+        zipcode = json['zipcode'] as String,
+        address = json['address'] as String,
+        phone = json['phone'] as String,
+        lat = json['lat'] as double,
+        lng = json['lng'] as double,
+        icon = json['icon'] as IconData?,
+        bgImageUrl = json['bgImageUrl'] as String?,
+        profileImageUrl = json['profileImageUrl'] as String?,
+        ownerId = json['ownerId'] as String,
+        blueprints = json['blueprints'] as List<StampCardBlueprint>?,
+        super(id: json['id'] as String);
 
   Store copyWith({
     String? id,

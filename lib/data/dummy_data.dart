@@ -5,7 +5,6 @@ import 'package:carol/models/stamp_card.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/models/store.dart';
 import 'package:carol/models/store_notice.dart';
-import 'package:carol/models/user.dart';
 import 'package:carol/providers/redeem_rule_provider.dart';
 import 'package:carol/providers/stamp_card_blueprint_provider.dart';
 import 'package:carol/providers/stamp_card_provider.dart';
@@ -195,5 +194,3 @@ List<RedeemRule> genDummySortedRedeemRules({
     return redeemRule;
   });
 }
-
-late final User currentUser;

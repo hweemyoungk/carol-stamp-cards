@@ -25,7 +25,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
           //     constraints.maxHeight * .05;
           return Container(
             alignment: Alignment.center,
-            margin: Utils.basicScreenEdgeInsets(context, constraints),
+            margin: DesignUtils.basicScreenEdgeInsets(context, constraints),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
               color: Theme.of(context).colorScheme.primary,

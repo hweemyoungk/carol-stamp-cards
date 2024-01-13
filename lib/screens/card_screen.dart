@@ -41,7 +41,7 @@ class _CardScreenState extends ConsumerState<CardScreen> {
     final notices = Container(
       color: Theme.of(context).colorScheme.tertiaryContainer,
       child: Padding(
-        padding: Utils.basicWidgetEdgeInsets(),
+        padding: DesignUtils.basicWidgetEdgeInsets(),
         child: Column(
           children: [
             if (stampCard.wasUsedOut)
@@ -127,7 +127,7 @@ class _CardScreenState extends ConsumerState<CardScreen> {
             child: Column(
               children: [
                 Padding(
-                  padding: Utils.basicWidgetEdgeInsets(.5),
+                  padding: DesignUtils.basicWidgetEdgeInsets(.5),
                   child: Text(
                     stampCard.stampsRatio,
                     style: Theme.of(context).textTheme.headlineLarge!.copyWith(
@@ -136,7 +136,7 @@ class _CardScreenState extends ConsumerState<CardScreen> {
                   ),
                 ),
                 Padding(
-                  padding: Utils.basicWidgetEdgeInsets(.5),
+                  padding: DesignUtils.basicWidgetEdgeInsets(.5),
                   child: Text(
                     'Max: ${stampCard.numMaxStamps}',
                     style: TextStyle(
@@ -153,12 +153,12 @@ class _CardScreenState extends ConsumerState<CardScreen> {
                 if (hasNotices) notices,
                 Container(
                   alignment: Alignment.center,
-                  margin: Utils.basicScreenEdgeInsets(ctx, constraints),
+                  margin: DesignUtils.basicScreenEdgeInsets(ctx, constraints),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Padding(
-                        padding: Utils.basicWidgetEdgeInsets(1.5),
+                        padding: DesignUtils.basicWidgetEdgeInsets(1.5),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
@@ -168,11 +168,11 @@ class _CardScreenState extends ConsumerState<CardScreen> {
                         ),
                       ),
                       Padding(
-                        padding: Utils.basicWidgetEdgeInsets(1.5),
+                        padding: DesignUtils.basicWidgetEdgeInsets(1.5),
                         child: cardInfo,
                       ),
                       Padding(
-                        padding: Utils.basicWidgetEdgeInsets(1.5),
+                        padding: DesignUtils.basicWidgetEdgeInsets(1.5),
                         child: RedeemRulesList(
                           stampCardProvider: widget.stampCardProvider,
                           blueprintProvider: widget.blueprintProvider,
@@ -208,7 +208,7 @@ class _CardScreenState extends ConsumerState<CardScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Padding(
-              padding: Utils.basicWidgetEdgeInsets(),
+              padding: DesignUtils.basicWidgetEdgeInsets(),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -225,7 +225,7 @@ class _CardScreenState extends ConsumerState<CardScreen> {
               ),
             ),
             Padding(
-              padding: Utils.basicWidgetEdgeInsets(),
+              padding: DesignUtils.basicWidgetEdgeInsets(),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
@@ -286,7 +286,7 @@ class _CardScreenState extends ConsumerState<CardScreen> {
     final stampCardNotifier = ref.read(widget.stampCardProvider.notifier);
     // TODO Implement
     // apis.softDeleteStampCard(stampCardId: stampCard.id);
-    await Utils.delaySeconds(2);
+    await DesignUtils.delaySeconds(2);
     stampCardNotifier.set(
         entity: stampCard.copyWith(
       wasDiscarded: true,

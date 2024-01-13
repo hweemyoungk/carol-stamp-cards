@@ -7,6 +7,7 @@ import 'package:carol/providers/redeem_rule_provider.dart';
 import 'package:carol/providers/stamp_card_blueprint_provider.dart';
 import 'package:carol/screens/owner_design_redeem_rule_screen.dart';
 import 'package:carol/utils.dart';
+import 'package:carol/widgets/common/icon_button_in_progress.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -85,14 +86,7 @@ class _OwnerDesignStoreScreenState
                   onPressed: _saveBlueprint,
                   icon: const Icon(Icons.check),
                 )
-              : Padding(
-                  padding: Utils.basicWidgetEdgeInsets(),
-                  child: const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(),
-                  ),
-                ),
+              : const IconButtonInProgress(),
         ],
       ),
       body: Form(
@@ -104,7 +98,7 @@ class _OwnerDesignStoreScreenState
                 child: Column(
                   children: [
                     Padding(
-                      padding: Utils.basicWidgetEdgeInsets(),
+                      padding: DesignUtils.basicWidgetEdgeInsets(),
                       child: TextFormField(
                         initialValue: widget.blueprint?.displayName,
                         style: Theme.of(context).textTheme.bodyLarge!.copyWith(
@@ -127,7 +121,7 @@ class _OwnerDesignStoreScreenState
                       ),
                     ),
                     Padding(
-                      padding: Utils.basicWidgetEdgeInsets(),
+                      padding: DesignUtils.basicWidgetEdgeInsets(),
                       child: TextFormField(
                         initialValue: widget.blueprint?.description,
                         keyboardType: TextInputType.multiline,
@@ -152,7 +146,7 @@ class _OwnerDesignStoreScreenState
                       ),
                     ),
                     Padding(
-                      padding: Utils.basicWidgetEdgeInsets(),
+                      padding: DesignUtils.basicWidgetEdgeInsets(),
                       child: TextFormField(
                         initialValue:
                             widget.blueprint?.stampGrantCondDescription,
@@ -183,7 +177,7 @@ class _OwnerDesignStoreScreenState
                       children: [
                         // late int _numMaxStamps;
                         Padding(
-                          padding: Utils.basicWidgetEdgeInsets(),
+                          padding: DesignUtils.basicWidgetEdgeInsets(),
                           child: SizedBox(
                             width: 100,
                             child: TextFormField(
@@ -226,7 +220,7 @@ class _OwnerDesignStoreScreenState
                         ),
                         // late int _numMaxRedeems;
                         Padding(
-                          padding: Utils.basicWidgetEdgeInsets(),
+                          padding: DesignUtils.basicWidgetEdgeInsets(),
                           child: SizedBox(
                             width: 100,
                             child: TextFormField(
@@ -262,7 +256,7 @@ class _OwnerDesignStoreScreenState
                         ),
                         // late int _numMaxIssues;
                         Padding(
-                          padding: Utils.basicWidgetEdgeInsets(),
+                          padding: DesignUtils.basicWidgetEdgeInsets(),
                           child: SizedBox(
                             width: 100,
                             child: TextFormField(
@@ -301,7 +295,7 @@ class _OwnerDesignStoreScreenState
                     Row(
                       children: [
                         Padding(
-                          padding: Utils.basicWidgetEdgeInsets(),
+                          padding: DesignUtils.basicWidgetEdgeInsets(),
                           child: Text(
                             'Redeem Rules',
                             style: Theme.of(context)
@@ -322,7 +316,7 @@ class _OwnerDesignStoreScreenState
                         ),
                         Expanded(
                           child: Container(
-                            margin: Utils.basicWidgetEdgeInsets(),
+                            margin: DesignUtils.basicWidgetEdgeInsets(),
                             decoration: BoxDecoration(
                               shape: BoxShape.rectangle,
                               borderRadius: BorderRadius.circular(8),
@@ -410,7 +404,7 @@ class _OwnerDesignStoreScreenState
                     Row(
                       children: [
                         Padding(
-                          padding: Utils.basicWidgetEdgeInsets(),
+                          padding: DesignUtils.basicWidgetEdgeInsets(),
                           child: Text(
                             'Expiration Date',
                             style: Theme.of(context)
@@ -420,7 +414,7 @@ class _OwnerDesignStoreScreenState
                           ),
                         ),
                         Padding(
-                          padding: Utils.basicWidgetEdgeInsets(),
+                          padding: DesignUtils.basicWidgetEdgeInsets(),
                           child: _expirationDate == null
                               ? Text(
                                   'No date selected',
@@ -441,7 +435,7 @@ class _OwnerDesignStoreScreenState
                                 ),
                         ),
                         Padding(
-                          padding: Utils.basicWidgetEdgeInsets(),
+                          padding: DesignUtils.basicWidgetEdgeInsets(),
                           child: IconButton(
                             onPressed:
                                 widget.designMode == BlueprintDesignMode.modify
@@ -456,7 +450,7 @@ class _OwnerDesignStoreScreenState
                     Row(
                       children: [
                         Padding(
-                          padding: Utils.basicWidgetEdgeInsets(),
+                          padding: DesignUtils.basicWidgetEdgeInsets(),
                           child: Text(
                             'Publish Now',
                             style: Theme.of(context)
@@ -503,11 +497,11 @@ class _OwnerDesignStoreScreenState
 
     if (widget.designMode == BlueprintDesignMode.create) {
       // TODO POST blueprint and get location
-      await Utils.delaySeconds(1);
+      await DesignUtils.delaySeconds(1);
       final location = uuid.v4();
       final redeemRuleTasks = _redeemRules.map((redeemRule) async {
         // TODO: POST every RedeemRule and get location
-        await Utils.delaySeconds(1);
+        await DesignUtils.delaySeconds(1);
         final location = uuid.v4();
         final postedRedeemRule = redeemRule.copyWith(id: location);
         redeemRuleProviders.tryAddProvider(entity: postedRedeemRule);
@@ -549,12 +543,12 @@ class _OwnerDesignStoreScreenState
       final blueprintNotifier = ref.read(blueprintProvider!.notifier);
 
       // TODO PUT blueprint
-      final putBlueprintTask = Utils.delaySeconds(2);
+      final putBlueprintTask = DesignUtils.delaySeconds(2);
 
       final redeemRuleTasks = _redeemRules.map((redeemRule) async {
         if (redeemRule.id == '') {
           // TODO: POST redeemRule and get location
-          await Utils.delaySeconds(1);
+          await DesignUtils.delaySeconds(1);
           final postedRedeemRule = redeemRule.copyWith(id: uuid.v4());
           redeemRuleProviders.tryAddProvider(entity: postedRedeemRule);
           return postedRedeemRule;
@@ -565,7 +559,7 @@ class _OwnerDesignStoreScreenState
           final putRedeemRule = await putBlueprintTask.then(
             (value) {
               // TODO: PUT redeemRule
-              Utils.delaySeconds(2);
+              DesignUtils.delaySeconds(2);
               return redeemRule.copyWith();
             },
           );

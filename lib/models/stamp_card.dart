@@ -135,13 +135,6 @@ class StampCard extends BaseModel {
   }
 }
 
-class StampCardQr {
-  final String type = 'StampCardQr';
-  final StampCard stampCard;
-
-  StampCardQr({required this.stampCard});
-}
-
 class SimpleStampCardQr {
   final String type = 'SimpleStampCardQr';
   final String stampCardId;

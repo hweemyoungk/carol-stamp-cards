@@ -166,7 +166,7 @@ class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
     if (blueprintProvider == null) {
       // Fetch Blueprint
       // apis.getBlueprint(blueprintId: stampCard.blueprintId,);
-      await Utils.delaySeconds(1);
+      await DesignUtils.delaySeconds(1);
       blueprint = genDummyBlueprints(
         numBlueprints: 1,
         storeId: stampCard.storeId,

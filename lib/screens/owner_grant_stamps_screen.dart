@@ -46,8 +46,8 @@ class _OwnerGrantStampsScreenState
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Container(
-                  margin: Utils.basicWidgetEdgeInsets(),
-                  padding: Utils.basicWidgetEdgeInsets(),
+                  margin: DesignUtils.basicWidgetEdgeInsets(),
+                  padding: DesignUtils.basicWidgetEdgeInsets(),
                   decoration: BoxDecoration(
                     border: Border.all(width: 2),
                     shape: BoxShape.rectangle,
@@ -56,7 +56,7 @@ class _OwnerGrantStampsScreenState
                   child: Column(
                     children: [
                       Padding(
-                        padding: Utils.basicWidgetEdgeInsets(),
+                        padding: DesignUtils.basicWidgetEdgeInsets(),
                         child: Text(
                           widget.blueprint.displayName,
                           style: Theme.of(context)
@@ -76,7 +76,7 @@ class _OwnerGrantStampsScreenState
                   ),
                 ),
                 Padding(
-                  padding: Utils.basicWidgetEdgeInsets(),
+                  padding: DesignUtils.basicWidgetEdgeInsets(),
                   child: Column(
                     children: [
                       SizedBox(
@@ -197,8 +197,8 @@ class _OwnerGrantStampsScreenState
     //   stampCardId: widget.stampCard.id,
     //   numGrant: _numGrant,
     // );
-    final isSuccessful =
-        await Utils.delaySeconds(2).then((value) => random.nextDouble() < 0.8);
+    final isSuccessful = await DesignUtils.delaySeconds(2)
+        .then((value) => random.nextDouble() < 0.8);
 
     if (isSuccessful) {
       Carol.showTextSnackBar(text: 'Grant successful!');

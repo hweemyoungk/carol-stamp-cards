@@ -1,5 +1,6 @@
 import 'package:carol/data/dummy_data.dart';
 import 'package:carol/models/stamp_card.dart';
+import 'package:carol/params.dart';
 import 'package:carol/providers/stamp_card_blueprint_provider.dart';
 import 'package:carol/providers/stamp_card_provider.dart';
 import 'package:carol/providers/stamp_cards_init_loaded_provider.dart';

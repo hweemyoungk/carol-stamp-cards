@@ -114,18 +114,18 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
             width: double.infinity,
           );
     final Widget googleMap = Padding(
-      padding: Utils.basicWidgetEdgeInsets(),
+      padding: DesignUtils.basicWidgetEdgeInsets(),
       child: const Text('Here comes google map. (Click to open external app)'),
     );
     final phone = Row(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         Padding(
-          padding: Utils.basicWidgetEdgeInsets(),
+          padding: DesignUtils.basicWidgetEdgeInsets(),
           child: const Icon(Icons.phone),
         ),
         Padding(
-          padding: Utils.basicWidgetEdgeInsets(),
+          padding: DesignUtils.basicWidgetEdgeInsets(),
           child: Text(
             store.phone,
             style: Theme.of(context).textTheme.bodyLarge,
@@ -137,11 +137,11 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         Padding(
-          padding: Utils.basicWidgetEdgeInsets(),
+          padding: DesignUtils.basicWidgetEdgeInsets(),
           child: const Icon(Icons.home),
         ),
         Padding(
-          padding: Utils.basicWidgetEdgeInsets(),
+          padding: DesignUtils.basicWidgetEdgeInsets(),
           child: Text(
             store.address,
             style: Theme.of(context).textTheme.bodyLarge,
@@ -150,11 +150,11 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       ],
     );
     final Widget description = Padding(
-      padding: Utils.basicWidgetEdgeInsets(),
+      padding: DesignUtils.basicWidgetEdgeInsets(),
       child: Text(store.description),
     );
     final storeName = Padding(
-      padding: Utils.basicWidgetEdgeInsets(),
+      padding: DesignUtils.basicWidgetEdgeInsets(),
       child: Text(
         store.displayName,
         style: Theme.of(context)
@@ -183,17 +183,17 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     final bpsExplorer = Column(
       children: [
         Padding(
-          padding: Utils.basicWidgetEdgeInsets(),
+          padding: DesignUtils.basicWidgetEdgeInsets(),
           child: bpsListTitle,
         ),
         !_blueprintsInitLoaded
             ? Padding(
-                padding: Utils.basicWidgetEdgeInsets(5),
+                padding: DesignUtils.basicWidgetEdgeInsets(5),
                 child: const CircularProgressIndicator(),
               )
             : blueprintsToDisplay.isEmpty
                 ? Padding(
-                    padding: Utils.basicWidgetEdgeInsets(),
+                    padding: DesignUtils.basicWidgetEdgeInsets(),
                     child: const Text('No publishing cards!'),
                   )
                 : ListView.builder(
@@ -312,7 +312,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
           ),
           Container(
             color: Theme.of(context).colorScheme.secondary,
-            padding: Utils.basicWidgetEdgeInsets(),
+            padding: DesignUtils.basicWidgetEdgeInsets(),
             child: mainContent,
           ),
         ],
@@ -333,7 +333,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         builder: (ctx, constraints) {
           return Container(
             alignment: Alignment.center,
-            margin: Utils.basicScreenEdgeInsets(ctx, constraints, 0),
+            margin: DesignUtils.basicScreenEdgeInsets(ctx, constraints, 0),
             child: SizedBox(
               height: double.infinity,
               width: double.infinity,

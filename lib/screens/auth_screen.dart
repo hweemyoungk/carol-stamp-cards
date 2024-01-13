@@ -1,14 +1,20 @@
+import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
-import 'package:carol/data/dummy_data.dart';
+import 'package:carol/apis/auth_apis.dart';
+import 'package:carol/apis/customer_apis_dummy.dart' as customerApisDummy;
+import 'package:carol/apis/utils.dart';
+import 'package:carol/main.dart';
 import 'package:carol/models/user.dart';
-import 'package:carol/providers/stamp_cards_init_loaded_provider.dart';
-import 'package:carol/providers/stamp_cards_provider.dart';
-import 'package:carol/providers/store_provider.dart';
-import 'package:carol/screens/dashboard_screen.dart';
+import 'package:carol/params.dart';
+import 'package:carol/providers/auth_status_provider.dart';
+import 'package:carol/providers/auto_sign_in_enabled_provider.dart';
 import 'package:carol/utils.dart';
+import 'package:carol/widgets/common/circular_progress_indicator_in_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pkce/pkce.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthScreen extends ConsumerStatefulWidget {
@@ -19,13 +25,7 @@ class AuthScreen extends ConsumerStatefulWidget {
 }
 
 class _AuthScreenState extends ConsumerState<AuthScreen> {
-  final _formKey = GlobalKey<FormState>();
-  var _isAutoSigningIn = true;
-  var _isLogin = true;
-  var _isAuthenticating = false;
-  var _enteredEmail = '';
-  var _enteredPassword = '';
-  var _enteredUsername = '';
+  bool _isAutoSigningIn = true;
   File? _pickedImageFile;
 
   @override
@@ -36,31 +36,178 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
   Future<void> tryAutoSignIn() async {
     // 1. Get stored credential
-    // Obtain shared preferences.
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final userCredential = prefs.getString('userCredential');
+
+    // 2. Validate credential
     if (userCredential == null) {
       if (mounted) {
         setState(() {
           _isAutoSigningIn = false;
         });
       }
+      return;
     }
-    // TODO: Implement tryAutoSignIn
-    // 2. Validate credential
+
+    final oidc = json.decode(userCredential);
+    final secondsSinceEpoch = getCurrentTimestampSeconds();
+
+    final refreshTokenMsg = validateRefreshToken(
+      oidc,
+      secondsSinceEpoch: secondsSinceEpoch,
+    );
+    if (refreshTokenMsg != null) {
+      Carol.showTextSnackBar(
+        text: 'Sign in again: $refreshTokenMsg',
+        level: SnackBarLevel.warn,
+      );
+      if (mounted) {
+        setState(() {
+          _isAutoSigningIn = false;
+        });
+      }
+      return;
+    }
+
     // 3. Refresh to latest credential
-    // 4. Get User and store
-    // 5. Push replacement to DashboardScreen
+    final refreshToken = oidc['refresh_token'] as String;
+    try {
+      final res = await httpPost(
+        tokenEndpoint,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
+        },
+        body: {
+          'grant_type': 'refresh_token',
+          'refresh_token': refreshToken,
+          'client_id': clientId,
+        },
+      );
+
+      final oidc = json.decode(res.body);
+
+      // Verify OIDC token
+      final invalidOidcMsgs = validateOidc(oidc);
+      if (invalidOidcMsgs != null) {
+        // Invalid OIDC token
+        prefs.remove('userCredential');
+        Carol.showTextSnackBar(
+          text:
+              'Failed to auto sign in. Please sign in manually.${invalidOidcMsgs.fold('\n- ', (prev, cur) => '$prev\n- $cur')}',
+          level: SnackBarLevel.error,
+        );
+        // Pop all
+        if (mounted) {
+          Navigator.of(context).popUntil(ModalRoute.withName('/auth'));
+        }
+        return;
+      }
+
+      // Store credential
+      // TEST: stale refresh token
+      // final staleOidc = getStaleRefreshOidc(oidc);
+      // prefs.setString('userCredential', json.encode(staleOidc));
+
+      prefs.setString('userCredential', res.body);
+
+      // TODO: Implement
+      // 4. Get User and store
+
+      // 5. Navigate to DashboardScreen
+      setState(() {
+        _isAutoSigningIn = false;
+      });
+    } on Exception catch (e) {
+      Carol.showTextSnackBar(
+        text: e.toString(),
+        seconds: 10,
+        level: SnackBarLevel.error,
+      );
+      return;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final authStatus = ref.watch(authStatusProvider);
+    final isAutoSignInEnabled = ref.watch(autoSignInEnabledProvider);
+    final autoSignInSection = Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Padding(
+          padding: DesignUtils.basicWidgetEdgeInsets(),
+          child: Text(
+            'Remember me',
+            style: Theme.of(context).textTheme.labelLarge!.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+          ),
+        ),
+        // const SizedBox(width: 10),
+        Switch(
+          value: isAutoSignInEnabled,
+          onChanged: _isAutoSigningIn || authStatus == AuthStatus.authenticating
+              ? null
+              : (value) {
+                  setState(() {
+                    ref.read(autoSignInEnabledProvider.notifier).set(value);
+                  });
+                },
+        ),
+      ],
+    );
+    final ElevatedButton authButton;
+    final authButtonStyle = ElevatedButton.styleFrom(
+      disabledBackgroundColor: Theme.of(context).colorScheme.primaryContainer,
+      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+    );
+    if (_isAutoSigningIn) {
+      authButton = ElevatedButton(
+        onPressed: null,
+        child: Text(
+          'Please wait...',
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onPrimaryContainer,
+          ),
+        ),
+      );
+    } else if (authStatus == AuthStatus.unauthenticated) {
+      authButton = ElevatedButton(
+        onPressed: _onPressSignIn,
+        style: authButtonStyle,
+        child: Text(
+          'Sign In / Up',
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onPrimaryContainer,
+          ),
+        ),
+      );
+    } else if (authStatus == AuthStatus.authenticating) {
+      authButton = ElevatedButton(
+        onPressed: null,
+        style: authButtonStyle,
+        child: CircularProgressIndicatorInButton(
+          color: Theme.of(context).colorScheme.onPrimaryContainer,
+        ),
+      );
+    } else {
+      // authStatus == AuthStatus.authenticated
+      authButton = ElevatedButton(
+        onPressed: null,
+        style: authButtonStyle,
+        child: Text(
+          'You are signed in, ${currentUser.displayName}!',
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onPrimaryContainer,
+          ),
+        ),
+      );
+    }
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.primary,
       body: Center(
         child: SingleChildScrollView(
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
                 margin: const EdgeInsets.only(
@@ -81,102 +228,50 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     )
                   : Card(
                       margin: const EdgeInsets.all(20),
-                      child: SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
                         child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Form(
-                            key: _formKey,
+                          padding: DesignUtils.basicWidgetEdgeInsets(2),
+                          child: SingleChildScrollView(
                             child: Column(
-                              mainAxisSize: MainAxisSize.min,
                               children: [
-                                // if (!_isLogin)
-                                //   UserImagePicker(
-                                //     onPickImage: (pickedImageFile) {
-                                //       _pickedImageFile = pickedImageFile;
-                                //     },
-                                //   ),
-                                TextFormField(
-                                  decoration: const InputDecoration(
-                                    labelText: 'Email Address',
+                                Padding(
+                                  padding: DesignUtils.basicWidgetEdgeInsets(),
+                                  child: Column(
+                                    children: [
+                                      Text(
+                                        'Welcome to',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleLarge!
+                                            .copyWith(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .onSurface,
+                                            ),
+                                      ),
+                                      Text(
+                                        'Carol Cards',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .displayMedium!
+                                            .copyWith(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .onSurface,
+                                            ),
+                                      ),
+                                    ],
                                   ),
-                                  keyboardType: TextInputType.emailAddress,
-                                  autocorrect: false,
-                                  textCapitalization: TextCapitalization.none,
-                                  validator: (value) {
-                                    final emailRegex = RegExp(
-                                        r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$');
-                                    if (value == null ||
-                                        value.trim().isEmpty ||
-                                        !emailRegex.hasMatch(value)) {
-                                      return 'Invalid email address';
-                                    }
-                                    return null;
-                                  },
-                                  onSaved: (newValue) {
-                                    _enteredEmail = newValue!;
-                                  },
                                 ),
-                                if (!_isLogin)
-                                  TextFormField(
-                                    decoration: const InputDecoration(
-                                      labelText: 'Username',
-                                    ),
-                                    enableSuggestions: false,
-                                    keyboardType: TextInputType.emailAddress,
-                                    autocorrect: false,
-                                    textCapitalization: TextCapitalization.none,
-                                    validator: (value) {
-                                      if (value == null ||
-                                          value.trim().length < 4) {
-                                        return 'Must be 4+ chars long';
-                                      }
-                                      return null;
-                                    },
-                                    onSaved: (newValue) {
-                                      _enteredUsername = newValue!;
-                                    },
+                                Padding(
+                                  padding: DesignUtils.basicWidgetEdgeInsets(),
+                                  child: Column(
+                                    children: [
+                                      authButton,
+                                      autoSignInSection,
+                                    ],
                                   ),
-                                TextFormField(
-                                  decoration: const InputDecoration(
-                                    labelText: 'Password',
-                                  ),
-                                  obscureText: true,
-                                  validator: (value) {
-                                    if (value == null ||
-                                        value.trim().length < 6) {
-                                      return 'Must be 6+ characters long';
-                                    }
-                                    return null;
-                                  },
-                                  onSaved: (newValue) {
-                                    _enteredPassword = newValue!;
-                                  },
-                                ),
-                                const SizedBox(height: 12),
-                                if (_isAuthenticating)
-                                  const CircularProgressIndicator(),
-                                if (!_isAuthenticating)
-                                  ElevatedButton(
-                                    onPressed: _isLogin
-                                        ? _onPressSignIn
-                                        : _onPressSignUp,
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Theme.of(context)
-                                          .colorScheme
-                                          .primaryContainer,
-                                    ),
-                                    child:
-                                        Text(_isLogin ? 'Sign In' : 'Sign Up'),
-                                  ),
-                                TextButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      _isLogin = !_isLogin;
-                                    });
-                                  },
-                                  child: Text(_isLogin
-                                      ? 'Create an account'
-                                      : 'I already have an account'),
                                 ),
                               ],
                             ),
@@ -191,137 +286,79 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     );
   }
 
-  /* void _submit() async {
-    final isValid = _formKey.currentState!.validate();
-    if (!isValid) {
-      return;
-    }
-
-    if (!_isLogin && _pickedImageFile == null) {
-      return;
-    }
-
-    _formKey.currentState!.save();
-    // print('Email: $_enteredEmail\tPassword: $_enteredPassword');
-
-    setState(() {
-      _isAuthenticating = true;
-    });
-    try {
-      if (_isLogin) {
-        final userCredential = await _firebase.signInWithEmailAndPassword(
-          email: _enteredEmail,
-          password: _enteredPassword,
-        );
-        print(userCredential);
-        // invalid-email:
-        // user-disabled:
-        // user-not-found:
-        // wrong-password:
-      } else {
-        // Sign Up mode
-        final userCredential = await _firebase.createUserWithEmailAndPassword(
-          email: _enteredEmail,
-          password: _enteredPassword,
-        );
-        final storageRef = FirebaseStorage.instance
-            .ref()
-            .child('user_images')
-            .child('${userCredential.user!.uid}.jpg');
-
-        await storageRef.putFile(_pickedImageFile!);
-        final imageUrl = await storageRef.getDownloadURL();
-
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(userCredential.user!.uid)
-            .set({
-          'username': _enteredUsername,
-          'email': _enteredEmail,
-          'image_url': imageUrl,
-        });
-      }
-      // email-already-in-use:
-      // invalid-email:
-      // operation-not-allowed:
-      // weak-password:
-    } on FirebaseAuthException catch (error) {
-      if (mounted) {
-        setState(() {
-          _isAuthenticating = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(error.message ?? 'Authentication failed')));
-      }
-    }
-  } */
-
-  void _onPressSignUp() {}
-
   Future<void> _onPressSignIn() async {
-    // TODO Implement
-    // await apis.signInWithPassword(email: _enteredEmail, password: _enteredPassword);
+    final authStatusNotifier = ref.read(authStatusProvider.notifier);
+    authStatusNotifier.set(AuthStatus.authenticating);
+
+    // Generate state
+    final state = genState();
+    // Locally store state
+    originalState = state;
+
+    // This is a stupid idea...
+    // Send state to cache
+    // final urlSendStateToCache = Uri.http(aliciaAuthHostname, '/state');
+    // final res = await httpPost(
+    //   urlSendStateToCache,
+    //   headers: {
+    //     "Content-Type": "application/json;charset=utf-8",
+    //   },
+    //   body: json.encode({
+    //     "state": originalState,
+    //   }),
+    // );
+
+    // Generate code challenge and code verifier
+    final pkcePair = PkcePair.generate();
+    originalPkcePair = pkcePair;
+
+    // Authenticate
+    final url = Uri.http(
+      keycloakHostname,
+      '/realms/$realmName/protocol/openid-connect/auth',
+      {
+        'client_id': clientId,
+        'response_type': 'code',
+        'scope': 'openid',
+        'redirect_uri': redirectUri,
+        'state': state,
+        'code_challenge': pkcePair.codeChallenge,
+        'code_challenge_method': 'S256'
+      },
+    );
+    await launchInBrowserView(url);
 
     // Dummy
     // Set User
-    currentUser = await Utils.delaySeconds(1).then((value) => User(
-          id: uuid.v4(),
-          displayName: 'HMK',
-          profileImageUrl: 'assets/images/schnitzel-3279045_1280.jpg',
-        ));
+    currentUser = await DesignUtils.delaySeconds(1).then(
+      (value) => User(
+        id: uuid.v4(),
+        displayName: 'HMK',
+        profileImageUrl: 'assets/images/schnitzel-3279045_1280.jpg',
+      ),
+    );
 
-    // Load Init Entities
-    await _loadInitEntities();
-
-    // Next Screen
-    if (mounted) {
-      Navigator.of(context).pushReplacement(MaterialPageRoute(
-        builder: (context) => const DashboardScreen(),
-      ));
-    }
-  }
-
-  Future<void> _loadInitEntities() async {
-    // Landing page is CardsList, so init load Cards
-
-    final stampCardsInitLoadedNotifier =
+    // Load Init Entities: Landing page is CustomerScreen, so load Customer Cards and Stores
+    // TODO: disable dummy
+    /* final stampCardsInitLoadedNotifier =
         ref.read(stampCardsInitLoadedProvider.notifier);
     final stampCardsNotifier = ref.read(stampCardsProvider.notifier);
+    final customerStoresInitLoadedNotifier =
+        ref.read(customerStoresInitLoadedProvider.notifier);
+    final customerStoresNotifier = ref.read(customerStoresProvider.notifier);
+    customerApis.initLoadCustomerEntities(
+      customerStoresInitLoadedNotifier: customerStoresInitLoadedNotifier,
+      customerStoresNotifier: customerStoresNotifier,
+      stampCardsInitLoadedNotifier: stampCardsInitLoadedNotifier,
+      stampCardsNotifier: stampCardsNotifier,
+    ); */
+    await customerApisDummy.initLoadCustomerEntities(ref);
 
-    // TODO: Implement
-    // Real: Bottom up
-    // Cards
-    // Blueprints and RedeemRules
-    // Stores
-
-    // Dummy: Top down
-    await Utils.delaySeconds(2);
-    // Stores
-    final stores = genDummyCustomerStores(
-      numStores: 2,
-      ownerId: currentUser.id,
-    );
-    // Blueprints and RedeemRules
-    stores.forEach((store) {
-      final storeProvider =
-          customerStoreProviders.tryGetProviderById(id: store.id)!;
-      final storeNotifier = ref.read(storeProvider.notifier);
-      final blueprints = genDummyBlueprints(
-        numBlueprints: 2,
-        storeId: store.id,
-      );
-      storeNotifier.set(entity: store.copyWith(blueprints: blueprints));
-
-      blueprints.forEach((blueprint) {
-        // StampCards
-        final stampCards = genDummyStampCards(
-          blueprint: blueprint,
-          customerId: currentUser.id,
-          numCards: 1,
-        );
-        stampCardsNotifier.appendAll(stampCards);
-      });
-    });
-    stampCardsInitLoadedNotifier.set(true);
+    // Next Screen
+    // if (mounted) {
+    //   Navigator.of(context).push(MaterialPageRoute(
+    //     builder: (context) => const DashboardScreen(),
+    //   ));
+    // }
   }
 }

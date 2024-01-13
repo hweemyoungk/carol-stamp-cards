@@ -1,5 +1,6 @@
 import 'package:carol/data/dummy_data.dart';
 import 'package:carol/models/store.dart';
+import 'package:carol/params.dart';
 import 'package:carol/providers/active_drawer_item_provider.dart';
 import 'package:carol/providers/entity_provider.dart';
 import 'package:carol/providers/store_provider.dart';

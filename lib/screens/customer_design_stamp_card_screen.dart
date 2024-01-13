@@ -48,7 +48,7 @@ class _CustomerDesignStampCardScreenState
                   icon: const Icon(Icons.check),
                 )
               : Padding(
-                  padding: Utils.basicWidgetEdgeInsets(),
+                  padding: DesignUtils.basicWidgetEdgeInsets(),
                   child: const SizedBox(
                     width: 16,
                     height: 16,
@@ -65,7 +65,7 @@ class _CustomerDesignStampCardScreenState
                 child: Column(
                   children: [
                     Padding(
-                      padding: Utils.basicWidgetEdgeInsets(),
+                      padding: DesignUtils.basicWidgetEdgeInsets(),
                       child: TextFormField(
                         initialValue: widget.stampCard.displayName,
                         style: Theme.of(context).textTheme.bodyLarge!.copyWith(
@@ -88,7 +88,7 @@ class _CustomerDesignStampCardScreenState
                       ),
                     ),
                     Padding(
-                      padding: Utils.basicWidgetEdgeInsets(),
+                      padding: DesignUtils.basicWidgetEdgeInsets(),
                       child: Container(
                         width: double.infinity,
                         alignment: Alignment.centerLeft,
@@ -154,7 +154,7 @@ class _CustomerDesignStampCardScreenState
     final stampCardNotifier = ref.read(stampCardProvider.notifier);
 
     // TODO: PUT StampCard
-    await Utils.delaySeconds(1);
+    await DesignUtils.delaySeconds(1);
 
     final modifiedStampCard = widget.stampCard.copyWith(
       displayName: _displayName,

@@ -1,9 +1,10 @@
-import 'package:carol/apis.dart' as apis;
+import 'package:carol/apis/owner_apis.dart' as ownerApis;
 import 'package:carol/data/dummy_data.dart';
 import 'package:carol/main.dart';
 import 'package:carol/models/stamp_card.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/models/user.dart';
+import 'package:carol/params.dart';
 import 'package:carol/providers/entity_provider.dart';
 import 'package:carol/providers/stamp_card_provider.dart';
 import 'package:carol/providers/stamp_cards_provider.dart';
@@ -14,7 +15,6 @@ import 'package:carol/widgets/blueprint/blueprint_info.dart';
 import 'package:carol/widgets/common/circular_progress_indicator_in_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:transparent_image/transparent_image.dart';
 
 class BlueprintDialogScreen extends ConsumerStatefulWidget {
   const BlueprintDialogScreen({
@@ -101,7 +101,7 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
             children: [
               blueprintInfo,
               Padding(
-                padding: Utils.basicWidgetEdgeInsets(),
+                padding: DesignUtils.basicWidgetEdgeInsets(),
                 child: cardNameTextField,
               ),
               if (_unissuableAlerts != null) _unissuableAlerts!,
@@ -254,7 +254,7 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
           });
 
     // Assume another check
-    Future<bool> veryLongTask = Utils.delaySeconds(5).then((value) {
+    Future<bool> veryLongTask = DesignUtils.delaySeconds(5).then((value) {
       if (random.nextDouble() < 0.9) {
         return false;
       }
@@ -301,7 +301,7 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
     required String blueprintId,
   }) async {
     // TODO replace with http
-    await Utils.delaySeconds(2);
+    await DesignUtils.delaySeconds(2);
     return random.nextInt(3);
   }
 
@@ -331,7 +331,7 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
         });
       }
     }
-    await Utils.delaySeconds(1);
+    await DesignUtils.delaySeconds(1);
     if (mounted) {
       Navigator.of(context).pop();
     }
@@ -344,11 +344,11 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
     final stampCardsNotifier = ref.read(stampCardsProvider.notifier);
     // TODO post stampCard and receive location
     final stampCardDisplayName = cardNameTextField.controller!.text;
-    await Utils.delaySeconds(1);
+    await DesignUtils.delaySeconds(1);
     final String newStampCardId = uuid.v4();
 
     // TODO get stampCard
-    await Utils.delaySeconds(1);
+    await DesignUtils.delaySeconds(1);
     final newStampCard = StampCard(
       id: newStampCardId,
       customerId: user.id,
@@ -393,7 +393,7 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
       // TODO Fetch redeemRules
       // Await: Fetch redeemRules first
       // apis.listRedeemRules(blueprintId: blueprint.id);
-      await apis.listDummyRedeemRules(blueprint: blueprint).then((value) {
+      await ownerApis.listDummyRedeemRules(blueprint: blueprint).then((value) {
         final fetchedBlueprint = blueprint.copyWith(redeemRules: value);
         blueprintNotifier.set(entity: fetchedBlueprint);
         blueprint = fetchedBlueprint;

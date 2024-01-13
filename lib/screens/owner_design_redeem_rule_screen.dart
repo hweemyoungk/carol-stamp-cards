@@ -72,7 +72,7 @@ class _OwnerDesignRedeemRuleScreenState
               child: Column(
                 children: [
                   Padding(
-                    padding: Utils.basicWidgetEdgeInsets(),
+                    padding: DesignUtils.basicWidgetEdgeInsets(),
                     child: TextFormField(
                       initialValue: widget.redeemRule?.displayName,
                       style: Theme.of(context).textTheme.bodyLarge!.copyWith(
@@ -95,7 +95,7 @@ class _OwnerDesignRedeemRuleScreenState
                     ),
                   ),
                   Padding(
-                    padding: Utils.basicWidgetEdgeInsets(),
+                    padding: DesignUtils.basicWidgetEdgeInsets(),
                     child: TextFormField(
                       initialValue: widget.redeemRule?.description,
                       keyboardType: TextInputType.multiline,
@@ -121,7 +121,7 @@ class _OwnerDesignRedeemRuleScreenState
                   ),
                   // late int _consumes; // Should't be modified
                   Padding(
-                    padding: Utils.basicWidgetEdgeInsets(),
+                    padding: DesignUtils.basicWidgetEdgeInsets(),
                     child: Container(
                       width: double.infinity,
                       alignment: Alignment.centerLeft,

@@ -16,7 +16,7 @@ class _StoresExplorerState extends State<StoresExplorer> {
       builder: (ctx, constraints) {
         return Container(
           alignment: Alignment.center,
-          margin: Utils.basicScreenEdgeInsets(ctx, constraints),
+          margin: DesignUtils.basicScreenEdgeInsets(ctx, constraints),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
             // color: Theme.of(context).colorScheme.primary,

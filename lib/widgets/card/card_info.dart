@@ -30,7 +30,7 @@ class CardInfo extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             Padding(
-              padding: Utils.basicWidgetEdgeInsets(),
+              padding: DesignUtils.basicWidgetEdgeInsets(),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -48,7 +48,7 @@ class CardInfo extends ConsumerWidget {
               ),
             ),
             Padding(
-              padding: Utils.basicWidgetEdgeInsets(),
+              padding: DesignUtils.basicWidgetEdgeInsets(),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
