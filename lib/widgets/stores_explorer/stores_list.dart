@@ -1,6 +1,5 @@
 import 'package:carol/data/dummy_data.dart';
 import 'package:carol/models/store.dart';
-import 'package:carol/params.dart';
 import 'package:carol/providers/active_drawer_item_provider.dart';
 import 'package:carol/providers/entity_provider.dart';
 import 'package:carol/providers/store_provider.dart';
@@ -80,14 +79,14 @@ class _StoresListState extends ConsumerState<StoresList> {
   //     final value = await loadStores(numStores: numStores);
   //     storesNotifier.appendAll(value);
   //   } on Exception catch (e) {
-  //     // TODO
   //   }
   // }
 
-  Future<List<Store>> loadStores({required int numStores}) async {
-    await Future.delayed(const Duration(seconds: 1));
-    return genDummyStores(numStores: numStores, ownerId: currentUser.id);
-  }
+  // Future<List<Store>> loadStores({required int numStores}) async {
+  //   final currentUser = ref.read(currentUserProvider)!;
+  //   await Future.delayed(const Duration(seconds: 1));
+  //   return genDummyStores(numStores: numStores, ownerId: currentUser.id);
+  // }
 
   // Future<void> _onPressLoadMore() async {
   //   await loadMore();

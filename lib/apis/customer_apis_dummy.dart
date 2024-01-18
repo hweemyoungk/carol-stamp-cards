@@ -1,6 +1,6 @@
 import 'package:carol/data/dummy_data.dart';
 import 'package:carol/models/store.dart';
-import 'package:carol/params.dart';
+import 'package:carol/providers/current_user_provider.dart';
 import 'package:carol/providers/stamp_cards_init_loaded_provider.dart';
 import 'package:carol/providers/stamp_cards_provider.dart';
 import 'package:carol/providers/store_provider.dart';
@@ -9,7 +9,8 @@ import 'package:carol/providers/stores_provider.dart';
 import 'package:carol/utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-Future<void> initLoadCustomerEntities(WidgetRef ref) async {
+Future<void> reloadCustomerEntities(WidgetRef ref) async {
+  final currentUser = ref.read(currentUserProvider)!;
   final stampCardsInitLoadedNotifier =
       ref.read(stampCardsInitLoadedProvider.notifier);
   final stampCardsNotifier = ref.read(stampCardsProvider.notifier);
@@ -52,13 +53,17 @@ Future<void> initLoadCustomerEntities(WidgetRef ref) async {
   stampCardsInitLoadedNotifier.set(true);
 }
 
-Future<List<Store>> loadStores(
-    {required String userId, required int numStores}) async {
+Future<List<Store>> loadStores({
+  required String userId,
+  required int numStores,
+  String? ownerId,
+}) async {
   await Future.delayed(const Duration(seconds: 1));
-  return genDummyStores(numStores: numStores, ownerId: currentUser.id);
+  return genDummyStores(numStores: numStores, ownerId: ownerId);
 }
 
 Future<void> dummyLoadCardsAndStores(WidgetRef ref) async {
+  final currentUser = ref.read(currentUserProvider)!;
   final stampCardsInitLoadedNotifier =
       ref.read(stampCardsInitLoadedProvider.notifier);
   final stampCardsNotifier = ref.read(stampCardsProvider.notifier);

@@ -1,6 +1,3 @@
-import 'package:carol/data/dummy_data.dart';
-import 'package:carol/models/stamp_card.dart';
-import 'package:carol/params.dart';
 import 'package:carol/providers/stamp_card_blueprint_provider.dart';
 import 'package:carol/providers/stamp_card_provider.dart';
 import 'package:carol/providers/stamp_cards_init_loaded_provider.dart';
@@ -20,7 +17,6 @@ class CardsList extends ConsumerStatefulWidget {
 
 class _CardsListState extends ConsumerState<CardsList> {
   final ScrollController _controller = ScrollController();
-  // final List<StampCard> _stampCards = [];
 
   @override
   void initState() {
@@ -68,11 +64,11 @@ class _CardsListState extends ConsumerState<CardsList> {
           );
   }
 
-  void loadFromEntityProviders() {
-    final loadedStampCards =
-        stampCardProviders.providers.entries.map((e) => ref.read(e.value));
-    ref.read(stampCardsProvider.notifier).appendAll(loadedStampCards);
-  }
+  // void loadFromEntityProviders() {
+  //   final loadedStampCards =
+  //       stampCardProviders.providers.entries.map((e) => ref.read(e.value));
+  //   ref.read(stampCardsProvider.notifier).appendAll(loadedStampCards);
+  // }
 
   // bool _handleScrollNotification(ScrollNotification notification) {
   //   if (notification is ScrollEndNotification) {
@@ -101,13 +97,14 @@ class _CardsListState extends ConsumerState<CardsList> {
   //   }
   // }
 
-  Future<List<StampCard>> loadStampCards() async {
-    await Future.delayed(const Duration(seconds: 2));
-    return genDummyStampCards(
-      numCards: 10,
-      customerId: currentUser.id,
-    );
-  }
+  // Future<List<StampCard>> loadStampCards() async {
+  //   final currentUser = ref.read(currentUserProvider)!;
+  //   await Future.delayed(const Duration(seconds: 2));
+  //   return genDummyStampCards(
+  //     numCards: 10,
+  //     customerId: currentUser.id,
+  //   );
+  // }
 
   // Future<void> _onPressLoadMore() async {
   //   await loadMore();

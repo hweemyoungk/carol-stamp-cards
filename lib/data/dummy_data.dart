@@ -49,7 +49,6 @@ List<StampCardBlueprint> genDummyBlueprints({
       numMaxRedeems: random.nextInt(4), // 0~3, where 0 is infinite
       numMaxIssues: random.nextInt(3) + 1, // 1~3
       storeId: storeId ?? uuid.v4(),
-      icon: random.nextDouble() < 0.5 ? Icons.breakfast_dining : null,
       bgImageUrl: random.nextDouble() < 1.0
           // ? 'https://cdn.pixabay.com/photo/2018/03/31/19/29/schnitzel-3279045_1280.jpg'
           ? 'assets/images/schnitzel-3279045_1280.jpg'
@@ -105,8 +104,11 @@ List<Store> genDummyStores({
       phone: '0212345678',
       lat: 37.29386,
       lng: 37.29386,
-      icon: Icons.bakery_dining,
       bgImageUrl: random.nextDouble() < 1.0
+          // ? 'https://cdn.pixabay.com/photo/2018/03/31/19/29/schnitzel-3279045_1280.jpg'
+          ? 'assets/images/schnitzel-3279045_1280.jpg'
+          : null,
+      profileImageUrl: random.nextDouble() < 1.0
           // ? 'https://cdn.pixabay.com/photo/2018/03/31/19/29/schnitzel-3279045_1280.jpg'
           ? 'assets/images/schnitzel-3279045_1280.jpg'
           : null,
@@ -165,7 +167,6 @@ List<StampCard> genDummyStampCards({
             // ? 'https://cdn.pixabay.com/photo/2018/03/31/19/29/schnitzel-3279045_1280.jpg'
             ? 'assets/images/schnitzel-3279045_1280.jpg'
             : null,
-        icon: random.nextDouble() < 0.1 ? Icons.breakfast_dining : null,
       );
       stampCardProviders.tryAddProvider(entity: stampCard);
       return stampCard;
@@ -188,7 +189,6 @@ List<RedeemRule> genDummySortedRedeemRules({
           // ? 'https://cdn.pixabay.com/photo/2018/03/31/19/29/schnitzel-3279045_1280.jpg'
           ? 'assets/images/schnitzel-3279045_1280.jpg'
           : null,
-      icon: random.nextDouble() < 0.5 ? Icons.cookie : null,
     );
     redeemRuleProviders.tryAddProvider(entity: redeemRule);
     return redeemRule;

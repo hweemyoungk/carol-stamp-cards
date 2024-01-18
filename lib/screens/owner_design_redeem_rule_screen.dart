@@ -194,7 +194,6 @@ class _OwnerDesignRedeemRuleScreenState
         displayName: _displayName,
         description: _description,
         consumes: _consumes,
-        icon: null,
         imageUrl: null,
         blueprintId: widget.blueprint?.id ?? '',
       );

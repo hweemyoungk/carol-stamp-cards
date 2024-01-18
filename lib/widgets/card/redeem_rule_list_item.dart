@@ -55,10 +55,6 @@ class _RedeemRuleListItemState extends ConsumerState<RedeemRuleListItem> {
         redeemRule.displayName,
         style: widget.style.copyWith(color: appliedColor),
       ),
-      trailing: Icon(
-        redeemRule.icon,
-        color: appliedColor,
-      ),
     );
   }
 }

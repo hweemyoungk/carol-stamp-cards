@@ -1,7 +1,7 @@
-import 'package:carol/data/dummy_data.dart';
+import 'package:carol/apis/owner_apis.dart' as owner_apis;
 import 'package:carol/main.dart';
 import 'package:carol/models/store.dart';
-import 'package:carol/params.dart';
+import 'package:carol/providers/current_user_provider.dart';
 import 'package:carol/providers/store_provider.dart';
 import 'package:carol/providers/stores_provider.dart';
 import 'package:carol/utils.dart';
@@ -273,6 +273,7 @@ class _OwnerDesignStoreScreenState
   }
 
   void _saveStore() async {
+    final currentUser = ref.read(currentUserProvider)!;
     final ownerStoresNotifier = ref.read(ownerStoresProvider.notifier);
 
     if (!_formKey.currentState!.validate()) {
@@ -285,37 +286,62 @@ class _OwnerDesignStoreScreenState
     _formKey.currentState!.save();
 
     if (widget.designMode == StoreDesignMode.create) {
-      // TODO POST Store
-      await DesignUtils.delaySeconds(2);
-      final location = uuid.v4();
-      final newStore = Store(
+      // POST Store
+      // await DesignUtils.delaySeconds(2);
+      // final location = uuid.v4();
+      final storeToPost = Store(
+        id: '',
         address: _address,
         description: _description,
         displayName: _displayName,
-        id: location,
         lat: _lat,
         lng: _lng,
         ownerId: currentUser.id,
         phone: _phone,
         zipcode: _zipcode,
         bgImageUrl: null,
-        icon: null,
         profileImageUrl: null,
       );
+      final newId = await owner_apis.postStore(store: storeToPost);
+
+      // Get Store
+      // final newStore = Store(
+      //   address: _address,
+      //   description: _description,
+      //   displayName: _displayName,
+      //   id: location,
+      //   lat: _lat,
+      //   lng: _lng,
+      //   ownerId: currentUser.id,
+      //   phone: _phone,
+      //   zipcode: _zipcode,
+      //   bgImageUrl: null,
+      //   profileImageUrl: null,
+      // );
+      final newStore = await owner_apis.getStore(id: newId);
+
       ownerStoreProviders.tryAddProvider(entity: newStore);
       ownerStoresNotifier.prepend(newStore);
-      Carol.showTextSnackBar(text: 'New store created!');
+      Carol.showTextSnackBar(
+        text: 'New store created!',
+        level: SnackBarLevel.success,
+      );
     } else {
+      // StoreDesignMode.modify
+
       final storeProvider =
           ownerStoreProviders.tryGetProviderById(id: widget.store!.id);
       if (storeProvider == null) {
-        Carol.showTextSnackBar(text: 'Error: Invalid Store');
+        Carol.showTextSnackBar(
+          text: 'Error: Invalid Store',
+          level: SnackBarLevel.error,
+          seconds: 10,
+        );
       }
       final storeNotifier = ref.read(storeProvider!.notifier);
 
-      // TODO PUT Store
-      await DesignUtils.delaySeconds(2);
-      final modifiedStore = widget.store!.copyWith(
+      // PUT Store
+      final storeToPut = widget.store!.copyWith(
         address: _address,
         description: _description,
         displayName: _displayName,
@@ -324,9 +350,30 @@ class _OwnerDesignStoreScreenState
         phone: _phone,
         zipcode: _zipcode,
       );
+      await owner_apis.putStore(
+        id: storeToPut.id,
+        store: storeToPut,
+      );
+
+      // Get Store
+      // await DesignUtils.delaySeconds(2);
+      // final modifiedStore = widget.store!.copyWith(
+      //   address: _address,
+      //   description: _description,
+      //   displayName: _displayName,
+      //   lat: _lat,
+      //   lng: _lng,
+      //   phone: _phone,
+      //   zipcode: _zipcode,
+      // );
+      final modifiedStore = await owner_apis.getStore(id: storeToPut.id);
+
       storeNotifier.set(entity: modifiedStore);
 
-      Carol.showTextSnackBar(text: 'Store modified!');
+      Carol.showTextSnackBar(
+        text: 'Store modified!',
+        level: SnackBarLevel.success,
+      );
     }
 
     if (mounted) {

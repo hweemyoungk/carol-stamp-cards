@@ -1,6 +1,9 @@
-import 'package:carol/data/dummy_data.dart';
-import 'package:carol/params.dart';
+import 'package:carol/apis/customer_apis.dart' as customer_apis;
+import 'package:carol/apis/owner_apis.dart';
 import 'package:carol/providers/active_drawer_item_provider.dart';
+import 'package:carol/providers/current_user_provider.dart';
+import 'package:carol/providers/stamp_cards_init_loaded_provider.dart';
+import 'package:carol/providers/stamp_cards_provider.dart';
 import 'package:carol/providers/store_provider.dart';
 import 'package:carol/providers/stores_init_loaded_provider.dart';
 import 'package:carol/providers/stores_provider.dart';
@@ -9,13 +12,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:transparent_image/transparent_image.dart';
 
-class MainDrawer extends StatelessWidget {
+class MainDrawer extends ConsumerWidget {
   const MainDrawer({
     super.key,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentUser = ref.watch(currentUserProvider)!;
     final avatar = ClipRRect(
       borderRadius: BorderRadius.circular(25.0),
       child: currentUser.profileImageUrl == null
@@ -132,14 +136,32 @@ class _DrawerItemState extends ConsumerState<DrawerItem> {
     );
   }
 
-  Future<void> _initLoadEntities() async {
-    if (widget.drawerItemEnum == DrawerItemEnum.owner &&
+  void _initLoadEntities() {
+    if (widget.drawerItemEnum == DrawerItemEnum.customer &&
+        !(ref.read(stampCardsInitLoadedProvider) &&
+            ref.read(customerStoresInitLoadedProvider))) {
+      final currentUser = ref.read(currentUserProvider)!;
+      final stampCardsInitLoadedNotifier =
+          ref.read(stampCardsInitLoadedProvider.notifier);
+      final stampCardsNotifier = ref.read(stampCardsProvider.notifier);
+      final customerStoresInitLoadedNotifier =
+          ref.read(customerStoresInitLoadedProvider.notifier);
+      final customerStoresNotifier = ref.read(customerStoresProvider.notifier);
+      customer_apis.reloadCustomerEntities(
+        currentUser: currentUser,
+        stampCardsInitLoadedNotifier: stampCardsInitLoadedNotifier,
+        stampCardsNotifier: stampCardsNotifier,
+        customerStoresInitLoadedNotifier: customerStoresInitLoadedNotifier,
+        customerStoresNotifier: customerStoresNotifier,
+      );
+    } else if (widget.drawerItemEnum == DrawerItemEnum.owner &&
         ref.read(ownerStoresInitLoadedProvider) == false) {
-      _loadOwnerStores();
+      _loadOwnerEntities();
     }
   }
 
-  Future<void> _loadOwnerStores() async {
+  Future<void> _loadOwnerEntities() async {
+    final currentUser = ref.read(currentUserProvider)!;
     final storesInitLoadedNotifier =
         ref.read(ownerStoresInitLoadedProvider.notifier);
     final storesNotifier = ref.read(ownerStoresProvider.notifier);
@@ -150,22 +172,21 @@ class _DrawerItemState extends ConsumerState<DrawerItem> {
       storesNotifier.appendAll(loadedStores);
       storesInitLoadedNotifier.set(true);
     } else {
-      // apis.listOwnerStores(ownerId: currentUser.id,);
-
-      // Dummy: Top down
-      await DesignUtils.delaySeconds(2);
-      // Stores
-      final stores = genDummyOwnerStores(
-        numStores: 2,
-        ownerId: currentUser.id,
-      );
-      // Blueprints
-      stores.forEach((store) {
-        final blueprints = genDummyBlueprints(
-          numBlueprints: 2,
-          storeId: store.id,
-        );
-      });
+      // // Dummy: Top down
+      // await DesignUtils.delaySeconds(2);
+      // // Stores
+      // final stores = genDummyOwnerStores(
+      //   numStores: 2,
+      //   ownerId: currentUser.id,
+      // );
+      // // Blueprints
+      // stores.forEach((store) {
+      //   final blueprints = genDummyBlueprints(
+      //     numBlueprints: 2,
+      //     storeId: store.id,
+      //   );
+      // });
+      final stores = await listStores(ownerId: currentUser.id);
       storesNotifier.appendAll(stores);
       storesInitLoadedNotifier.set(true);
     }

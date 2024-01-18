@@ -1,7 +1,7 @@
-import 'package:carol/data/dummy_data.dart';
+import 'package:carol/apis/customer_apis.dart' as customer_apis;
+import 'package:carol/apis/owner_apis.dart' as owner_apis;
 import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/models/store.dart';
-import 'package:carol/models/store_notice.dart';
 import 'package:carol/providers/active_drawer_item_provider.dart';
 import 'package:carol/providers/entity_provider.dart';
 import 'package:carol/providers/stamp_card_blueprint_provider.dart';
@@ -57,7 +57,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
 
     final storeNotifier = ref.read(widget.storeProvider.notifier);
 
-    loadBlueprints(
+    _loadBlueprints(
       numBps: 3,
       storeId: store.id,
     ).then((value) {
@@ -203,10 +203,6 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                     itemBuilder: (ctx, index) {
                       final blueprint = blueprintsToDisplay[index];
                       return ListTile(
-                        leading: Icon(
-                          blueprint.icon,
-                          color: Theme.of(context).colorScheme.onSecondary,
-                        ),
                         title: Text(
                           blueprint.displayName,
                           style: Theme.of(context).textTheme.bodyLarge,
@@ -356,27 +352,35 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     );
   }
 
-  Future<List<StampCardBlueprint>> loadBlueprints({
+  Future<List<StampCardBlueprint>> _loadBlueprints({
     required int numBps,
     required String storeId,
   }) async {
-    await Future.delayed(const Duration(seconds: 1));
-    return genDummyBlueprints(
-      numBlueprints: numBps,
-      storeId: storeId,
-    );
+    // await Future.delayed(const Duration(seconds: 1));
+    // return genDummyBlueprints(
+    //   numBlueprints: numBps,
+    //   storeId: storeId,
+    // );
+    if (_mode == StoreScreenMode.customer) {
+      final blueprints = await customer_apis.listBlueprints(storeId: storeId);
+      return blueprints.toList();
+    } else {
+      final blueprints = await owner_apis.listBlueprints(storeId: storeId);
+      return blueprints.toList();
+    }
   }
 
-  Future<List<StoreNotice>> loadNotices({
-    required int numNotices,
-    required String storeId,
-  }) async {
-    await Future.delayed(const Duration(seconds: 1));
-    return genDummyNotices(
-      numNotices: 5,
-      storeId: storeId,
-    );
-  }
+  // Skips in phase 1
+  // Future<List<StoreNotice>> loadNotices({
+  //   required int numNotices,
+  //   required String storeId,
+  // }) async {
+  //   await Future.delayed(const Duration(seconds: 1));
+  //   return genDummyNotices(
+  //     numNotices: 5,
+  //     storeId: storeId,
+  //   );
+  // }
 
   void _onPressModifyStore() {
     Navigator.of(context).push(MaterialPageRoute(
@@ -400,6 +404,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     ));
   }
 
+  // Skips in phase 1
   // void _onPressNewNotice() {}
 }
 

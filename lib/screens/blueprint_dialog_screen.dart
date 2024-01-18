@@ -1,10 +1,10 @@
-import 'package:carol/apis/owner_apis.dart' as ownerApis;
-import 'package:carol/data/dummy_data.dart';
+import 'package:carol/apis/customer_apis.dart' as customer_apis;
+import 'package:carol/apis/owner_apis.dart' as owner_apis;
 import 'package:carol/main.dart';
 import 'package:carol/models/stamp_card.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/models/user.dart';
-import 'package:carol/params.dart';
+import 'package:carol/providers/current_user_provider.dart';
 import 'package:carol/providers/entity_provider.dart';
 import 'package:carol/providers/stamp_card_provider.dart';
 import 'package:carol/providers/stamp_cards_provider.dart';
@@ -43,6 +43,7 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final currentUser = ref.watch(currentUserProvider)!;
     final blueprint = ref.watch(widget.blueprintProvider);
 
     final blueprintInfo = BlueprintInfo(
@@ -289,28 +290,19 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
     required User user,
     required StampCardBlueprint blueprint,
   }) async {
-    final numIssuedCards = await _getNumIssuedCards(
+    final numIssuedCards = await customer_apis.getNumIssuedCards(
       userId: user.id,
       blueprintId: blueprint.id,
     );
     return blueprint.numMaxIssues <= numIssuedCards;
   }
 
-  Future<int> _getNumIssuedCards({
-    required String userId,
-    required String blueprintId,
-  }) async {
-    // TODO replace with http
-    await DesignUtils.delaySeconds(2);
-    return random.nextInt(3);
-  }
-
   void _onPressIssue() async {
+    final currentUser = ref.read(currentUserProvider)!;
     final blueprint = ref.read(widget.blueprintProvider);
     if (mounted) {
       setState(() {
         _issueStatus = _IssueStatus.issuing;
-        // _issuing = true;
       });
     }
     final newStampCard = await issueCard(
@@ -342,37 +334,27 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
     required StampCardBlueprint blueprint,
   }) async {
     final stampCardsNotifier = ref.read(stampCardsProvider.notifier);
-    // TODO post stampCard and receive location
-    final stampCardDisplayName = cardNameTextField.controller!.text;
-    await DesignUtils.delaySeconds(1);
-    final String newStampCardId = uuid.v4();
 
-    // TODO get stampCard
-    await DesignUtils.delaySeconds(1);
-    final newStampCard = StampCard(
-      id: newStampCardId,
+    // Post StampCard and receive location
+    final stampCardDisplayName = cardNameTextField.controller!.text;
+    final stampCardToPost = StampCard.fromBlueprint(
+      id: '',
       customerId: user.id,
-      displayName: stampCardDisplayName,
-      expirationDate: blueprint.expirationDate,
-      isFavorite: false,
-      lastModifiedDate: DateTime.now(),
-      numCollectedStamps: 0,
-      numMaxStamps: blueprint.numMaxStamps,
-      numGoalStamps: blueprint.numMaxStamps,
-      numRedeemed: 0,
-      numMaxRedeems: blueprint.numMaxRedeems,
-      storeId: blueprint.storeId,
-      blueprintId: blueprint.id,
-      wasDiscarded: false,
-      wasUsedOut: false,
-      isInactive: false,
-      bgImageUrl: blueprint.bgImageUrl,
-      icon: blueprint.icon,
-    );
+      blueprint: blueprint,
+    ).copyWith(displayName: stampCardDisplayName);
+
+    final newStampCardId =
+        await customer_apis.postStampCard(stampCard: stampCardToPost);
+
+    // Get StampCard
+    final newStampCard = await customer_apis.getStampCard(id: newStampCardId);
     stampCardProviders.tryAddProvider(entity: newStampCard);
     stampCardsNotifier.prepend(newStampCard, sort: false);
 
-    Carol.showTextSnackBar(text: 'Your stamp card is ready!');
+    Carol.showTextSnackBar(
+      text: 'Your card is ready!',
+      level: SnackBarLevel.success,
+    );
     return newStampCard;
   }
 
@@ -390,14 +372,22 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
       setState(() {
         _isFetchingRedeemRules = true;
       });
-      // TODO Fetch redeemRules
+
       // Await: Fetch redeemRules first
-      // apis.listRedeemRules(blueprintId: blueprint.id);
-      await ownerApis.listDummyRedeemRules(blueprint: blueprint).then((value) {
-        final fetchedBlueprint = blueprint.copyWith(redeemRules: value);
-        blueprintNotifier.set(entity: fetchedBlueprint);
-        blueprint = fetchedBlueprint;
-      });
+      // await owner_apis.listDummyRedeemRules(blueprint: blueprint).then((value) {
+      //   final fetchedBlueprint = blueprint.copyWith(redeemRules: value);
+      //   blueprintNotifier.set(entity: fetchedBlueprint);
+      //   blueprint = fetchedBlueprint;
+      // });
+      final fetchedRedeemRules = await owner_apis.listRedeemRules(
+        blueprintId: blueprint.id,
+      );
+      final fetchedBlueprint = blueprint.copyWith(
+        redeemRules: fetchedRedeemRules,
+      );
+      blueprintNotifier.set(entity: fetchedBlueprint);
+      blueprint = fetchedBlueprint;
+
       if (mounted) {
         setState(() {
           _isFetchingRedeemRules = false;

@@ -1,6 +1,7 @@
-import 'dart:convert';
-
+import 'package:carol/params/auth.dart' as auth_params;
 import 'package:carol/utils.dart';
+import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
+import 'package:pkce/pkce.dart';
 
 const alphanumericChars =
     'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
@@ -11,6 +12,29 @@ String genAlphanumeric(int length) => String.fromCharCodes(Iterable.generate(
         .codeUnitAt(random.nextInt(alphanumericChars.length))));
 
 String genState({int length = 30}) => genAlphanumeric(length);
+
+Uri getTokenEndpoint() => Uri.http(
+      auth_params.keycloakHostname,
+      '/realms/${auth_params.realmName}/protocol/openid-connect/token',
+    );
+
+Uri getAuthEndpoint({
+  required String state,
+  required PkcePair pkcePair,
+}) =>
+    Uri.http(
+      auth_params.keycloakHostname,
+      '/realms/${auth_params.realmName}/protocol/openid-connect/auth',
+      {
+        'client_id': auth_params.clientId,
+        'response_type': 'code',
+        'scope': 'openid',
+        'redirect_uri': auth_params.redirectUri,
+        'state': state,
+        'code_challenge': pkcePair.codeChallenge,
+        'code_challenge_method': 'S256'
+      },
+    );
 
 List<String>? validateOidc(Map<String, dynamic> oidc) {
   final secondsSinceEpoch = getCurrentTimestampSeconds();
@@ -73,10 +97,11 @@ String? validateAccessToken(
     return 'Access token not found';
   }
   try {
-    final String accessToken = oidc['access_token'];
-    // final base64 = Base64Codec();
-    final accessTokenPayload = json.decode(String.fromCharCodes(
-        base64.decode(base64.normalize(accessToken.split('.')[1]))));
+    // final String accessToken = oidc['access_token'];
+    // final accessTokenPayload = json.decode(String.fromCharCodes(
+    //     base64.decode(base64.normalize(accessToken.split('.')[1]))));
+    final accessToken = JWT.decode(oidc['access_token']);
+    final accessTokenPayload = accessToken.payload;
     if (accessTokenPayload['exp'] < secondsSinceEpoch) {
       return 'Access token expired';
     }
@@ -94,9 +119,11 @@ String? validateIdToken(
     return 'ID token not found';
   }
   try {
-    final String idToken = oidc['id_token'];
-    final idTokenPayload = json.decode(String.fromCharCodes(
-        base64.decode(base64.normalize(idToken.split('.')[1]))));
+    // final String idToken = oidc['id_token'];
+    // final idTokenPayload = json.decode(String.fromCharCodes(
+    //     base64.decode(base64.normalize(idToken.split('.')[1]))));
+    final idToken = JWT.decode(oidc['id_token']);
+    final idTokenPayload = idToken.payload;
     if (idTokenPayload['exp'] < secondsSinceEpoch) {
       return 'ID token expired';
     }
@@ -114,9 +141,11 @@ String? validateRefreshToken(
     return 'Refresh token not found';
   }
   try {
-    final String refreshToken = oidc['refresh_token'];
-    final refreshTokenPayload = json.decode(String.fromCharCodes(
-        base64.decode(base64.normalize(refreshToken.split('.')[1]))));
+    // final String refreshToken = oidc['refresh_token'];
+    // final refreshTokenPayload = json.decode(String.fromCharCodes(
+    //     base64.decode(base64.normalize(refreshToken.split('.')[1]))));
+    final refreshToken = JWT.decode(oidc['refresh_token']);
+    final refreshTokenPayload = refreshToken.payload;
     if (refreshTokenPayload['exp'] < secondsSinceEpoch) {
       return 'Refresh token expired';
     }

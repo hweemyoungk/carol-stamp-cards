@@ -5,9 +5,12 @@ class EntityProviders<T extends BaseModel> {
   final Map<String, StateNotifierProvider<EntityStateNotifier<T>, T>>
       providers = {};
 
-  bool tryAddProvider({required T entity}) {
+  bool tryAddProvider({
+    required T entity,
+    bool overwrite = true,
+  }) {
     final provider = providers[entity.id];
-    if (provider != null) return false;
+    if (provider != null && !overwrite) return false;
     providers[entity.id] = StateNotifierProvider<EntityStateNotifier<T>, T>(
         (ref) => EntityStateNotifier<T>(entity: entity));
     return true;

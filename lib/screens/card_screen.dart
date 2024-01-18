@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:carol/apis/customer_apis.dart' as customer_apis;
 import 'package:carol/main.dart';
 import 'package:carol/models/stamp_card.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
@@ -284,18 +285,24 @@ class _CardScreenState extends ConsumerState<CardScreen> {
 
     final stampCard = ref.read(widget.stampCardProvider);
     final stampCardNotifier = ref.read(widget.stampCardProvider.notifier);
-    // TODO Implement
-    // apis.softDeleteStampCard(stampCardId: stampCard.id);
-    await DesignUtils.delaySeconds(2);
-    stampCardNotifier.set(
-        entity: stampCard.copyWith(
-      wasDiscarded: true,
-      isInactive: true,
-    ));
-    ScaffoldMessenger.of(Carol.materialKey.currentContext!)
-        .showSnackBar(const SnackBar(
-      content: Text('Deleted card!'),
-      duration: Duration(seconds: 3),
-    ));
+
+    // Soft delete StampCard
+    // await DesignUtils.delaySeconds(2);
+    // stampCardNotifier.set(
+    //   entity: stampCard.copyWith(
+    //     wasDiscarded: true,
+    //     isInactive: true,
+    //   ),
+    // );
+    await customer_apis.softDeleteStampCard(id: stampCard.id);
+
+    // Get StampCard
+    final deletedStampCard = await customer_apis.getStampCard(id: stampCard.id);
+    stampCardNotifier.set(entity: deletedStampCard);
+
+    Carol.showTextSnackBar(
+      text: 'Deleted card!',
+      level: SnackBarLevel.success,
+    );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:carol/apis/customer_apis.dart' as customer_apis;
 import 'package:carol/main.dart';
 import 'package:carol/models/stamp_card.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
@@ -153,15 +154,30 @@ class _CustomerDesignStampCardScreenState
         stampCardProviders.tryGetProviderById(id: widget.stampCard.id)!;
     final stampCardNotifier = ref.read(stampCardProvider.notifier);
 
-    // TODO: PUT StampCard
-    await DesignUtils.delaySeconds(1);
-
-    final modifiedStampCard = widget.stampCard.copyWith(
+    // PUT StampCard
+    // await DesignUtils.delaySeconds(1);
+    // final modifiedStampCard = widget.stampCard.copyWith(
+    //   displayName: _displayName,
+    //   numGoalStamps: _numGoalStamps,
+    // );
+    final stampCardToPut = widget.stampCard.copyWith(
       displayName: _displayName,
       numGoalStamps: _numGoalStamps,
     );
+    await customer_apis.putStampCard(
+      id: stampCardToPut.id,
+      stampCard: stampCardToPut,
+    );
+
+    // Get StampCard
+    final modifiedStampCard =
+        await customer_apis.getStampCard(id: stampCardToPut.id);
     stampCardNotifier.set(entity: modifiedStampCard);
-    Carol.showTextSnackBar(text: 'Card modified!');
+
+    Carol.showTextSnackBar(
+      text: 'Card modified!',
+      level: SnackBarLevel.success,
+    );
 
     if (mounted) {
       Navigator.of(context).pop();

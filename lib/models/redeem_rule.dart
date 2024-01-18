@@ -1,5 +1,4 @@
 import 'package:carol/models/base_model.dart';
-import 'package:carol/params.dart';
 import 'package:flutter/material.dart';
 
 class RedeemRule extends BaseModel {
@@ -7,7 +6,6 @@ class RedeemRule extends BaseModel {
   final String description;
   final int consumes;
   final String blueprintId;
-  final IconData? icon;
   final String? imageUrl;
 
   RedeemRule({
@@ -16,7 +14,6 @@ class RedeemRule extends BaseModel {
     required this.description,
     required this.consumes,
     required this.blueprintId,
-    this.icon,
     this.imageUrl,
   });
 
@@ -35,7 +32,6 @@ class RedeemRule extends BaseModel {
       description: description ?? this.description,
       consumes: consumes ?? this.consumes,
       blueprintId: blueprintId ?? this.blueprintId,
-      icon: icon ?? this.icon,
       imageUrl: imageUrl ?? this.imageUrl,
     );
   }
@@ -46,7 +42,7 @@ class RedeemRule extends BaseModel {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Params.stampIcon,
+              Icons.star,
               color: color,
               size: style.fontSize,
             ),
@@ -57,4 +53,21 @@ class RedeemRule extends BaseModel {
           ],
         ),
       );
+
+  RedeemRule.fromJson(Map<String, dynamic> json)
+      : displayName = json['displayName'] as String,
+        description = json['description'] as String,
+        consumes = json['consumes'] as int,
+        blueprintId = json['blueprintId'] as String,
+        imageUrl = json['imageUrl'] as String?,
+        super(id: json['id'] as String);
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'displayName': displayName,
+        'description': description,
+        'consumes': consumes,
+        'blueprintId': blueprintId,
+        'imageUrl': imageUrl,
+      };
 }

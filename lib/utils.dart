@@ -1,12 +1,10 @@
 import 'dart:convert';
-import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:uuid/uuid.dart';
-import 'package:http/http.dart' as http;
 
 const uuid = Uuid();
 final random = Random();
@@ -14,6 +12,8 @@ const distance = Distance();
 final formatter = DateFormat.yMd();
 
 class DesignUtils {
+  static IconData stampIcon = Icons.star;
+
   static EdgeInsets basicWidgetEdgeInsets([double scale = 1.0]) {
     return EdgeInsets.all(8.0 * scale);
   }
@@ -48,23 +48,24 @@ class DesignUtils {
     );
   }
 
-  static bool _handleScrollNotification(
-      ScrollController controller, ScrollNotification notification) {
-    if (notification is ScrollEndNotification) {
-      print('[+]Got a ScrollEndNotification!');
-      print('${controller.position.extentAfter.toStringAsFixed(1)}');
-      if (controller.position.extentAfter == 0) {
-        // loadMore();
-      }
-    }
-    return false;
-  }
+  // static bool _handleScrollNotification(
+  //     ScrollController controller, ScrollNotification notification) {
+  //   if (notification is ScrollEndNotification) {
+  //     print('[+]Got a ScrollEndNotification!');
+  //     print('${controller.position.extentAfter.toStringAsFixed(1)}');
+  //     if (controller.position.extentAfter == 0) {
+  //       // loadMore();
+  //     }
+  //   }
+  //   return false;
+  // }
 
   static Future<void> delaySeconds(int seconds) async {
     return Future.delayed(Duration(seconds: seconds));
   }
 }
 
+// For test
 Map<String, dynamic> getStaleRefreshOidc(Map<String, dynamic> oidc) {
   final String refreshToken = oidc['refresh_token'];
   final split = refreshToken.split('.');

@@ -12,7 +12,6 @@ class StampCardBlueprint extends BaseModel {
   final DateTime lastModifiedDate;
   final DateTime expirationDate;
   final String storeId;
-  final IconData? icon;
   final String? bgImageUrl;
   final bool isPublishing;
   List<RedeemRule>? redeemRules;
@@ -28,7 +27,6 @@ class StampCardBlueprint extends BaseModel {
     required this.numMaxRedeems,
     required this.numMaxIssues,
     required this.storeId,
-    required this.icon,
     required this.bgImageUrl,
     required this.isPublishing,
     required this.redeemRules,
@@ -44,10 +42,13 @@ class StampCardBlueprint extends BaseModel {
         lastModifiedDate = json['lastModifiedDate'] as DateTime,
         expirationDate = json['expirationDate'] as DateTime,
         storeId = json['storeId'] as String,
-        icon = json['icon'] as IconData?,
         bgImageUrl = json['bgImageUrl'] as String?,
         isPublishing = json['isPublishing'] as bool,
-        redeemRules = json['redeemRules'] as List<RedeemRule>?,
+        redeemRules = json['redeemRules'] == null
+            ? null
+            : [
+                for (final map in json['redeemRules']) RedeemRule.fromJson(map),
+              ],
         super(id: json['id'] as String);
 
   bool get wasExpired {
@@ -82,10 +83,29 @@ class StampCardBlueprint extends BaseModel {
       lastModifiedDate: lastModifiedDate ?? this.lastModifiedDate,
       expirationDate: expirationDate ?? this.expirationDate,
       storeId: storeId ?? this.storeId,
-      icon: icon ?? this.icon,
       bgImageUrl: bgImageUrl ?? this.bgImageUrl,
       isPublishing: isPublishing ?? this.isPublishing,
       redeemRules: redeemRules ?? this.redeemRules,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'displayName': displayName,
+        'description': description,
+        'stampGrantCondDescription': stampGrantCondDescription,
+        'numMaxStamps': numMaxStamps,
+        'numMaxRedeems': numMaxRedeems,
+        'numMaxIssues': numMaxIssues,
+        'lastModifiedDate': lastModifiedDate,
+        'expirationDate': expirationDate,
+        'storeId': storeId,
+        'bgImageUrl': bgImageUrl,
+        'isPublishing': isPublishing,
+        'redeemRules': redeemRules == null
+            ? null
+            : [
+                for (final redeemRule in redeemRules!) redeemRule.toJson(),
+              ],
+      };
 }

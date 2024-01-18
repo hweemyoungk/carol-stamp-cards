@@ -1,4 +1,3 @@
-import 'package:carol/main.dart';
 import 'package:carol/models/stamp_card.dart';
 import 'package:carol/screens/owner_design_store_screen.dart';
 import 'package:carol/screens/owner_scan_qr_screen.dart';
@@ -19,8 +18,8 @@ class _OwnerScreenState extends State<OwnerScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          Positioned(
-            child: const StoresExplorer(),
+          const Positioned(
+            child: StoresExplorer(),
           ),
           Positioned(
             bottom: 30,
@@ -54,14 +53,17 @@ class _OwnerScreenState extends State<OwnerScreen> {
     ));
   }
 
-  Future<void> _onPressScanQr() async {
-    final qr =
-        await Navigator.of(context).push<SimpleStampCardQr>(MaterialPageRoute(
+  void _onPressScanQr() {
+    Navigator.of(context).push<SimpleStampCardQr>(MaterialPageRoute(
       builder: (context) => const OwnerScanQrScreen(),
     ));
-    if (qr == null) {
-      return;
-    }
-    Carol.showTextSnackBar(text: 'Got stamp card id: ${qr.stampCardId}');
+    // final qr =
+    //     await Navigator.of(context).push<SimpleStampCardQr>(MaterialPageRoute(
+    //   builder: (context) => const OwnerScanQrScreen(),
+    // ));
+    // if (qr == null) {
+    //   return;
+    // }
+    // Carol.showTextSnackBar(text: 'Got stamp card id: ${qr.stampCardId}');
   }
 }

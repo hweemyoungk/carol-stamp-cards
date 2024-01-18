@@ -1,3 +1,4 @@
+import 'package:carol/apis/owner_apis.dart';
 import 'package:carol/main.dart';
 import 'package:carol/models/stamp_card.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
@@ -192,23 +193,19 @@ class _OwnerGrantStampsScreenState
       _status = GrantStatus.sending;
     });
 
-    // TODO: POST GrantHistory
-    // await apis.owner.postGrantHistory(
-    //   stampCardId: widget.stampCard.id,
-    //   numGrant: _numGrant,
-    // );
-    final isSuccessful = await DesignUtils.delaySeconds(2)
-        .then((value) => random.nextDouble() < 0.8);
+    // POST StampGrant
+    await grantStamp(
+      stampCardId: widget.stampCard.id,
+      numStamps: _numGrant,
+    );
 
-    if (isSuccessful) {
-      Carol.showTextSnackBar(text: 'Grant successful!');
-      if (mounted) {
-        Navigator.of(context).pop();
-      }
-      return;
+    Carol.showTextSnackBar(
+      text: 'Grant successful!',
+      level: SnackBarLevel.success,
+    );
+    if (mounted) {
+      Navigator.of(context).pop();
     }
-
-    Carol.showTextSnackBar(text: 'ERROR: Grant failed');
     return;
   }
 }

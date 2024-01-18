@@ -1,11 +1,14 @@
 import 'dart:async';
-import 'dart:io';
 
+import 'package:carol/apis/customer_apis.dart' as customer_apis;
 import 'package:carol/main.dart';
+import 'package:carol/models/redeem_request.dart';
 import 'package:carol/models/redeem_rule.dart';
 import 'package:carol/models/stamp_card.dart';
+import 'package:carol/params/app.dart' as app_params;
 import 'package:carol/providers/entity_provider.dart';
 import 'package:carol/utils.dart';
+import 'package:carol/widgets/common/circular_progress_indicator_in_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:transparent_image/transparent_image.dart';
@@ -28,7 +31,7 @@ class RedeemDialogScreen extends ConsumerStatefulWidget {
 
 class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
   late Widget redeemButton;
-  String? redeemRequestId;
+  String? _redeemRequestId;
   late RedeemStatus _redeemStatus;
 
   @override
@@ -118,28 +121,35 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
     // 1. Post RedeemRequest and receive location.
     // Trigger customerService.initRedeemRequest
     if (_redeemStatus == RedeemStatus.redeeming) {
-      redeemRequestId = await initRedeemRequest(
+      _redeemRequestId = await _postRedeemRequest(
         stampCardId: stampCard.id,
         redeemRuleId: redeemRule.id,
       );
     }
 
-    // 2. Every n seconds, check RedeemRequest still exists, until m seconds.
-    if (redeemRequestId != null) {
-      await watchRedeemRequestNotExist();
-    }
+    // 2. Watch request exists
+    await _watchRedeemRequestExist();
 
     // 3. Check if RedeemHistory exists.
-    final hasRedeemHistory = redeemRequestId == null
+    final hasRedeemHistory = _redeemRequestId == null
         ? false
-        : await redeemHistoryExists(
-            redeemRequestId: redeemRequestId!,
+        : await _redeemHistoryExists(
+            redeemRequestId: _redeemRequestId!,
           );
-    // 3-1. If exists, redeem succeeded.
+
     if (hasRedeemHistory) {
-      // 3-1.1. Change Progress widget to Completed widget
+      // 3-1. If exists, redeem succeeded.
+      // 3-1.1. Close Dialog and refresh CardScreen
+      // final updatedNumCollectedStamps =
+      //     stampCard.numCollectedStamps - redeemRule.consumes;
+      // final updatedStampCard = stampCard.copyWith(
+      //   numCollectedStamps: updatedNumCollectedStamps,
+      // );
+      // stampCardNotifier.set(entity: updatedStampCard);
+      // Get StampCard
+
+      // 3-1.2. Change Progress widget to Completed widget
       if (mounted) {
-        _redeemStatus == RedeemStatus.redeemSuccessful;
         setState(() {
           redeemButton = TextButton(
             onPressed: null,
@@ -152,21 +162,19 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
             ),
           );
         });
-        await DesignUtils.delaySeconds(1);
+        final refreshStampCardTask =
+            customer_apis.getStampCard(id: stampCard.id).then((value) {
+          stampCardNotifier.set(entity: value);
+        });
+        await Future.wait([refreshStampCardTask, DesignUtils.delaySeconds(1)]);
       }
-
-      // 3-1.2. Close Dialog and refresh CardScreen
-      Carol.showTextSnackBar(text: 'Request success');
-      final updatedNumCollectedStamps =
-          stampCard.numCollectedStamps - redeemRule.consumes;
-      final updatedStampCard = stampCard.copyWith(
-        numCollectedStamps: updatedNumCollectedStamps,
+      Carol.showTextSnackBar(
+        text: 'Redeem success!',
+        level: SnackBarLevel.success,
       );
-      stampCardNotifier.set(entity: updatedStampCard);
     } else {
       // 3-2. If not, redeem failed. (probably because owner didn't allowed or timeout)
       // 3-2.1. Change Progress with to Refresh widget
-      _redeemStatus == RedeemStatus.redeemFailed;
       if (mounted) {
         setState(() {
           redeemButton = TextButton(
@@ -182,7 +190,10 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
         });
         await DesignUtils.delaySeconds(1);
       }
-      Carol.showTextSnackBar(text: 'Request CANCELED!');
+      Carol.showTextSnackBar(
+        text: 'Redeem failed!',
+        level: SnackBarLevel.error,
+      );
     }
 
     if (mounted) {
@@ -190,7 +201,7 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
     }
   }
 
-  Future<bool> redeemHistoryExists({
+  Future<bool> _redeemHistoryExists({
     required String redeemRequestId,
   }) async {
     if (mounted) {
@@ -201,31 +212,29 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
             disabledBackgroundColor:
                 Theme.of(context).colorScheme.tertiaryContainer,
           ),
-          child: SizedBox(
-            width: 15,
-            height: 15,
-            child: CircularProgressIndicator(
-              color: Theme.of(context).colorScheme.onTertiaryContainer,
-            ),
+          child: CircularProgressIndicatorInButton(
+            color: Theme.of(context).colorScheme.onTertiaryContainer,
           ),
         );
       });
     }
-    final historyExistsTask = Future(() async {
-      await Future.delayed(Duration(seconds: random.nextInt(3) + 1));
-      final exists = random.nextDouble() < 0.5;
-      return exists;
-    });
-    return historyExistsTask;
+
+    // final historyExistsTask = Future(() async {
+    //   await Future.delayed(Duration(seconds: random.nextInt(3) + 1));
+    //   final exists = random.nextDouble() < 0.5;
+    //   return exists;
+    // });
+    final historyExists = await customer_apis.redeemExists(id: redeemRequestId);
+    return historyExists;
   }
 
-  Future<void> watchRedeemRequestNotExist() async {
-    const totalSeconds = 20;
-    const checkIntervalSeconds = 3;
-    Future<bool> requestExistsTask;
-    Completer<bool> completer = Completer<bool>();
-    for (var i = 0; i < totalSeconds; i++) {
+  Future<void> _watchRedeemRequestExist() async {
+    bool exists = true;
+    // Every second...
+    for (var i = 0; i < app_params.watchRedeemRequestDurationSeconds; i++) {
       if (_redeemStatus != RedeemStatus.redeeming) return;
+      // Check exists
+      if (!exists) return;
 
       if (mounted) {
         setState(() {
@@ -236,7 +245,7 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
                   Theme.of(context).colorScheme.tertiaryContainer,
             ),
             child: Text(
-              'Awaiting owner\'s approval (${totalSeconds - i})',
+              'Awaiting owner\'s approval (${app_params.watchRedeemRequestDurationSeconds - i})',
               style: TextStyle(
                 color: Theme.of(context).colorScheme.onTertiaryContainer,
               ),
@@ -245,49 +254,24 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
         });
       }
 
-      // check RedeemRequest still exists
-      if (i % checkIntervalSeconds == 0) {
-        // requestExistsTask = http.get('foo');
-        requestExistsTask = Future(() async {
-          final localCompleter = Completer<bool>();
-          localCompleter.future.catchError((e) {
-            print(e);
-            return false;
-          });
-          completer = localCompleter;
-          await Future.delayed(Duration(seconds: random.nextInt(5) + 1));
-          if (random.nextDouble() < 0.1) {
-            final error =
-                HttpException('RequestExists at t=${i}s threw error!');
-            localCompleter.completeError(error);
-            return Future.error(error);
-          }
-          final exists = random.nextDouble() < 0.0;
-          print('RequestExists at t=${i}s responds: $exists');
-          localCompleter.complete(exists);
-          return exists;
-        });
-        requestExistsTask.catchError((e) {
-          print(e);
-          return false;
-        });
+      // Every n seconds...
+      if (i % app_params.watchRedeemRequestIntervalSeconds == 0) {
+        // Call api
+        customer_apis.redeemRequestExists(id: _redeemRequestId!).then(
+          (value) {
+            if (!value) {
+              exists = false;
+            }
+          },
+        );
       }
+
+      // Wait for one second
       await DesignUtils.delaySeconds(1);
-      if (completer.isCompleted) {
-        try {
-          final exists = await completer.future;
-          // 2-1. If not exist, break.
-          if (!exists) {
-            break;
-          }
-        } catch (e) {
-          print('caught error from future: ${e.toString()}');
-        }
-      }
     }
   }
 
-  Future<String> initRedeemRequest({
+  Future<String> _postRedeemRequest({
     required String stampCardId,
     required String redeemRuleId,
   }) async {
@@ -300,7 +284,7 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
                 Theme.of(context).colorScheme.tertiaryContainer,
           ),
           child: Text(
-            'Sending a reward request to owner...',
+            'Sending redeem request to owner...',
             style: TextStyle(
               color: Theme.of(context).colorScheme.onTertiaryContainer,
             ),
@@ -313,15 +297,25 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
     // 1. Check card exists: card = resource.getCard(cardId)
     // 2. Check redeemRule exists: redeemRule = resource.getRedeemRule(redeemRuleId)
     // 3. Check same BP: card.getBP() == redeemRule.getBP()
+    // 3.5 Check BP has this redeemRule: redeemRule in resource.getCard(cardId).getBP().getRedeemRules()
     // 4. Create new RedeemRequest: resource.postRedeemRequest()
     // 5. return redeemRequestId
-    await Future.delayed(Duration(seconds: 1));
-    return uuid.v4();
+    // 1~3.5 will be done in server-side.
+    // await Future.delayed(Duration(seconds: 1));
+    // return uuid.v4();
+    final redeemRequest = RedeemRequest(
+      id: '',
+      stampCardId: stampCardId,
+      redeemRuleId: redeemRuleId,
+    );
+    final redisKey =
+        await customer_apis.postRedeemRequest(redeemRequest: redeemRequest);
+    return redisKey;
   }
 
   void _onPressBack() {
     // If redeemRequestId exists, try deleting RedeemRequest
-    if (redeemRequestId != null) {
+    if (_redeemRequestId != null) {
       Future.delayed(
         const Duration(seconds: 2),
         () {
@@ -344,6 +338,4 @@ enum RedeemStatus {
   redeemable,
   redeeming,
   redeemCanceled,
-  redeemFailed,
-  redeemSuccessful,
 }

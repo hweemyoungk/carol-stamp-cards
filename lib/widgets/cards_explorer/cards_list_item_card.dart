@@ -1,10 +1,10 @@
-import 'package:carol/data/dummy_data.dart';
+import 'package:carol/apis/customer_apis.dart' as customer_apis;
 import 'package:carol/models/stamp_card.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/providers/entity_provider.dart';
+import 'package:carol/providers/redeem_rule_provider.dart';
 import 'package:carol/providers/stamp_card_blueprint_provider.dart';
 import 'package:carol/screens/card_screen.dart';
-import 'package:carol/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:transparent_image/transparent_image.dart';
@@ -164,13 +164,13 @@ class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
         blueprintProviders.tryGetProviderById(id: stampCard.blueprintId);
     final StampCardBlueprint blueprint;
     if (blueprintProvider == null) {
-      // Fetch Blueprint
-      // apis.getBlueprint(blueprintId: stampCard.blueprintId,);
-      await DesignUtils.delaySeconds(1);
-      blueprint = genDummyBlueprints(
-        numBlueprints: 1,
-        storeId: stampCard.storeId,
-      )[0];
+      // Get Blueprint
+      // await DesignUtils.delaySeconds(1);
+      // blueprint = genDummyBlueprints(
+      //   numBlueprints: 1,
+      //   storeId: stampCard.storeId,
+      // )[0];
+      blueprint = await customer_apis.getBlueprint(id: stampCard.blueprintId);
       blueprintProvider =
           blueprintProviders.tryGetProviderById(id: stampCard.blueprintId)!;
     } else {
@@ -178,19 +178,25 @@ class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
     }
 
     if (blueprint.redeemRules == null) {
-      // Fetch RedeemRules
+      // List RedeemRules
       if (mounted) {
         final blueprintNotifier = ref.read(blueprintProvider.notifier);
-        // apis.listRedeemRule(blueprintId: blueprint.id,);
-        await Future.delayed(const Duration(seconds: 1));
-        final redeemRules = genDummySortedRedeemRules(
-          blueprint: blueprint,
-          numRules: random.nextInt(3) + 1, // 1~3
+        // await Future.delayed(const Duration(seconds: 1));
+        // final redeemRules = genDummySortedRedeemRules(
+        //   blueprint: blueprint,
+        //   numRules: random.nextInt(3) + 1, // 1~3
+        // );
+        final redeemRules = await customer_apis.listRedeemRules(
+          blueprintId: stampCard.blueprintId,
         );
+        for (final redeemRule in redeemRules) {
+          redeemRuleProviders.tryAddProvider(entity: redeemRule);
+        }
         blueprintNotifier.set(
-            entity: blueprint.copyWith(
-          redeemRules: redeemRules,
-        ));
+          entity: blueprint.copyWith(
+            redeemRules: redeemRules,
+          ),
+        );
       }
     }
   }
@@ -208,15 +214,22 @@ class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
   Future<bool> _toggleFavorite({
     required StampCard stampCard,
   }) async {
-    // TODO: replace with http.
-    return Future.delayed(
-      const Duration(seconds: 1),
-      () {
-        // Case: broken integrity by 10%
-        final integrity = random.nextDouble() < 0.9;
-        if (!integrity) print('[-]Broken integrity!');
-        return integrity ? !stampCard.isFavorite : stampCard.isFavorite;
-      },
+    // return Future.delayed(
+    //   const Duration(seconds: 1),
+    //   () {
+    //     // Case: broken integrity by 10%
+    //     final integrity = random.nextDouble() < 0.9;
+    //     if (!integrity) print('[-]Broken integrity!');
+    //     return integrity ? !stampCard.isFavorite : stampCard.isFavorite;
+    //   },
+    // );
+    final stampCardToPut = stampCard.copyWith(
+      isFavorite: !stampCard.isFavorite,
     );
+    await customer_apis.putStampCard(
+      id: stampCard.id,
+      stampCard: stampCardToPut,
+    );
+    return stampCardToPut.isFavorite;
   }
 }

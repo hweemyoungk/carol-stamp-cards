@@ -12,7 +12,6 @@ class Store extends BaseModel {
   final String phone;
   final double lat;
   final double lng;
-  final IconData? icon;
   final String? bgImageUrl;
   final String? profileImageUrl;
   final String ownerId;
@@ -28,9 +27,8 @@ class Store extends BaseModel {
     required this.phone,
     required this.lat,
     required this.lng,
-    this.icon,
-    this.bgImageUrl,
-    this.profileImageUrl,
+    required this.bgImageUrl,
+    required this.profileImageUrl,
     required this.ownerId,
     this.blueprints,
   });
@@ -42,11 +40,15 @@ class Store extends BaseModel {
         phone = json['phone'] as String,
         lat = json['lat'] as double,
         lng = json['lng'] as double,
-        icon = json['icon'] as IconData?,
         bgImageUrl = json['bgImageUrl'] as String?,
         profileImageUrl = json['profileImageUrl'] as String?,
         ownerId = json['ownerId'] as String,
-        blueprints = json['blueprints'] as List<StampCardBlueprint>?,
+        blueprints = json['blueprints'] == null
+            ? null
+            : [
+                for (final map in json['blueprints'])
+                  StampCardBlueprint.fromJson(map),
+              ],
         super(id: json['id'] as String);
 
   Store copyWith({
@@ -73,7 +75,6 @@ class Store extends BaseModel {
       phone: phone ?? this.phone,
       lat: lat ?? this.lat,
       lng: lng ?? this.lng,
-      icon: icon ?? this.icon,
       bgImageUrl: bgImageUrl ?? this.bgImageUrl,
       profileImageUrl: profileImageUrl ?? this.profileImageUrl,
       ownerId: ownerId ?? this.ownerId,
@@ -81,8 +82,27 @@ class Store extends BaseModel {
     );
   }
 
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'displayName': displayName,
+        'description': description,
+        'zipcode': zipcode,
+        'address': address,
+        'phone': phone,
+        'lat': lat,
+        'lng': lng,
+        'bgImageUrl': bgImageUrl,
+        'profileImageUrl': profileImageUrl,
+        'ownerId': ownerId,
+        'blueprints': blueprints == null
+            ? null
+            : [
+                for (final blueprint in blueprints!) blueprint.toJson(),
+              ],
+      };
+
   double getDistance(double deviceLat, double deviceLng) {
-    return random.nextDouble() * (random.nextInt(1000) + 1);
+    // return random.nextDouble() * (random.nextInt(1000) + 1);
     final meters = distance(LatLng(lat, lng), LatLng(deviceLat, deviceLng));
     return meters;
   }

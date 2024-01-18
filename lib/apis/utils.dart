@@ -4,9 +4,51 @@ import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
 Future<http.Response> httpGet(Uri url) async {
-  final res = await http.get(
+  final res = await httpClient.get(
     url,
-    headers: getHeaders(),
+    headers: getAuthHeaders(),
+  );
+  if (400 <= res.statusCode) {
+    throw HttpException('${res.statusCode} ${res.reasonPhrase}: ${res.body}');
+  }
+  return res;
+}
+
+Future<http.Response> httpDelete(
+  Uri url, {
+  Map<String, String>? headers = const {
+    'Content-Type': 'application/json',
+  },
+  Object? body,
+}) async {
+  final res = await httpClient.delete(
+    url,
+    headers: {
+      ...getAuthHeaders(),
+      if (headers != null) ...headers,
+    },
+    body: body,
+  );
+  if (400 <= res.statusCode) {
+    throw HttpException('${res.statusCode} ${res.reasonPhrase}: ${res.body}');
+  }
+  return res;
+}
+
+Future<http.Response> httpPut(
+  Uri url, {
+  Map<String, String>? headers = const {
+    'Content-Type': 'application/json',
+  },
+  Object? body,
+}) async {
+  final res = await httpClient.put(
+    url,
+    headers: {
+      ...getAuthHeaders(),
+      if (headers != null) ...headers,
+    },
+    body: body,
   );
   if (400 <= res.statusCode) {
     throw HttpException('${res.statusCode} ${res.reasonPhrase}: ${res.body}');
@@ -16,12 +58,17 @@ Future<http.Response> httpGet(Uri url) async {
 
 Future<http.Response> httpPost(
   Uri url, {
-  Map<String, String>? headers,
+  Map<String, String>? headers = const {
+    'Content-Type': 'application/json',
+  },
   Object? body,
 }) async {
-  final res = await http.post(
+  final res = await httpClient.post(
     url,
-    headers: headers,
+    headers: {
+      ...getAuthHeaders(),
+      if (headers != null) ...headers,
+    },
     body: body,
   );
   if (400 <= res.statusCode) {
@@ -30,9 +77,9 @@ Future<http.Response> httpPost(
   return res;
 }
 
-Map<String, String> getHeaders() {
+Map<String, String> getAuthHeaders() {
   final headers = {
-    'Authentication': 'Bearer $token',
+    'Authentication': 'Bearer $accessToken',
   };
   return headers;
 }
@@ -43,4 +90,14 @@ Future<void> launchInBrowserView(Uri url) async {
   }
 }
 
-late final String token;
+Object? customToEncodable(dynamic value) {
+  if (value is DateTime) {
+    // DateTime to Timestamp milliseconds
+    return value.millisecondsSinceEpoch;
+  }
+  return value;
+}
+
+final httpClient = http.Client();
+
+late final String accessToken;

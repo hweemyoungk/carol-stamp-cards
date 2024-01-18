@@ -1,17 +1,24 @@
+import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
-import 'dart:typed_data';
 
+import 'package:app_links/app_links.dart';
 import 'package:carol/apis/auth_apis.dart';
-import 'package:carol/apis/customer_apis_dummy.dart' as customerApisDummy;
+import 'package:carol/apis/customer_apis.dart' as customer_apis;
 import 'package:carol/apis/utils.dart';
 import 'package:carol/main.dart';
 import 'package:carol/models/user.dart';
-import 'package:carol/params.dart';
+import 'package:carol/params/auth.dart' as auth_params;
+import 'package:carol/params/shared_preferences.dart'
+    as shared_preferences_params;
 import 'package:carol/providers/auth_status_provider.dart';
 import 'package:carol/providers/auto_sign_in_enabled_provider.dart';
+import 'package:carol/providers/current_user_provider.dart';
+import 'package:carol/providers/stamp_cards_init_loaded_provider.dart';
+import 'package:carol/providers/stamp_cards_provider.dart';
+import 'package:carol/providers/stores_init_loaded_provider.dart';
+import 'package:carol/providers/stores_provider.dart';
 import 'package:carol/utils.dart';
-import 'package:carol/widgets/common/circular_progress_indicator_in_button.dart';
+import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pkce/pkce.dart';
@@ -25,19 +32,30 @@ class AuthScreen extends ConsumerStatefulWidget {
 }
 
 class _AuthScreenState extends ConsumerState<AuthScreen> {
+  late AppLinks _appLinks;
   bool _isAutoSigningIn = true;
-  File? _pickedImageFile;
+  String? _stateToken;
+  PkcePair? _pkcePair;
 
   @override
   void initState() {
     super.initState();
-    tryAutoSignIn();
+    _bindAuthCallback();
+    _tryAutoSignIn(ignore: true);
   }
 
-  Future<void> tryAutoSignIn() async {
+  Future<void> _tryAutoSignIn({bool ignore = false}) async {
+    if (ignore) {
+      if (mounted) {
+        setState(() {
+          _isAutoSigningIn = false;
+        });
+      }
+      return;
+    }
     // 1. Get stored credential
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final userCredential = prefs.getString('userCredential');
+    final userCredential = prefs.getString(shared_preferences_params.oidcKey);
 
     // 2. Validate credential
     if (userCredential == null) {
@@ -73,14 +91,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     final refreshToken = oidc['refresh_token'] as String;
     try {
       final res = await httpPost(
-        tokenEndpoint,
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
-        },
+        getTokenEndpoint(),
         body: {
           'grant_type': 'refresh_token',
           'refresh_token': refreshToken,
-          'client_id': clientId,
+          'client_id': auth_params.clientId,
         },
       );
 
@@ -90,7 +105,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       final invalidOidcMsgs = validateOidc(oidc);
       if (invalidOidcMsgs != null) {
         // Invalid OIDC token
-        prefs.remove('userCredential');
+        prefs.remove(shared_preferences_params.oidcKey);
         Carol.showTextSnackBar(
           text:
               'Failed to auto sign in. Please sign in manually.${invalidOidcMsgs.fold('\n- ', (prev, cur) => '$prev\n- $cur')}',
@@ -106,9 +121,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       // Store credential
       // TEST: stale refresh token
       // final staleOidc = getStaleRefreshOidc(oidc);
-      // prefs.setString('userCredential', json.encode(staleOidc));
+      // prefs.setString(shared_preferences_params.oidcKey, json.encode(staleOidc));
 
-      prefs.setString('userCredential', res.body);
+      prefs.setString(shared_preferences_params.oidcKey, res.body);
 
       // TODO: Implement
       // 4. Get User and store
@@ -131,6 +146,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   Widget build(BuildContext context) {
     final authStatus = ref.watch(authStatusProvider);
     final isAutoSignInEnabled = ref.watch(autoSignInEnabledProvider);
+    final currentUser = ref.watch(currentUserProvider);
     final autoSignInSection = Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -184,10 +200,15 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       );
     } else if (authStatus == AuthStatus.authenticating) {
       authButton = ElevatedButton(
-        onPressed: null,
-        style: authButtonStyle,
-        child: CircularProgressIndicatorInButton(
-          color: Theme.of(context).colorScheme.onPrimaryContainer,
+        onPressed: _onPressCancelAuth,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Theme.of(context).colorScheme.errorContainer,
+        ),
+        child: Text(
+          'Abort Sign In / Up',
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onErrorContainer,
+          ),
         ),
       );
     } else {
@@ -196,7 +217,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         onPressed: null,
         style: authButtonStyle,
         child: Text(
-          'You are signed in, ${currentUser.displayName}!',
+          'You are signed in, ${currentUser!.displayName}!',
           style: TextStyle(
             color: Theme.of(context).colorScheme.onPrimaryContainer,
           ),
@@ -291,74 +312,159 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     authStatusNotifier.set(AuthStatus.authenticating);
 
     // Generate state
-    final state = genState();
-    // Locally store state
-    originalState = state;
-
-    // This is a stupid idea...
-    // Send state to cache
-    // final urlSendStateToCache = Uri.http(aliciaAuthHostname, '/state');
-    // final res = await httpPost(
-    //   urlSendStateToCache,
-    //   headers: {
-    //     "Content-Type": "application/json;charset=utf-8",
-    //   },
-    //   body: json.encode({
-    //     "state": originalState,
-    //   }),
-    // );
+    _stateToken = genState();
 
     // Generate code challenge and code verifier
-    final pkcePair = PkcePair.generate();
-    originalPkcePair = pkcePair;
+    _pkcePair = PkcePair.generate();
 
     // Authenticate
-    final url = Uri.http(
-      keycloakHostname,
-      '/realms/$realmName/protocol/openid-connect/auth',
-      {
-        'client_id': clientId,
-        'response_type': 'code',
-        'scope': 'openid',
-        'redirect_uri': redirectUri,
-        'state': state,
-        'code_challenge': pkcePair.codeChallenge,
-        'code_challenge_method': 'S256'
-      },
-    );
+    final url = getAuthEndpoint(state: _stateToken!, pkcePair: _pkcePair!);
     await launchInBrowserView(url);
+  }
 
-    // Dummy
-    // Set User
-    currentUser = await DesignUtils.delaySeconds(1).then(
-      (value) => User(
-        id: uuid.v4(),
-        displayName: 'HMK',
-        profileImageUrl: 'assets/images/schnitzel-3279045_1280.jpg',
-      ),
-    );
+  void _bindAuthCallback() {
+    _appLinks = AppLinks();
 
-    // Load Init Entities: Landing page is CustomerScreen, so load Customer Cards and Stores
-    // TODO: disable dummy
-    /* final stampCardsInitLoadedNotifier =
+    _appLinks.uriLinkStream.listen((uri) {
+      if (uri.path == '/auth/callback') {
+        _handleAuthCallback(uri);
+      }
+    });
+  }
+
+  Future<void> _handleAuthCallback(Uri uri) async {
+    final authStatusNotifier = ref.read(authStatusProvider.notifier);
+    final isAutoSignInEnabled = ref.read(autoSignInEnabledProvider);
+    final currentUserNotifier = ref.read(currentUserProvider.notifier);
+
+    // For customer_apis
+    final stampCardsInitLoadedNotifier =
         ref.read(stampCardsInitLoadedProvider.notifier);
     final stampCardsNotifier = ref.read(stampCardsProvider.notifier);
     final customerStoresInitLoadedNotifier =
         ref.read(customerStoresInitLoadedProvider.notifier);
     final customerStoresNotifier = ref.read(customerStoresProvider.notifier);
-    customerApis.initLoadCustomerEntities(
+
+    if (_pkcePair == null) {
+      Carol.showTextSnackBar(
+        text: 'Lost PKCE data',
+        level: SnackBarLevel.error,
+      );
+      authStatusNotifier.set(AuthStatus.unauthenticated);
+      // Pop all
+      Navigator.of(context).popUntil(ModalRoute.withName('/auth'));
+      return;
+    }
+
+    // Verify state
+    final state = uri.queryParameters['state'];
+    if (state != _stateToken) {
+      Carol.showTextSnackBar(
+        text: 'Invalid state token',
+        level: SnackBarLevel.error,
+      );
+      authStatusNotifier.set(AuthStatus.unauthenticated);
+      // Pop all
+      Navigator.of(context).popUntil(ModalRoute.withName('/auth'));
+      return;
+    }
+
+    // final sessionState = uri.queryParameters['session_state'];
+
+    // Exchange code
+    final code = uri.queryParameters['code'];
+    final Map<String, dynamic> oidc;
+    try {
+      final res = await httpPost(
+        getTokenEndpoint(),
+        body: {
+          'grant_type': 'authorization_code',
+          'client_id': auth_params.clientId,
+          'code': code,
+          'code_verifier': _pkcePair!.codeVerifier,
+          'redirect_uri': auth_params.redirectUri,
+        },
+      );
+      oidc = json.decode(res.body);
+
+      // Verify OIDC token
+      final invalidOidcMsgs = validateOidc(oidc);
+      if (invalidOidcMsgs != null) {
+        // Invalid OIDC token
+        authStatusNotifier.set(AuthStatus.unauthenticated);
+        Carol.showTextSnackBar(
+          text:
+              'Failed to authenticate. Please contact admin.${invalidOidcMsgs.fold('\n- ', (prev, cur) => '$prev\n- $cur')}',
+          level: SnackBarLevel.error,
+        );
+        // Pop all
+        if (mounted) {
+          Navigator.of(context).popUntil(ModalRoute.withName('/auth'));
+        }
+        return;
+      }
+
+      // Store credential if auto sign in is enabled
+      final prefs = await SharedPreferences.getInstance();
+      if (isAutoSignInEnabled) {
+        prefs.setString(shared_preferences_params.oidcKey, res.body);
+      } else {
+        // Try removing credential if auto sign in is disabled
+        prefs.remove(shared_preferences_params.oidcKey);
+      }
+
+      authStatusNotifier.set(AuthStatus.authenticated);
+    } on Exception catch (e) {
+      authStatusNotifier.set(AuthStatus.unauthenticated);
+      Carol.showTextSnackBar(
+        text: e.toString(),
+        seconds: 10,
+        level: SnackBarLevel.error,
+      );
+      return;
+    }
+
+    // Dummy
+    // Set User
+    // oidc['']
+    final accessTokenPayload = JWT.decode(oidc['access_token']).payload;
+    final userId = accessTokenPayload['sub'];
+    final userDisplayName = accessTokenPayload['preferred_username'];
+
+    // currentUser = await DesignUtils.delaySeconds(1).then(
+    //   (value) => User(
+    //     id: userId,
+    //     displayName: userDisplayName,
+    //     profileImageUrl: 'assets/images/schnitzel-3279045_1280.jpg',
+    //   ),
+    // );
+    final currentUser = User(
+      id: userId,
+      displayName: userDisplayName,
+      profileImageUrl: 'assets/images/schnitzel-3279045_1280.jpg',
+    );
+    currentUserNotifier.set(currentUser);
+
+    // Load Init Entities: Landing page is CustomerScreen, so load Customer Cards and Stores
+    await customer_apis.reloadCustomerEntities(
+      currentUser: currentUser,
       customerStoresInitLoadedNotifier: customerStoresInitLoadedNotifier,
       customerStoresNotifier: customerStoresNotifier,
       stampCardsInitLoadedNotifier: stampCardsInitLoadedNotifier,
       stampCardsNotifier: stampCardsNotifier,
-    ); */
-    await customerApisDummy.initLoadCustomerEntities(ref);
+    );
+    // await customer_apis_dummy.reloadCustomerEntities(ref);
 
     // Next Screen
-    // if (mounted) {
-    //   Navigator.of(context).push(MaterialPageRoute(
-    //     builder: (context) => const DashboardScreen(),
-    //   ));
-    // }
+    if (mounted) {
+      Navigator.of(context).pushReplacementNamed(
+        '/dashboard',
+      );
+    }
+  }
+
+  void _onPressCancelAuth() {
+    ref.read(authStatusProvider.notifier).set(AuthStatus.unauthenticated);
+    ref.read(currentUserProvider.notifier).set(null);
   }
 }

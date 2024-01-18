@@ -1,12 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:carol/data/dummy_data.dart';
+import 'package:carol/apis/owner_apis.dart' as owner_apis;
 import 'package:carol/main.dart';
 import 'package:carol/models/stamp_card.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
-import 'package:carol/providers/store_provider.dart';
-import 'package:carol/providers/stores_provider.dart';
 import 'package:carol/screens/owner_grant_stamps_screen.dart';
 import 'package:carol/utils.dart';
 import 'package:flutter/material.dart';
@@ -148,57 +146,48 @@ class _OwnerScanQrScreenState extends ConsumerState<OwnerScanQrScreen> {
         }
 
         // Fetch StampCard and Blueprint
-        // TODO: fetch StampCard with Blueprint
-        // try {
-        //   // Can throw 403 exception if blueprint is not owner's.
-        //   final StampCardBlueprint blueprint = await apis.owner.getBlueprint(
-        //     id: _qr.blueprintId,
-        //   );
-        //   final StampCard stampCard = await apis.owner.getStampCard(
-        //     id: _qr.stampCardId,
-        //   );
-        // } on Exception catch (e) {
-        //   // // In apis...
-        //   // if (400 <= res.statusCode) {
-        //   //   throw Exception('${res.statusCode} ${res.reasonPhrase}: ${res.body}');
-        //   // }
-        //   Carol.showTextSnackBar(text: e.toString());
-        //   if (mounted) {
-        //     Navigator.of(context).pop();
-        //   }
-        // }
-
         // Get dummy blueprint and stampcard
-        final ownerStores = ref.read(ownerStoresProvider);
-        if (ownerStores.isEmpty) {
-          Carol.showTextSnackBar(text: 'You don\'t have any store yet');
-          Navigator.of(context).pop();
-        }
-        final store = ownerStores[0];
-        final storeProvider =
-            ownerStoreProviders.tryGetProviderById(id: store.id)!;
-        final storeNotifier = ref.read(storeProvider.notifier);
-        final StampCardBlueprint blueprint;
-        if (store.blueprints == null) {
-          // Load blueprints
-          final blueprints =
-              genDummyBlueprints(numBlueprints: 1, storeId: store.id);
-          storeNotifier.set(entity: store.copyWith(blueprints: blueprints));
-          blueprint = blueprints[0];
-        } else {
-          blueprint = store.blueprints![0];
-        }
-        final StampCard stampCard = genDummyStampCards(
-          numCards: 1,
-          blueprint: blueprint,
-        )[0];
+        // final ownerStores = ref.read(ownerStoresProvider);
+        // if (ownerStores.isEmpty) {
+        //   Carol.showTextSnackBar(text: 'You don\'t have any store yet');
+        //   Navigator.of(context).pop();
+        // }
+        // final store = ownerStores[0];
+        // final storeProvider =
+        //     ownerStoreProviders.tryGetProviderById(id: store.id)!;
+        // final storeNotifier = ref.read(storeProvider.notifier);
+        // final StampCardBlueprint blueprint;
+        // if (store.blueprints == null) {
+        //   // Load blueprints
+        //   final blueprints =
+        //       genDummyBlueprints(numBlueprints: 1, storeId: store.id);
+        //   storeNotifier.set(entity: store.copyWith(blueprints: blueprints));
+        //   blueprint = blueprints[0];
+        // } else {
+        //   blueprint = store.blueprints![0];
+        // }
+        // final StampCard stampCard = genDummyStampCards(
+        //   numCards: 1,
+        //   blueprint: blueprint,
+        // )[0];
 
-        Navigator.of(context).pushReplacement(MaterialPageRoute(
-          builder: (context) => OwnerGrantStampsScreen(
-            stampCard: stampCard,
-            blueprint: blueprint,
-          ),
-        ));
+        final stampCardTask = owner_apis.getStampCard(id: qr.stampCardId);
+        final blueprintTask = owner_apis.getBlueprint(id: qr.blueprintId);
+        final results = await Future.wait(
+          [stampCardTask, blueprintTask],
+          eagerError: true,
+        );
+        final stampCard = results[0] as StampCard;
+        final blueprint = results[0] as StampCardBlueprint;
+
+        if (mounted) {
+          Navigator.of(context).pushReplacement(MaterialPageRoute(
+            builder: (ctx) => OwnerGrantStampsScreen(
+              stampCard: stampCard,
+              blueprint: blueprint,
+            ),
+          ));
+        }
       },
     );
   }
@@ -239,7 +228,7 @@ class _OwnerScanQrScreenState extends ConsumerState<OwnerScanQrScreen> {
     try {
       SimpleStampCardQr.fromJson(json.decode(code));
     } catch (e) {
-      Carol.showTextSnackBar(text: 'Not valid stamp card QR');
+      Carol.showTextSnackBar(text: 'Not valid QR');
       return false;
     }
 

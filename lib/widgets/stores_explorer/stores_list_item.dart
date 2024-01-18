@@ -21,7 +21,6 @@ class _StoresListItemState extends ConsumerState<StoresListItem> {
     final store = ref.watch(widget.storeProvider);
     return ListTile(
       onTap: _onTapItem,
-      leading: Icon(store.icon),
       title: Text(store.displayName),
       trailing: Text(store.getDistanceString(0.0, 0.0)),
     );

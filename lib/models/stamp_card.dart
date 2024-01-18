@@ -1,4 +1,5 @@
 import 'package:carol/models/base_model.dart';
+import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:flutter/material.dart';
 
 class StampCard extends BaseModel {
@@ -14,7 +15,6 @@ class StampCard extends BaseModel {
   final String customerId;
   final String storeId;
   final String blueprintId;
-  final IconData? icon;
   final String? bgImageUrl;
   final bool wasDiscarded;
   final bool wasUsedOut;
@@ -34,7 +34,6 @@ class StampCard extends BaseModel {
     required this.customerId,
     required this.storeId,
     required this.blueprintId,
-    this.icon,
     this.bgImageUrl,
     required this.wasDiscarded,
     required this.wasUsedOut,
@@ -54,12 +53,52 @@ class StampCard extends BaseModel {
         customerId = json['customerId'] as String,
         storeId = json['storeId'] as String,
         blueprintId = json['blueprintId'] as String,
-        icon = json['icon'] as IconData?,
         bgImageUrl = json['bgImageUrl'] as String?,
         wasDiscarded = json['wasDiscarded'] as bool,
         wasUsedOut = json['wasUsedOut'] as bool,
         isInactive = json['isInactive'] as bool,
         super(id: json['id'] as String);
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'displayName': displayName,
+        'numCollectedStamps': numCollectedStamps,
+        'numGoalStamps': numGoalStamps,
+        'numMaxStamps': numMaxStamps,
+        'lastModifiedDate': lastModifiedDate,
+        'expirationDate': expirationDate,
+        'isFavorite': isFavorite,
+        'numMaxRedeems': numMaxRedeems,
+        'numRedeemed': numRedeemed,
+        'customerId': customerId,
+        'storeId': storeId,
+        'blueprintId': blueprintId,
+        'bgImageUrl': bgImageUrl,
+        'wasDiscarded': wasDiscarded,
+        'wasUsedOut': wasUsedOut,
+        'isInactive': isInactive,
+      };
+
+  StampCard.fromBlueprint({
+    required String id,
+    required this.customerId,
+    required StampCardBlueprint blueprint,
+  })  : displayName = blueprint.displayName,
+        numCollectedStamps = 0,
+        numGoalStamps = blueprint.numMaxStamps,
+        numMaxStamps = blueprint.numMaxStamps,
+        lastModifiedDate = DateTime.now(),
+        expirationDate = blueprint.expirationDate,
+        isFavorite = false,
+        numMaxRedeems = blueprint.numMaxRedeems,
+        numRedeemed = 0,
+        storeId = blueprint.storeId,
+        blueprintId = blueprint.id,
+        bgImageUrl = blueprint.bgImageUrl,
+        wasDiscarded = false,
+        wasUsedOut = false,
+        isInactive = false,
+        super(id: id);
 
   StampCard copyWith({
     String? id,
@@ -95,7 +134,6 @@ class StampCard extends BaseModel {
       customerId: customerId ?? this.customerId,
       storeId: storeId ?? this.storeId,
       blueprintId: blueprintId ?? this.blueprintId,
-      icon: icon ?? this.icon,
       bgImageUrl: bgImageUrl ?? this.bgImageUrl,
       wasDiscarded: wasDiscarded ?? this.wasDiscarded,
       wasUsedOut: wasUsedOut ?? this.wasUsedOut,

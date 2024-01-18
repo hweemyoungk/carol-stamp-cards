@@ -1,10 +1,11 @@
+import 'package:carol/apis/customer_apis.dart' as customer_apis;
+import 'package:carol/providers/current_user_provider.dart';
 import 'package:carol/providers/customer_screen_reloading_provider.dart';
 import 'package:carol/providers/stamp_cards_init_loaded_provider.dart';
 import 'package:carol/providers/stamp_cards_provider.dart';
 import 'package:carol/providers/store_provider.dart';
 import 'package:carol/providers/stores_init_loaded_provider.dart';
 import 'package:carol/providers/stores_provider.dart';
-import 'package:carol/utils.dart';
 import 'package:carol/widgets/cards_explorer/cards_explorer.dart';
 import 'package:carol/widgets/common/icon_button_in_progress.dart';
 import 'package:carol/widgets/main_drawer.dart';
@@ -88,31 +89,50 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
   Future<void> _loadCustomerStores() async {
     final storesInitLoadedNotifier =
         ref.read(customerStoresInitLoadedProvider.notifier);
+    final customerStoresNotifier = ref.read(customerStoresProvider.notifier);
+
     // Initial load
     if (customerStoreProviders.providers.isNotEmpty) {
       final loadedStores = customerStoreProviders.providers.entries
           .map((e) => ref.read(e.value));
-      ref.read(customerStoresProvider.notifier).appendAll(loadedStores);
+      customerStoresNotifier.appendAll(loadedStores);
       storesInitLoadedNotifier.set(true);
     } else {
       // apis.listCustomerStores(customerId: currentUser.id,);
       // Get storeIds from stampCards
       final stampCards = ref.read(stampCardsProvider);
-      final storeIdsSet = stampCards.map((e) => e.storeId).toSet();
-      final stores = storeIdsSet.map((storeId) =>
-          ref.read(customerStoreProviders.tryGetProviderById(id: storeId)!));
-      ref.read(customerStoresProvider.notifier).appendAll(stores);
-      storesInitLoadedNotifier.set(true);
+      final storeIds = stampCards.map((e) => e.storeId).toSet();
 
-      await DesignUtils.delaySeconds(2);
+      // Get Stores
+      // final stores = storeIds.map((storeId) =>
+      //     ref.read(customerStoreProviders.tryGetProviderById(id: storeId)!));
+      // await DesignUtils.delaySeconds(2);
+      final stores = await customer_apis.listStores(storeIds: storeIds);
+
+      customerStoresNotifier.appendAll(stores);
+      storesInitLoadedNotifier.set(true);
     }
   }
 
   Future<void> _reloadCardsAndStores() async {
     final customerScreenReloadingNotifier =
         ref.read(customerScreenReloadingProvider.notifier);
+    final currentUser = ref.read(currentUserProvider)!;
+    final stampCardsInitLoadedNotifier =
+        ref.read(stampCardsInitLoadedProvider.notifier);
+    final stampCardsNotifier = ref.read(stampCardsProvider.notifier);
+    final customerStoresInitLoadedNotifier =
+        ref.read(customerStoresInitLoadedProvider.notifier);
+    final customerStoresNotifier = ref.read(customerStoresProvider.notifier);
+
     customerScreenReloadingNotifier.set(true);
-    await DesignUtils.delaySeconds(2);
+    await customer_apis.reloadCustomerEntities(
+      currentUser: currentUser,
+      stampCardsInitLoadedNotifier: stampCardsInitLoadedNotifier,
+      stampCardsNotifier: stampCardsNotifier,
+      customerStoresInitLoadedNotifier: customerStoresInitLoadedNotifier,
+      customerStoresNotifier: customerStoresNotifier,
+    );
     customerScreenReloadingNotifier.set(false);
   }
 }
