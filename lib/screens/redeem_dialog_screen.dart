@@ -308,9 +308,9 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
       stampCardId: stampCardId,
       redeemRuleId: redeemRuleId,
     );
-    final redisKey =
+    final redeemRequestId =
         await customer_apis.postRedeemRequest(redeemRequest: redeemRequest);
-    return redisKey;
+    return redeemRequestId;
   }
 
   void _onPressBack() {

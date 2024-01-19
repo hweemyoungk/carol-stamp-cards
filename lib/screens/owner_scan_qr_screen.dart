@@ -173,12 +173,15 @@ class _OwnerScanQrScreenState extends ConsumerState<OwnerScanQrScreen> {
 
         final stampCardTask = owner_apis.getStampCard(id: qr.stampCardId);
         final blueprintTask = owner_apis.getBlueprint(id: qr.blueprintId);
-        final results = await Future.wait(
-          [stampCardTask, blueprintTask],
+        final [stampCard as StampCard, blueprint as StampCardBlueprint] =
+            await Future.wait(
+          [
+            stampCardTask,
+            blueprintTask,
+          ],
           eagerError: true,
         );
-        final stampCard = results[0] as StampCard;
-        final blueprint = results[0] as StampCardBlueprint;
+        // No need to register to providers: temporary data for redeem process.
 
         if (mounted) {
           Navigator.of(context).pushReplacement(MaterialPageRoute(

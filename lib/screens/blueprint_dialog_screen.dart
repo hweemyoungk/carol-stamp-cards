@@ -6,6 +6,7 @@ import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/models/user.dart';
 import 'package:carol/providers/current_user_provider.dart';
 import 'package:carol/providers/entity_provider.dart';
+import 'package:carol/providers/redeem_rule_provider.dart';
 import 'package:carol/providers/stamp_card_provider.dart';
 import 'package:carol/providers/stamp_cards_provider.dart';
 import 'package:carol/providers/store_provider.dart';
@@ -255,25 +256,25 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
           });
 
     // Assume another check
-    Future<bool> veryLongTask = DesignUtils.delaySeconds(5).then((value) {
-      if (random.nextDouble() < 0.9) {
-        return false;
-      }
-      if (mounted) {
-        setState(() {
-          _issueStatus = _IssueStatus.notIssuable;
-          // _isIssuable = false;
-          _alertRows.add(
-            const AlertRow(text: 'Violated very long check task'),
-          );
-        });
-      }
-      return true;
-    });
+    // Future<bool> veryLongTask = DesignUtils.delaySeconds(5).then((value) {
+    //   if (random.nextDouble() < 0.9) {
+    //     return false;
+    //   }
+    //   if (mounted) {
+    //     setState(() {
+    //       _issueStatus = _IssueStatus.notIssuable;
+    //       // _isIssuable = false;
+    //       _alertRows.add(
+    //         const AlertRow(text: 'Violated very long check task'),
+    //       );
+    //     });
+    //   }
+    //   return true;
+    // });
 
     final tasks = [
       numMaxIssuesTask,
-      veryLongTask,
+      // veryLongTask,
     ];
     final violations = await Future.wait(tasks);
     if (violations.every((violated) => !violated)) {
@@ -309,21 +310,15 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
       user: currentUser,
       blueprint: blueprint,
     );
-    if (newStampCard == null) {
-      // failed
-      if (mounted) {
-        setState(() {
-          _issueStatus = _IssueStatus.issueFailed;
-        });
-      }
-    } else {
-      if (mounted) {
-        setState(() {
-          _issueStatus = _IssueStatus.issueSuccessful;
-        });
-      }
+
+    if (mounted) {
+      setState(() {
+        _issueStatus = newStampCard == null
+            ? _IssueStatus.issueFailed
+            : _IssueStatus.issueSuccessful;
+      });
     }
-    await DesignUtils.delaySeconds(1);
+
     if (mounted) {
       Navigator.of(context).pop();
     }
@@ -382,6 +377,7 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
       final fetchedRedeemRules = await owner_apis.listRedeemRules(
         blueprintId: blueprint.id,
       );
+      redeemRuleProviders.tryAddProviders(entities: fetchedRedeemRules);
       final fetchedBlueprint = blueprint.copyWith(
         redeemRules: fetchedRedeemRules,
       );
@@ -399,8 +395,6 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
         builder: (context) {
           final storeProvider =
               ownerStoreProviders.tryGetProviderById(id: blueprint.storeId)!;
-          blueprint.storeId;
-          ownerStoreProviders;
           return OwnerDesignBlueprintScreen(
             designMode: BlueprintDesignMode.modify,
             storeProvider: storeProvider,

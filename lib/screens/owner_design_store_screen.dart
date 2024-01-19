@@ -319,7 +319,6 @@ class _OwnerDesignStoreScreenState
       //   profileImageUrl: null,
       // );
       final newStore = await owner_apis.getStore(id: newId);
-
       ownerStoreProviders.tryAddProvider(entity: newStore);
       ownerStoresNotifier.prepend(newStore);
       Carol.showTextSnackBar(
@@ -367,7 +366,6 @@ class _OwnerDesignStoreScreenState
       //   zipcode: _zipcode,
       // );
       final modifiedStore = await owner_apis.getStore(id: storeToPut.id);
-
       storeNotifier.set(entity: modifiedStore);
 
       Carol.showTextSnackBar(

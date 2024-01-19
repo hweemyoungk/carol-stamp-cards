@@ -16,6 +16,15 @@ class EntityProviders<T extends BaseModel> {
     return true;
   }
 
+  void tryAddProviders({
+    required Iterable<T> entities,
+    bool overwrite = true,
+  }) {
+    for (final entity in entities) {
+      tryAddProvider(entity: entity, overwrite: overwrite);
+    }
+  }
+
   StateNotifierProvider<EntityStateNotifier<T>, T>? tryGetProvider(
       {required T entity}) {
     return providers[entity.id];

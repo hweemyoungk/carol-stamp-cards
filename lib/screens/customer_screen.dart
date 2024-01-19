@@ -98,7 +98,6 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
       customerStoresNotifier.appendAll(loadedStores);
       storesInitLoadedNotifier.set(true);
     } else {
-      // apis.listCustomerStores(customerId: currentUser.id,);
       // Get storeIds from stampCards
       final stampCards = ref.read(stampCardsProvider);
       final storeIds = stampCards.map((e) => e.storeId).toSet();
@@ -108,6 +107,7 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
       //     ref.read(customerStoreProviders.tryGetProviderById(id: storeId)!));
       // await DesignUtils.delaySeconds(2);
       final stores = await customer_apis.listStores(storeIds: storeIds);
+      customerStoreProviders.tryAddProviders(entities: stores);
 
       customerStoresNotifier.appendAll(stores);
       storesInitLoadedNotifier.set(true);

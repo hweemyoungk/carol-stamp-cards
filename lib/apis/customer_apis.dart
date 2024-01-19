@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:carol/apis/utils.dart';
+import 'package:carol/models/base_model.dart';
 import 'package:carol/models/redeem_request.dart';
 import 'package:carol/models/redeem_rule.dart';
 import 'package:carol/models/stamp_card.dart';
@@ -8,11 +9,17 @@ import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/models/store.dart';
 import 'package:carol/models/user.dart';
 import 'package:carol/params/backend.dart' as backend_params;
+import 'package:carol/providers/entity_provider.dart';
+import 'package:carol/providers/stamp_card_blueprint_provider.dart';
+import 'package:carol/providers/stamp_card_provider.dart';
 import 'package:carol/providers/stamp_cards_init_loaded_provider.dart';
 import 'package:carol/providers/stamp_cards_provider.dart';
+import 'package:carol/providers/store_provider.dart';
 import 'package:carol/providers/stores_init_loaded_provider.dart';
 import 'package:carol/providers/stores_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+/// Handles both fetching and registering providers.
 Future<void> reloadCustomerEntities({
   required User currentUser,
   required StampCardsInitLoadedNotifier stampCardsInitLoadedNotifier,
@@ -43,6 +50,11 @@ Future<void> reloadCustomerEntities({
   for (final blueprint in blueprints) {
     storeMap[blueprint.storeId]!.blueprints!.add(blueprint);
   }
+
+  // Register to providers
+  customerStoreProviders.tryAddProviders(entities: stores);
+  blueprintProviders.tryAddProviders(entities: blueprints);
+  stampCardProviders.tryAddProviders(entities: stampCards);
 
   stampCardsNotifier.set(stampCards.toList());
   stampCardsInitLoadedNotifier.set(true);

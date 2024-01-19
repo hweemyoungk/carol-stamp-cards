@@ -187,6 +187,7 @@ class _DrawerItemState extends ConsumerState<DrawerItem> {
       //   );
       // });
       final stores = await listStores(ownerId: currentUser.id);
+      ownerStoreProviders.tryAddProviders(entities: stores);
       storesNotifier.appendAll(stores);
       storesInitLoadedNotifier.set(true);
     }

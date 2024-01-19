@@ -543,7 +543,6 @@ class _OwnerDesignStoreScreenState
       //   redeemRules: processedRedeemRules,
       // );
       final newBlueprint = await owner_apis.getBlueprint(id: newBlueprintId);
-
       blueprintProviders.tryAddProvider(entity: newBlueprint);
       if (store.blueprints == null) {
         // Should not happen: Blueprints must be fetched already.
@@ -555,16 +554,17 @@ class _OwnerDesignStoreScreenState
       }
 
       Carol.showTextSnackBar(
-        text: 'New Blueprint Created!',
+        text: 'Blueprint created!',
         level: SnackBarLevel.success,
       );
     } else {
       // BlueprintDesignMode.modify
 
-      final blueprintProvider =
-          blueprintProviders.tryGetProviderById(id: widget.blueprint!.id);
-      final blueprint = ref.read(blueprintProvider!);
-      final blueprintNotifier = ref.read(blueprintProvider.notifier);
+      final blueprintNotifier = ref.read(
+        blueprintProviders
+            .tryGetProviderById(id: widget.blueprint!.id)!
+            .notifier,
+      );
 
       // PUT blueprint
       // final putBlueprintTask = DesignUtils.delaySeconds(2);
@@ -598,7 +598,7 @@ class _OwnerDesignStoreScreenState
       // final processedRedeemRules = await Future.wait(redeemRuleTasks);
 
       final blueprintToPut = StampCardBlueprint(
-        id: blueprint.id,
+        id: widget.blueprint!.id,
         displayName: _displayName,
         description: _description,
         stampGrantCondDescription: _stampGrantCondDescription,
@@ -613,7 +613,7 @@ class _OwnerDesignStoreScreenState
         redeemRules: _redeemRules,
       );
       await owner_apis.putBlueprint(
-        id: blueprint.id,
+        id: widget.blueprint!.id,
         blueprint: blueprintToPut,
       );
 
@@ -631,21 +631,29 @@ class _OwnerDesignStoreScreenState
       //   redeemRules: processedRedeemRules,
       // );
 
-      final modifiedBlueprint = await owner_apis.getBlueprint(id: blueprint.id);
+      final modifiedBlueprint =
+          await owner_apis.getBlueprint(id: widget.blueprint!.id);
       if (blueprintProviders.tryGetProviderById(id: widget.blueprint!.id) ==
           null) {
         // Very unlikely but what if blueprint was deleted while modifying?
+        // Blueprint exists anyway, as server fetched modifiedBlueprint.
         Carol.showTextSnackBar(
-            text: 'Error: Invalid Blueprint. Please refresh.');
+          text: 'Error: Blueprint once deleted.',
+          level: SnackBarLevel.warn,
+        );
+        blueprintProviders.tryAddProvider(entity: modifiedBlueprint);
       } else {
         blueprintNotifier.set(entity: modifiedBlueprint);
-        Carol.showTextSnackBar(text: 'Blueprint Modified!');
+        Carol.showTextSnackBar(
+          text: 'Blueprint Modified!',
+          level: SnackBarLevel.success,
+        );
       }
     }
-
     if (mounted) {
       Navigator.of(context).pop();
     }
+    return;
   }
 
   void _onPressSelectExpDate() async {

@@ -171,6 +171,7 @@ class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
       //   storeId: stampCard.storeId,
       // )[0];
       blueprint = await customer_apis.getBlueprint(id: stampCard.blueprintId);
+      blueprintProviders.tryAddProvider(entity: blueprint);
       blueprintProvider =
           blueprintProviders.tryGetProviderById(id: stampCard.blueprintId)!;
     } else {
@@ -189,9 +190,7 @@ class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
         final redeemRules = await customer_apis.listRedeemRules(
           blueprintId: stampCard.blueprintId,
         );
-        for (final redeemRule in redeemRules) {
-          redeemRuleProviders.tryAddProvider(entity: redeemRule);
-        }
+        redeemRuleProviders.tryAddProviders(entities: redeemRules);
         blueprintNotifier.set(
           entity: blueprint.copyWith(
             redeemRules: redeemRules,

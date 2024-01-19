@@ -361,13 +361,11 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     //   numBlueprints: numBps,
     //   storeId: storeId,
     // );
-    if (_mode == StoreScreenMode.customer) {
-      final blueprints = await customer_apis.listBlueprints(storeId: storeId);
-      return blueprints.toList();
-    } else {
-      final blueprints = await owner_apis.listBlueprints(storeId: storeId);
-      return blueprints.toList();
-    }
+    final blueprints = _mode == StoreScreenMode.customer
+        ? await customer_apis.listBlueprints(storeId: storeId)
+        : await owner_apis.listBlueprints(storeId: storeId);
+    blueprintProviders.tryAddProviders(entities: blueprints);
+    return blueprints.toList();
   }
 
   // Skips in phase 1
