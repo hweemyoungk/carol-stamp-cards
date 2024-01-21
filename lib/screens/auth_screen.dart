@@ -427,6 +427,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     // Dummy
     // Set User
     // oidc['']
+    accessToken = oidc['access_token'];
     final accessTokenPayload = JWT.decode(oidc['access_token']).payload;
     final userId = accessTokenPayload['sub'];
     final userDisplayName = accessTokenPayload['preferred_username'];

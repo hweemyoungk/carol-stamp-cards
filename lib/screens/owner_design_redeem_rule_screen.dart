@@ -194,7 +194,7 @@ class _OwnerDesignRedeemRuleScreenState
         displayName: _displayName,
         description: _description,
         consumes: _consumes,
-        imageUrl: null,
+        imageId: null,
         blueprintId: widget.blueprint?.id ?? '',
       );
       Navigator.of(context).pop(newRedeemRule);

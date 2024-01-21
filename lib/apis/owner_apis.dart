@@ -89,8 +89,7 @@ Future<String> postBlueprint({
     url,
     body: json.encode(blueprintJson, toEncodable: customToEncodable),
   );
-  final location =
-      res.headers['Content-Location']!; // e.g., '/api/v1/stampCard/{uuid}'
+  final location = res.headers['Location']!; // e.g., '/api/v1/stampCard/{uuid}'
   final newId =
       backend_params.stampCardLocationPattern.firstMatch(location)![0]!;
   return newId;
@@ -179,8 +178,7 @@ Future<String> postStore({
     url,
     body: json.encode(storeJson, toEncodable: customToEncodable),
   );
-  final location =
-      res.headers['Content-Location']!; // e.g., '/api/v1/stampCard/{uuid}'
+  final location = res.headers['Location']!; // e.g., '/api/v1/stampCard/{uuid}'
   final newId =
       backend_params.stampCardLocationPattern.firstMatch(location)![0]!;
   return newId;
@@ -245,7 +243,7 @@ Future<String> grantStamp({
   );
 
   final bodyJson = {
-    'stampCardId': stampCardId,
+    'cardId': stampCardId,
     'numStamps': numStamps,
   };
 
@@ -254,7 +252,7 @@ Future<String> grantStamp({
     body: json.encode(bodyJson, toEncodable: customToEncodable),
   );
   final location =
-      res.headers['Content-Location']!; // e.g., '/api/v1/stampGrant/{uuid}'
+      res.headers['Location']!; // e.g., '/api/v1/stampGrant/{uuid}'
   final newId =
       backend_params.stampCardLocationPattern.firstMatch(location)![0]!;
   return newId;

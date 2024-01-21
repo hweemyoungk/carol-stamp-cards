@@ -1,33 +1,35 @@
-// Alicia
+// Alice
 const apigateway = '10.0.2.2:8080';
+const imageStorageHost = '10.0.2.2:8080';
+const imageStoragePath = '/a-image-storage';
 
 // Paths
 
 // Customer service
-const customerStampCardListPath = '/customer/api/v1/stampCard/list';
-const customerBlueprintListPath = '/customer/api/v1/blueprint/list';
-const customerBlueprintPath = '/customer/api/v1/blueprint';
-const customerStoreListPath = '/customer/api/v1/store/list';
-const customerNumIssuedCardsPath = '/customer/api/v1/stampCard/numIssues';
-const customerStampCardPath = '/customer/api/v1/stampCard';
-const customerRedeemRequestPath = '/customer/api/v1/redeemRequest';
-const customerRedeemRequestExistsPath = '/customer/api/v1/redeemRequest/exist';
-const customerRedeemExistsPath = '/customer/api/v1/redeem/exist';
-const customerRedeemRuleListPath = '/owner/api/v1/redeemRule';
+const customerStampCardPath = '/customer/api/v1/card'; // Done
+const customerStampCardListPath = '/customer/api/v1/card/list'; // Done
+const customerNumIssuedCardsPath = '/customer/api/v1/card/numIssues'; // Done
+const customerBlueprintPath = '/customer/api/v1/blueprint'; // Done
+const customerBlueprintListPath = '/customer/api/v1/blueprint/list'; // Done
+const customerStoreListPath = '/customer/api/v1/store/list'; // Done
+const customerRedeemRequestPath = '/customer/api/v1/redeemRequest'; // Done
+const customerRedeemRequestExistsPath =
+    '/customer/api/v1/redeemRequest/exists'; // Done
+const customerRedeemExistsPath = '/customer/api/v1/redeem/exists'; // Done
+const customerRedeemRuleListPath = '/customer/api/v1/redeemRule/list'; // Done
 
 // Owner service
-const ownerBlueprintListPath = '/owner/api/v1/blueprint/list';
-const ownerBlueprintPath = '/owner/api/v1/blueprint';
-const ownerRedeemRuleListPath = '/owner/api/v1/redeemRule/list';
-const ownerRedeemRulePath = '/owner/api/v1/redeemRule';
-const ownerStoreListPath = '/owner/api/v1/store/list';
-const ownerStorePath = '/owner/api/v1/store';
-const ownerStampGrantPath = '/owner/api/v1/stampGrant';
-const ownerStampCardPath = '/owner/api/v1/stampCard';
+const ownerBlueprintPath = '/owner/api/v1/blueprint'; // Done
+const ownerBlueprintListPath = '/owner/api/v1/blueprint/list'; // Done
+const ownerRedeemRuleListPath = '/owner/api/v1/redeemRule/list'; // Done
+const ownerStorePath = '/owner/api/v1/store'; // Done
+const ownerStoreListPath = '/owner/api/v1/store/list'; // Done
+const ownerStampGrantPath = '/owner/api/v1/stampGrant'; // Done
+const ownerStampCardPath = '/owner/api/v1/card'; // Done
 
-// Content-Location
+// Location
 const stampCardLocationPrefix =
-    '/api/v1/stampCard/'; // '/api/v1/stampCard/{uuid}'
+    '/customer/api/v1/stampCard/'; // '/api/v1/stampCard/{uuid}'
 final stampCardLocationPattern = RegExp('^($stampCardLocationPrefix).+');
 const stampGrantLocationPrefix =
     '/api/v1/stampGrant/'; // '/api/v1/stampGrant/{uuid}'

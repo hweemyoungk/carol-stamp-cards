@@ -39,8 +39,10 @@ class StampCardBlueprint extends BaseModel {
         numMaxStamps = json['numMaxStamps'] as int,
         numMaxRedeems = json['numMaxRedeems'] as int,
         numMaxIssues = json['numMaxIssues'] as int,
-        lastModifiedDate = json['lastModifiedDate'] as DateTime,
-        expirationDate = json['expirationDate'] as DateTime,
+        lastModifiedDate =
+            DateTime.fromMillisecondsSinceEpoch(json['lastModifiedDate']),
+        expirationDate =
+            DateTime.fromMillisecondsSinceEpoch(json['expirationDate']),
         storeId = json['storeId'] as String,
         bgImageUrl = json['bgImageUrl'] as String?,
         isPublishing = json['isPublishing'] as bool,

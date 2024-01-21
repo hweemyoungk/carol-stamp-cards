@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:carol/apis/utils.dart';
-import 'package:carol/models/base_model.dart';
 import 'package:carol/models/redeem_request.dart';
 import 'package:carol/models/redeem_rule.dart';
 import 'package:carol/models/stamp_card.dart';
@@ -9,7 +8,6 @@ import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/models/store.dart';
 import 'package:carol/models/user.dart';
 import 'package:carol/params/backend.dart' as backend_params;
-import 'package:carol/providers/entity_provider.dart';
 import 'package:carol/providers/stamp_card_blueprint_provider.dart';
 import 'package:carol/providers/stamp_card_provider.dart';
 import 'package:carol/providers/stamp_cards_init_loaded_provider.dart';
@@ -17,7 +15,6 @@ import 'package:carol/providers/stamp_cards_provider.dart';
 import 'package:carol/providers/store_provider.dart';
 import 'package:carol/providers/stores_init_loaded_provider.dart';
 import 'package:carol/providers/stores_provider.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Handles both fetching and registering providers.
 Future<void> reloadCustomerEntities({
@@ -62,6 +59,9 @@ Future<void> reloadCustomerEntities({
   customerStoresInitLoadedNotifier.set(true);
 }
 
+/// Assumes blueprint is not fetched (null).
+///
+/// In real practice, all Many-to-One associations are EAGERLY fetched from backend, so response includes every associated blueprint and store.
 Future<Set<StampCard>> listStampCards({
   String? customerId,
   Set<String>? stampCardIds,
@@ -74,7 +74,7 @@ Future<Set<StampCard>> listStampCards({
     backend_params.apigateway,
     backend_params.customerStampCardListPath,
     {
-      if (customerId != null) 'userId': customerId,
+      if (customerId != null) 'customerId': customerId,
       if (stampCardIds != null && stampCardIds.isNotEmpty)
         'ids': stampCardIds.toList(),
     },
@@ -178,14 +178,14 @@ Future<List<RedeemRule>> listRedeemRules({
 }
 
 Future<int> getNumIssuedCards({
-  required String userId,
+  required String customerId,
   required String blueprintId,
 }) async {
   final url = Uri.http(
     backend_params.apigateway,
     backend_params.customerNumIssuedCardsPath,
     {
-      'userId': userId,
+      'customerId': customerId,
       'blueprintId': blueprintId,
     },
   );
@@ -206,8 +206,7 @@ Future<String> postStampCard({
     url,
     body: json.encode(stampCardJson, toEncodable: customToEncodable),
   );
-  final location =
-      res.headers['Content-Location']!; // e.g., '/api/v1/stampCard/{uuid}'
+  final location = res.headers['Location']!; // e.g., '/api/v1/stampCard/{uuid}'
   final newStampCardId =
       backend_params.stampCardLocationPattern.firstMatch(location)![0]!;
   return newStampCardId;
@@ -265,7 +264,7 @@ Future<String> postRedeemRequest({
     body: json.encode(redeemRequestJson, toEncodable: customToEncodable),
   );
   final location =
-      res.headers['Content-Location']!; // e.g., '/api/v1/redeemRequest/{uuid}'
+      res.headers['Location']!; // e.g., '/api/v1/redeemRequest/{uuid}'
   final newId =
       backend_params.stampCardLocationPattern.firstMatch(location)![0]!;
   return newId;
@@ -322,4 +321,3 @@ Future<bool> redeemExists({
   }
   return (stampCards, blueprints);
 } */
-

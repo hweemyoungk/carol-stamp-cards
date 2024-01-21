@@ -6,18 +6,18 @@ class StampCard extends BaseModel {
   final String displayName;
   final int numCollectedStamps;
   final int numGoalStamps;
-  final int numMaxStamps;
+  // final int numMaxStamps;
   final DateTime lastModifiedDate;
   final DateTime expirationDate;
   final bool isFavorite;
-  final int numMaxRedeems;
+  // final int numMaxRedeems; // Blueprint can be modified
   final int numRedeemed;
   final String customerId;
   final String storeId;
   final String blueprintId;
-  final String? bgImageUrl;
-  final bool wasDiscarded;
-  final bool wasUsedOut;
+  final String? bgImageId;
+  final bool isDiscarded;
+  final bool isUsedOut;
   final bool isInactive;
 
   StampCard({
@@ -25,37 +25,39 @@ class StampCard extends BaseModel {
     required this.displayName,
     required this.numCollectedStamps,
     required this.numGoalStamps,
-    required this.numMaxStamps,
+    // required this.numMaxStamps,
     required this.lastModifiedDate,
     required this.expirationDate,
     required this.isFavorite,
-    required this.numMaxRedeems,
+    // required this.numMaxRedeems,
     required this.numRedeemed,
+    this.bgImageId,
+    required this.isDiscarded,
+    required this.isUsedOut,
+    required this.isInactive,
     required this.customerId,
     required this.storeId,
     required this.blueprintId,
-    this.bgImageUrl,
-    required this.wasDiscarded,
-    required this.wasUsedOut,
-    required this.isInactive,
   });
 
   StampCard.fromJson(Map<String, dynamic> json)
       : displayName = json['displayName'] as String,
         numCollectedStamps = json['numCollectedStamps'] as int,
         numGoalStamps = json['numGoalStamps'] as int,
-        numMaxStamps = json['numMaxStamps'] as int,
-        lastModifiedDate = json['lastModifiedDate'] as DateTime,
-        expirationDate = json['expirationDate'] as DateTime,
+        // numMaxStamps = json['numMaxStamps'] as int,
+        lastModifiedDate =
+            DateTime.fromMillisecondsSinceEpoch(json['lastModifiedDate']),
+        expirationDate =
+            DateTime.fromMillisecondsSinceEpoch(json['expirationDate']),
         isFavorite = json['isFavorite'] as bool,
-        numMaxRedeems = json['numMaxRedeems'] as int,
+        // numMaxRedeems = json['numMaxRedeems'] as int,
         numRedeemed = json['numRedeemed'] as int,
         customerId = json['customerId'] as String,
         storeId = json['storeId'] as String,
         blueprintId = json['blueprintId'] as String,
-        bgImageUrl = json['bgImageUrl'] as String?,
-        wasDiscarded = json['wasDiscarded'] as bool,
-        wasUsedOut = json['wasUsedOut'] as bool,
+        bgImageId = json['bgImageId'] as String?,
+        isDiscarded = json['wasDiscarded'] as bool,
+        isUsedOut = json['wasUsedOut'] as bool,
         isInactive = json['isInactive'] as bool,
         super(id: json['id'] as String);
 
@@ -64,18 +66,18 @@ class StampCard extends BaseModel {
         'displayName': displayName,
         'numCollectedStamps': numCollectedStamps,
         'numGoalStamps': numGoalStamps,
-        'numMaxStamps': numMaxStamps,
+        // 'numMaxStamps': numMaxStamps,
         'lastModifiedDate': lastModifiedDate,
         'expirationDate': expirationDate,
         'isFavorite': isFavorite,
-        'numMaxRedeems': numMaxRedeems,
+        // 'numMaxRedeems': numMaxRedeems,
         'numRedeemed': numRedeemed,
         'customerId': customerId,
         'storeId': storeId,
         'blueprintId': blueprintId,
-        'bgImageUrl': bgImageUrl,
-        'wasDiscarded': wasDiscarded,
-        'wasUsedOut': wasUsedOut,
+        'bgImageId': bgImageId,
+        'wasDiscarded': isDiscarded,
+        'wasUsedOut': isUsedOut,
         'isInactive': isInactive,
       };
 
@@ -86,17 +88,17 @@ class StampCard extends BaseModel {
   })  : displayName = blueprint.displayName,
         numCollectedStamps = 0,
         numGoalStamps = blueprint.numMaxStamps,
-        numMaxStamps = blueprint.numMaxStamps,
+        // numMaxStamps = blueprint.numMaxStamps,
         lastModifiedDate = DateTime.now(),
         expirationDate = blueprint.expirationDate,
         isFavorite = false,
-        numMaxRedeems = blueprint.numMaxRedeems,
+        // numMaxRedeems = blueprint.numMaxRedeems,
         numRedeemed = 0,
         storeId = blueprint.storeId,
         blueprintId = blueprint.id,
-        bgImageUrl = blueprint.bgImageUrl,
-        wasDiscarded = false,
-        wasUsedOut = false,
+        bgImageId = blueprint.bgImageUrl,
+        isDiscarded = false,
+        isUsedOut = false,
         isInactive = false,
         super(id: id);
 
@@ -105,19 +107,19 @@ class StampCard extends BaseModel {
     String? displayName,
     int? numCollectedStamps,
     int? numGoalStamps,
-    int? numMaxStamps,
+    // int? numMaxStamps,
     DateTime? lastModifiedDate,
     DateTime? expirationDate,
     bool? isFavorite,
-    int? numMaxRedeems,
+    // int? numMaxRedeems,
     int? numRedeemed,
     String? customerId,
     String? storeId,
     String? blueprintId,
     IconData? icon,
-    String? bgImageUrl,
-    bool? wasDiscarded,
-    bool? wasUsedOut,
+    String? bgImageId,
+    bool? isDiscarded,
+    bool? isUsedOut,
     bool? isInactive,
   }) {
     return StampCard(
@@ -125,18 +127,18 @@ class StampCard extends BaseModel {
       displayName: displayName ?? this.displayName,
       numCollectedStamps: numCollectedStamps ?? this.numCollectedStamps,
       numGoalStamps: numGoalStamps ?? this.numGoalStamps,
-      numMaxStamps: numMaxStamps ?? this.numMaxStamps,
+      // numMaxStamps: numMaxStamps ?? this.numMaxStamps,
       lastModifiedDate: lastModifiedDate ?? this.lastModifiedDate,
       expirationDate: expirationDate ?? this.expirationDate,
       isFavorite: isFavorite ?? this.isFavorite,
-      numMaxRedeems: numMaxRedeems ?? this.numMaxRedeems,
+      // numMaxRedeems: numMaxRedeems ?? this.numMaxRedeems,
       numRedeemed: numRedeemed ?? this.numRedeemed,
       customerId: customerId ?? this.customerId,
       storeId: storeId ?? this.storeId,
       blueprintId: blueprintId ?? this.blueprintId,
-      bgImageUrl: bgImageUrl ?? this.bgImageUrl,
-      wasDiscarded: wasDiscarded ?? this.wasDiscarded,
-      wasUsedOut: wasUsedOut ?? this.wasUsedOut,
+      bgImageId: bgImageId ?? this.bgImageId,
+      isDiscarded: isDiscarded ?? this.isDiscarded,
+      isUsedOut: isUsedOut ?? this.isUsedOut,
       isInactive: isInactive ?? this.isInactive,
     );
   }
@@ -171,6 +173,15 @@ class StampCard extends BaseModel {
       return '${(diff.inDays % 365).floor()}Y left';
     }
   }
+
+  String? get bgImageUrl {
+    return bgImageId;
+    // Skip in phase 1
+    // return Uri.http(
+    //   imageStorageHost,
+    //   '$imageStoragePath/$imageId'
+    // ).toString();
+  }
 }
 
 class SimpleStampCardQr {
@@ -190,7 +201,7 @@ class SimpleStampCardQr {
   });
 
   SimpleStampCardQr.fromJson(Map<String, dynamic> json)
-      : stampCardId = json['stampCardId'] as String,
+      : stampCardId = json['cardId'] as String,
         blueprintId = json['blueprintId'] as String,
         wasDiscarded = json['wasDiscarded'] as bool,
         wasUsedOut = json['wasUsedOut'] as bool,
@@ -203,13 +214,13 @@ class SimpleStampCardQr {
   SimpleStampCardQr.fromStampCard(StampCard stampCard)
       : stampCardId = stampCard.id,
         blueprintId = stampCard.blueprintId,
-        wasDiscarded = stampCard.wasDiscarded,
-        wasUsedOut = stampCard.wasUsedOut,
+        wasDiscarded = stampCard.isDiscarded,
+        wasUsedOut = stampCard.isUsedOut,
         isInactive = stampCard.isInactive;
 
   Map<String, dynamic> toJson() => {
         'type': type,
-        'stampCardId': stampCardId,
+        'cardId': stampCardId,
         'blueprintId': blueprintId,
         'wasDiscarded': wasDiscarded,
         'wasUsedOut': wasUsedOut,

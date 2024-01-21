@@ -37,15 +37,16 @@ class _CardScreenState extends ConsumerState<CardScreen> {
   @override
   Widget build(BuildContext context) {
     final stampCard = ref.watch(widget.stampCardProvider);
+    final blueprint = ref.watch(widget.blueprintProvider);
 
-    final hasNotices = stampCard.wasDiscarded || stampCard.wasUsedOut;
+    final hasNotices = stampCard.isDiscarded || stampCard.isUsedOut;
     final notices = Container(
       color: Theme.of(context).colorScheme.tertiaryContainer,
       child: Padding(
         padding: DesignUtils.basicWidgetEdgeInsets(),
         child: Column(
           children: [
-            if (stampCard.wasUsedOut)
+            if (stampCard.isUsedOut)
               Row(
                 children: [
                   Icon(Icons.warning,
@@ -60,7 +61,7 @@ class _CardScreenState extends ConsumerState<CardScreen> {
                   ),
                 ],
               ),
-            if (stampCard.wasDiscarded)
+            if (stampCard.isDiscarded)
               Row(
                 children: [
                   Icon(Icons.warning,
@@ -139,7 +140,7 @@ class _CardScreenState extends ConsumerState<CardScreen> {
                 Padding(
                   padding: DesignUtils.basicWidgetEdgeInsets(.5),
                   child: Text(
-                    'Max: ${stampCard.numMaxStamps}',
+                    'Max: ${blueprint.numMaxStamps}',
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.onSecondary,
                     ),
@@ -180,7 +181,7 @@ class _CardScreenState extends ConsumerState<CardScreen> {
                         ),
                       ),
                       storeInfoButton,
-                      if (!stampCard.wasDiscarded) deleteButton,
+                      if (!stampCard.isDiscarded) deleteButton,
                     ],
                   ),
                 ),

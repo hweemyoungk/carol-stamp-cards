@@ -6,15 +6,15 @@ class RedeemRule extends BaseModel {
   final String description;
   final int consumes;
   final String blueprintId;
-  final String? imageUrl;
+  final String? imageId;
 
   RedeemRule({
     required super.id,
     required this.displayName,
     required this.description,
     required this.consumes,
+    this.imageId,
     required this.blueprintId,
-    this.imageUrl,
   });
 
   RedeemRule copyWith({
@@ -24,7 +24,7 @@ class RedeemRule extends BaseModel {
     int? consumes,
     String? blueprintId,
     IconData? icon,
-    String? imageUrl,
+    String? imageId,
   }) {
     return RedeemRule(
       id: id ?? this.id,
@@ -32,9 +32,26 @@ class RedeemRule extends BaseModel {
       description: description ?? this.description,
       consumes: consumes ?? this.consumes,
       blueprintId: blueprintId ?? this.blueprintId,
-      imageUrl: imageUrl ?? this.imageUrl,
+      imageId: imageId ?? this.imageId,
     );
   }
+
+  RedeemRule.fromJson(Map<String, dynamic> json)
+      : displayName = json['displayName'] as String,
+        description = json['description'] as String,
+        consumes = json['consumes'] as int,
+        blueprintId = json['blueprintId'] as String,
+        imageId = json['imageId'] as String?,
+        super(id: json['id'] as String);
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'displayName': displayName,
+        'description': description,
+        'consumes': consumes,
+        'blueprintId': blueprintId,
+        'imageId': imageId,
+      };
 
   Widget consumesWidget(TextStyle style, Color color) => SizedBox(
         width: 50,
@@ -54,20 +71,12 @@ class RedeemRule extends BaseModel {
         ),
       );
 
-  RedeemRule.fromJson(Map<String, dynamic> json)
-      : displayName = json['displayName'] as String,
-        description = json['description'] as String,
-        consumes = json['consumes'] as int,
-        blueprintId = json['blueprintId'] as String,
-        imageUrl = json['imageUrl'] as String?,
-        super(id: json['id'] as String);
-
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'displayName': displayName,
-        'description': description,
-        'consumes': consumes,
-        'blueprintId': blueprintId,
-        'imageUrl': imageUrl,
-      };
+  String? get imageUrl {
+    return imageId;
+    // Skip in phase 1
+    // return Uri.http(
+    //   imageStorageHost,
+    //   '$imageStoragePath/$imageId'
+    // ).toString();
+  }
 }

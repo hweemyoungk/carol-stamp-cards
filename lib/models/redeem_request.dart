@@ -11,13 +11,13 @@ class RedeemRequest extends BaseModel {
   });
 
   /* RedeemRequest.fromJson(Map<String, dynamic> json)
-      : stampCardId = json['stampCardId'] as String,
+      : stampCardId = json['cardId'] as String,
         redeemRuleId = json['redeemRuleId'] as String,
         super(id: json['id'] as String); */
 
   Map<String, dynamic> toJson() => {
         'id': id,
-        'stampCardId': stampCardId,
+        'cardId': stampCardId,
         'redeemRuleId': redeemRuleId,
       };
 }

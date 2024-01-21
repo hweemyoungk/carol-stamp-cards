@@ -129,7 +129,7 @@ List<StampCard> genDummyStampCards({
     (index) {
       final numGoalStamps = random.nextInt(49) + 2;
       final numCollectedStamps = random.nextInt(numGoalStamps + 1);
-      final numMaxStamps = numGoalStamps + random.nextInt(5);
+      // final numMaxStamps = numGoalStamps + random.nextInt(5);
       final lastModifiedDate =
           DateTime.now().add(Duration(days: -(random.nextInt(99) + 1)));
       final expirationDate =
@@ -151,19 +151,19 @@ List<StampCard> genDummyStampCards({
         displayName: 'Card Name $index',
         numCollectedStamps: numCollectedStamps,
         numGoalStamps: numGoalStamps,
-        numMaxStamps: numMaxStamps,
+        // numMaxStamps: numMaxStamps,
         lastModifiedDate: lastModifiedDate,
         expirationDate: expirationDate,
         isFavorite: random.nextDouble() < 0.3,
-        numMaxRedeems: numMaxRedeems,
+        // numMaxRedeems: numMaxRedeems,
         numRedeemed: numRedeemed,
-        wasUsedOut: wasUsedOut,
-        wasDiscarded: wasDiscarded,
+        isUsedOut: wasUsedOut,
+        isDiscarded: wasDiscarded,
         isInactive: isInactive,
         customerId: customerId ?? uuid.v4(),
         storeId: blueprint?.storeId ?? uuid.v4(),
         blueprintId: blueprint?.id ?? uuid.v4(),
-        bgImageUrl: random.nextDouble() < 0.5
+        bgImageId: random.nextDouble() < 0.5
             // ? 'https://cdn.pixabay.com/photo/2018/03/31/19/29/schnitzel-3279045_1280.jpg'
             ? 'assets/images/schnitzel-3279045_1280.jpg'
             : null,
@@ -185,7 +185,7 @@ List<RedeemRule> genDummySortedRedeemRules({
       displayName: '${index + 1} Cookies',
       description: 'Presents ${index + 1} cookies.',
       blueprintId: blueprint.id,
-      imageUrl: random.nextDouble() < 0.5
+      imageId: random.nextDouble() < 0.5
           // ? 'https://cdn.pixabay.com/photo/2018/03/31/19/29/schnitzel-3279045_1280.jpg'
           ? 'assets/images/schnitzel-3279045_1280.jpg'
           : null,

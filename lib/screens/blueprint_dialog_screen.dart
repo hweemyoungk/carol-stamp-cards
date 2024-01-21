@@ -292,7 +292,7 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
     required StampCardBlueprint blueprint,
   }) async {
     final numIssuedCards = await customer_apis.getNumIssuedCards(
-      userId: user.id,
+      customerId: user.id,
       blueprintId: blueprint.id,
     );
     return blueprint.numMaxIssues <= numIssuedCards;
