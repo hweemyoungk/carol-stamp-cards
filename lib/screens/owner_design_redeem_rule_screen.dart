@@ -49,7 +49,7 @@ class _OwnerDesignRedeemRuleScreenState
             ? 'New Redeem Rule'
             : 'Modify Redeem Rule'),
         actions: [
-          if (widget.redeemRule?.id == '')
+          if (widget.redeemRule?.id == -1)
             IconButton(
               onPressed: _locallyDeleteRedeemRule,
               icon: const Icon(Icons.delete),
@@ -67,7 +67,7 @@ class _OwnerDesignRedeemRuleScreenState
             // final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
             final editConsumesEnabled =
                 widget.designMode == RedeemRuleDesignMode.create ||
-                    widget.redeemRule!.id == '';
+                    widget.redeemRule!.id == -1;
             return SingleChildScrollView(
               child: Column(
                 children: [
@@ -190,12 +190,12 @@ class _OwnerDesignRedeemRuleScreenState
     if (widget.designMode == RedeemRuleDesignMode.create) {
       // Create
       final newRedeemRule = RedeemRule(
-        id: '',
+        id: -1,
         displayName: _displayName,
         description: _description,
         consumes: _consumes,
         imageId: null,
-        blueprintId: widget.blueprint?.id ?? '',
+        blueprintId: widget.blueprint?.id ?? -1,
       );
       Navigator.of(context).pop(newRedeemRule);
     } else {
@@ -211,7 +211,7 @@ class _OwnerDesignRedeemRuleScreenState
 
   void _locallyDeleteRedeemRule() {
     // widget.redeemRule must exist
-    final deletedRedeemRule = widget.redeemRule!.copyWith(blueprintId: '');
+    final deletedRedeemRule = widget.redeemRule!.copyWith(blueprintId: -1);
     Navigator.of(context).pop(deletedRedeemRule);
   }
 }

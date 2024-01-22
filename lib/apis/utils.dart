@@ -62,11 +62,12 @@ Future<http.Response> httpPost(
     'Content-Type': 'application/json',
   },
   Object? body,
+  bool withAuthHeaders = true,
 }) async {
   final res = await httpClient.post(
     url,
     headers: {
-      ...getAuthHeaders(),
+      if (withAuthHeaders) ...getAuthHeaders(),
       if (headers != null) ...headers,
     },
     body: body,

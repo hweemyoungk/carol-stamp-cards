@@ -13,8 +13,8 @@ class StampCard extends BaseModel {
   // final int numMaxRedeems; // Blueprint can be modified
   final int numRedeemed;
   final String customerId;
-  final String storeId;
-  final String blueprintId;
+  final int storeId;
+  final int blueprintId;
   final String? bgImageId;
   final bool isDiscarded;
   final bool isUsedOut;
@@ -53,13 +53,13 @@ class StampCard extends BaseModel {
         // numMaxRedeems = json['numMaxRedeems'] as int,
         numRedeemed = json['numRedeemed'] as int,
         customerId = json['customerId'] as String,
-        storeId = json['storeId'] as String,
-        blueprintId = json['blueprintId'] as String,
+        storeId = json['storeId'] as int,
+        blueprintId = json['blueprintId'] as int,
         bgImageId = json['bgImageId'] as String?,
-        isDiscarded = json['wasDiscarded'] as bool,
-        isUsedOut = json['wasUsedOut'] as bool,
+        isDiscarded = json['isDiscarded'] as bool,
+        isUsedOut = json['isUsedOut'] as bool,
         isInactive = json['isInactive'] as bool,
-        super(id: json['id'] as String);
+        super(id: json['id'] as int);
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -76,13 +76,13 @@ class StampCard extends BaseModel {
         'storeId': storeId,
         'blueprintId': blueprintId,
         'bgImageId': bgImageId,
-        'wasDiscarded': isDiscarded,
-        'wasUsedOut': isUsedOut,
+        'isDiscarded': isDiscarded,
+        'isUsedOut': isUsedOut,
         'isInactive': isInactive,
       };
 
   StampCard.fromBlueprint({
-    required String id,
+    required int id,
     required this.customerId,
     required StampCardBlueprint blueprint,
   })  : displayName = blueprint.displayName,
@@ -103,7 +103,7 @@ class StampCard extends BaseModel {
         super(id: id);
 
   StampCard copyWith({
-    String? id,
+    int? id,
     String? displayName,
     int? numCollectedStamps,
     int? numGoalStamps,
@@ -114,8 +114,8 @@ class StampCard extends BaseModel {
     // int? numMaxRedeems,
     int? numRedeemed,
     String? customerId,
-    String? storeId,
-    String? blueprintId,
+    int? storeId,
+    int? blueprintId,
     IconData? icon,
     String? bgImageId,
     bool? isDiscarded,
@@ -186,8 +186,8 @@ class StampCard extends BaseModel {
 
 class SimpleStampCardQr {
   final String type = 'SimpleStampCardQr';
-  final String stampCardId;
-  final String blueprintId;
+  final int stampCardId;
+  final int blueprintId;
   final bool wasDiscarded;
   final bool wasUsedOut;
   final bool isInactive;
@@ -201,10 +201,10 @@ class SimpleStampCardQr {
   });
 
   SimpleStampCardQr.fromJson(Map<String, dynamic> json)
-      : stampCardId = json['cardId'] as String,
-        blueprintId = json['blueprintId'] as String,
-        wasDiscarded = json['wasDiscarded'] as bool,
-        wasUsedOut = json['wasUsedOut'] as bool,
+      : stampCardId = json['cardId'] as int,
+        blueprintId = json['blueprintId'] as int,
+        wasDiscarded = json['isDiscarded'] as bool,
+        wasUsedOut = json['isUsedOut'] as bool,
         isInactive = json['isInactive'] as bool {
     if (json['type'] != 'SimpleStampCardQr') {
       throw const FormatException('Not valid SimpleStampCardQr');
@@ -222,8 +222,8 @@ class SimpleStampCardQr {
         'type': type,
         'cardId': stampCardId,
         'blueprintId': blueprintId,
-        'wasDiscarded': wasDiscarded,
-        'wasUsedOut': wasUsedOut,
+        'isDiscarded': wasDiscarded,
+        'isUsedOut': wasUsedOut,
         'isInactive': isInactive,
       };
 }

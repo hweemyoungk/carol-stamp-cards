@@ -28,7 +28,7 @@ Uri getAuthEndpoint({
       {
         'client_id': auth_params.clientId,
         'response_type': 'code',
-        'scope': 'openid',
+        'scope': 'openid offline_access',
         'redirect_uri': auth_params.redirectUri,
         'state': state,
         'code_challenge': pkcePair.codeChallenge,
@@ -145,8 +145,8 @@ String? validateRefreshToken(
     // final refreshTokenPayload = json.decode(String.fromCharCodes(
     //     base64.decode(base64.normalize(refreshToken.split('.')[1]))));
     final refreshToken = JWT.decode(oidc['refresh_token']);
-    final refreshTokenPayload = refreshToken.payload;
-    if (refreshTokenPayload['exp'] < secondsSinceEpoch) {
+    final exp = refreshToken.payload['exp'];
+    if (exp != null && exp < secondsSinceEpoch) {
       return 'Refresh token expired';
     }
   } catch (e) {

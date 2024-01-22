@@ -41,7 +41,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   void initState() {
     super.initState();
     _bindAuthCallback();
-    _tryAutoSignIn(ignore: true);
+    _tryAutoSignIn(ignore: false);
   }
 
   Future<void> _tryAutoSignIn({bool ignore = false}) async {
@@ -53,6 +53,14 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       }
       return;
     }
+    final stampCardsInitLoadedNotifier =
+        ref.read(stampCardsInitLoadedProvider.notifier);
+    final stampCardsNotifier = ref.read(stampCardsProvider.notifier);
+    final customerStoresInitLoadedNotifier =
+        ref.read(customerStoresInitLoadedProvider.notifier);
+    final customerStoresNotifier = ref.read(customerStoresProvider.notifier);
+    final currentUserNotifier = ref.read(currentUserProvider.notifier);
+
     // 1. Get stored credential
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final userCredential = prefs.getString(shared_preferences_params.oidcKey);
@@ -92,11 +100,13 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     try {
       final res = await httpPost(
         getTokenEndpoint(),
+        headers: null,
         body: {
           'grant_type': 'refresh_token',
           'refresh_token': refreshToken,
           'client_id': auth_params.clientId,
         },
+        withAuthHeaders: false,
       );
 
       final oidc = json.decode(res.body);
@@ -125,13 +135,39 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
       prefs.setString(shared_preferences_params.oidcKey, res.body);
 
-      // TODO: Implement
-      // 4. Get User and store
-
       // 5. Navigate to DashboardScreen
       setState(() {
         _isAutoSigningIn = false;
       });
+
+      // Set User
+      accessToken = oidc['access_token'];
+      final accessTokenPayload = JWT.decode(oidc['access_token']).payload;
+      final userId = accessTokenPayload['sub'];
+      final userDisplayName = accessTokenPayload['preferred_username'];
+
+      final currentUser = User(
+        id: userId,
+        displayName: userDisplayName,
+        profileImageUrl: 'assets/images/schnitzel-3279045_1280.jpg',
+      );
+      currentUserNotifier.set(currentUser);
+
+      // Load Init Entities: Landing page is CustomerScreen, so load Customer Cards and Stores
+      await customer_apis.reloadCustomerEntities(
+        currentUser: currentUser,
+        customerStoresInitLoadedNotifier: customerStoresInitLoadedNotifier,
+        customerStoresNotifier: customerStoresNotifier,
+        stampCardsInitLoadedNotifier: stampCardsInitLoadedNotifier,
+        stampCardsNotifier: stampCardsNotifier,
+      );
+
+      // Next Screen
+      if (mounted) {
+        Navigator.of(context).pushReplacementNamed(
+          '/dashboard',
+        );
+      }
     } on Exception catch (e) {
       Carol.showTextSnackBar(
         text: e.toString(),
@@ -377,6 +413,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     try {
       final res = await httpPost(
         getTokenEndpoint(),
+        headers: null,
         body: {
           'grant_type': 'authorization_code',
           'client_id': auth_params.clientId,
@@ -384,6 +421,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           'code_verifier': _pkcePair!.codeVerifier,
           'redirect_uri': auth_params.redirectUri,
         },
+        withAuthHeaders: false,
       );
       oidc = json.decode(res.body);
 

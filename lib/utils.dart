@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:uuid/uuid.dart';
 
+const int maxInteger = 0x7FFFFFFFFFFFFFFF;
 const uuid = Uuid();
 final random = Random();
 const distance = Distance();

@@ -290,7 +290,7 @@ class _OwnerDesignStoreScreenState
       // await DesignUtils.delaySeconds(2);
       // final location = uuid.v4();
       final storeToPost = Store(
-        id: '',
+        id: -1,
         address: _address,
         description: _description,
         displayName: _displayName,

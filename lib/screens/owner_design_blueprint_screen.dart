@@ -375,7 +375,7 @@ class _OwnerDesignStoreScreenState
                                     if (outputRedeemRule == null) {
                                       return;
                                     }
-                                    if (outputRedeemRule.blueprintId == '') {
+                                    if (outputRedeemRule.blueprintId == -1) {
                                       // Deleted
                                       if (mounted) {
                                         setState(() {
@@ -508,7 +508,7 @@ class _OwnerDesignStoreScreenState
       // });
       // final processedRedeemRules = await Future.wait(redeemRuleTasks);
       final blueprintToPost = StampCardBlueprint(
-        id: '',
+        id: -1,
         displayName: _displayName,
         description: _description,
         stampGrantCondDescription: _stampGrantCondDescription,

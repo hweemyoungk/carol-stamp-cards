@@ -354,7 +354,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
 
   Future<List<StampCardBlueprint>> _loadBlueprints({
     required int numBps,
-    required String storeId,
+    required int storeId,
   }) async {
     // await Future.delayed(const Duration(seconds: 1));
     // return genDummyBlueprints(

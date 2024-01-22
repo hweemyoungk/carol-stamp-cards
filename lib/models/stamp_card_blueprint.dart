@@ -11,7 +11,7 @@ class StampCardBlueprint extends BaseModel {
   final int numMaxIssues;
   final DateTime lastModifiedDate;
   final DateTime expirationDate;
-  final String storeId;
+  final int storeId;
   final String? bgImageUrl;
   final bool isPublishing;
   List<RedeemRule>? redeemRules;
@@ -43,7 +43,7 @@ class StampCardBlueprint extends BaseModel {
             DateTime.fromMillisecondsSinceEpoch(json['lastModifiedDate']),
         expirationDate =
             DateTime.fromMillisecondsSinceEpoch(json['expirationDate']),
-        storeId = json['storeId'] as String,
+        storeId = json['storeId'] as int,
         bgImageUrl = json['bgImageUrl'] as String?,
         isPublishing = json['isPublishing'] as bool,
         redeemRules = json['redeemRules'] == null
@@ -51,14 +51,14 @@ class StampCardBlueprint extends BaseModel {
             : [
                 for (final map in json['redeemRules']) RedeemRule.fromJson(map),
               ],
-        super(id: json['id'] as String);
+        super(id: json['id'] as int);
 
   bool get wasExpired {
     return DateTime.now().isAfter(expirationDate);
   }
 
   StampCardBlueprint copyWith({
-    String? id,
+    int? id,
     String? displayName,
     String? description,
     String? stampGrantCondDescription,
@@ -67,7 +67,7 @@ class StampCardBlueprint extends BaseModel {
     int? numMaxIssues,
     DateTime? lastModifiedDate,
     DateTime? expirationDate,
-    String? storeId,
+    int? storeId,
     IconData? icon,
     String? bgImageUrl,
     bool? isPublishing,

@@ -2,8 +2,8 @@ import 'package:carol/models/base_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class EntityProviders<T extends BaseModel> {
-  final Map<String, StateNotifierProvider<EntityStateNotifier<T>, T>>
-      providers = {};
+  final Map<int, StateNotifierProvider<EntityStateNotifier<T>, T>> providers =
+      {};
 
   bool tryAddProvider({
     required T entity,
@@ -31,7 +31,7 @@ class EntityProviders<T extends BaseModel> {
   }
 
   StateNotifierProvider<EntityStateNotifier<T>, T>? tryGetProviderById(
-      {required String id}) {
+      {required int id}) {
     return providers[id];
   }
 }

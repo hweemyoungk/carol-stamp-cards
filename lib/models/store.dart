@@ -49,10 +49,10 @@ class Store extends BaseModel {
                 for (final map in json['blueprints'])
                   StampCardBlueprint.fromJson(map),
               ],
-        super(id: json['id'] as String);
+        super(id: json['id'] as int);
 
   Store copyWith({
-    String? id,
+    int? id,
     String? displayName,
     String? description,
     String? zipcode,

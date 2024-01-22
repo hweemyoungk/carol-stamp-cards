@@ -21,19 +21,25 @@ const customerRedeemRuleListPath = '/customer/api/v1/redeemRule/list'; // Done
 // Owner service
 const ownerBlueprintPath = '/owner/api/v1/blueprint'; // Done
 const ownerBlueprintListPath = '/owner/api/v1/blueprint/list'; // Done
-const ownerRedeemRuleListPath = '/owner/api/v1/redeemRule/list'; // Done
 const ownerStorePath = '/owner/api/v1/store'; // Done
 const ownerStoreListPath = '/owner/api/v1/store/list'; // Done
 const ownerStampGrantPath = '/owner/api/v1/stampGrant'; // Done
 const ownerStampCardPath = '/owner/api/v1/card'; // Done
+const ownerRedeemPath = '/owner/api/v1/redeem/list';
+const ownerRedeemRuleListPath = '/owner/api/v1/redeemRule/list'; // Done
+const ownerRedeemRequestListPath = '/owner/api/v1/redeemRequest/list'; // Done
 
 // Location
+const backendHostname = 'http://localhost:8080';
+// TODO: Split customer and owner
 const stampCardLocationPrefix =
-    '/customer/api/v1/stampCard/'; // '/api/v1/stampCard/{uuid}'
-final stampCardLocationPattern = RegExp('^($stampCardLocationPrefix).+');
+    '/customer/api/v1/card/'; // 'http://localhost:8080/customer/api/v1/stampCard/{uuid}'
+final stampCardLocationPattern =
+    RegExp('(?<=$backendHostname$stampCardLocationPrefix).+');
 const stampGrantLocationPrefix =
-    '/api/v1/stampGrant/'; // '/api/v1/stampGrant/{uuid}'
-final stampGrantLocationPattern = RegExp('^($stampCardLocationPrefix).+');
+    '/api/v1/stampGrant/'; // 'http://localhost:8080/customer/api/v1/stampGrant/{uuid}'
+final stampGrantLocationPattern =
+    RegExp('(?<=$backendHostname$stampGrantLocationPrefix).+');
 const redeemRequestLocationPrefix =
     '/api/v1/redeemRequest/'; // '/api/v1/redeemRequest/{uuid}'
 final redeemRequestLocationPattern =

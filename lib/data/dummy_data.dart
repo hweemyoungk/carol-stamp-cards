@@ -14,15 +14,15 @@ import 'package:flutter/material.dart';
 
 List<StoreNotice> genDummyNotices({
   int numNotices = 3,
-  String? storeId,
+  int? storeId,
 }) {
   return List.generate(numNotices, (index) {
     final notice = StoreNotice(
-      id: uuid.v4(),
+      id: random.nextInt(maxInteger),
       displayName: 'Notice ${index + 1} from store!',
       description:
           'Amet irure ut incididunt officia eiusmod nisi ullamco dolore. Dolore non incididunt eu nisi id commodo aute elit laborum voluptate incididunt. Incididunt aute nisi do eu dolore duis. Exercitation enim minim eiusmod veniam officia exercitation labore est velit est consequat qui. Do anim officia ut sunt. Ut elit aute dolor duis in excepteur. Consectetur deserunt ut proident quis enim.',
-      storeId: storeId ?? uuid.v4(),
+      storeId: storeId ?? random.nextInt(maxInteger),
       icon: random.nextDouble() < 0.5 ? Icons.breakfast_dining : null,
     );
     return notice;
@@ -31,11 +31,11 @@ List<StoreNotice> genDummyNotices({
 
 List<StampCardBlueprint> genDummyBlueprints({
   int numBlueprints = 3,
-  String? storeId,
+  int? storeId,
 }) {
   return List.generate(numBlueprints, (index) {
     final blueprint = StampCardBlueprint(
-      id: uuid.v4(),
+      id: random.nextInt(maxInteger),
       displayName: 'Blueprint ${index + 1}',
       description:
           'Dolor incididunt ipsum labore incididunt reprehenderit laborum quis ut Lorem enim mollit nisi velit. Fugiat occaecat et quis duis labore et et. Cupidatat et eu fugiat tempor nostrud. Cupidatat cupidatat aliquip aliquip quis. In minim officia irure qui eiusmod incididunt minim sunt reprehenderit.',
@@ -48,7 +48,7 @@ List<StampCardBlueprint> genDummyBlueprints({
           DateTime.now().add(Duration(days: random.nextInt(50) + 1)),
       numMaxRedeems: random.nextInt(4), // 0~3, where 0 is infinite
       numMaxIssues: random.nextInt(3) + 1, // 1~3
-      storeId: storeId ?? uuid.v4(),
+      storeId: storeId ?? random.nextInt(maxInteger),
       bgImageUrl: random.nextDouble() < 1.0
           // ? 'https://cdn.pixabay.com/photo/2018/03/31/19/29/schnitzel-3279045_1280.jpg'
           ? 'assets/images/schnitzel-3279045_1280.jpg'
@@ -95,7 +95,7 @@ List<Store> genDummyStores({
 }) {
   return List.generate(numStores, (index) {
     final store = Store(
-      id: uuid.v4(),
+      id: random.nextInt(maxInteger),
       displayName: 'H\'s Bakery $index',
       description:
           'Commodo irure ad adipisicing anim. Pariatur amet culpa nulla magna deserunt commodo est consequat. Aliqua mollit nostrud mollit reprehenderit enim Lorem veniam adipisicing mollit est. Officia anim aliqua anim ea aliqua laboris.\nUt in nostrud mollit elit exercitation mollit. Minim nulla aliqua commodo mollit. Excepteur cupidatat culpa incididunt esse fugiat magna aliquip consectetur. Enim exercitation cillum pariatur adipisicing. Incididunt ut consectetur commodo elit officia tempor cupidatat irure enim non occaecat reprehenderit. Eiusmod fugiat irure officia nulla aliquip aliqua incididunt nulla laboris in id esse. Est aliquip et culpa deserunt fugiat eiusmod fugiat velit dolor voluptate anim et.',
@@ -112,7 +112,7 @@ List<Store> genDummyStores({
           // ? 'https://cdn.pixabay.com/photo/2018/03/31/19/29/schnitzel-3279045_1280.jpg'
           ? 'assets/images/schnitzel-3279045_1280.jpg'
           : null,
-      ownerId: uuid.v4(),
+      ownerId: ownerId ?? uuid.v4(),
       blueprints: null,
     );
     return store;
@@ -147,7 +147,7 @@ List<StampCard> genDummyStampCards({
       final wasDiscarded = wasUsedOut ? false : random.nextDouble() < 0.2;
       final isInactive = wasUsedOut || wasDiscarded;
       final stampCard = StampCard(
-        id: uuid.v4(),
+        id: random.nextInt(maxInteger),
         displayName: 'Card Name $index',
         numCollectedStamps: numCollectedStamps,
         numGoalStamps: numGoalStamps,
@@ -161,8 +161,8 @@ List<StampCard> genDummyStampCards({
         isDiscarded: wasDiscarded,
         isInactive: isInactive,
         customerId: customerId ?? uuid.v4(),
-        storeId: blueprint?.storeId ?? uuid.v4(),
-        blueprintId: blueprint?.id ?? uuid.v4(),
+        storeId: blueprint?.storeId ?? random.nextInt(maxInteger),
+        blueprintId: blueprint?.id ?? random.nextInt(maxInteger),
         bgImageId: random.nextDouble() < 0.5
             // ? 'https://cdn.pixabay.com/photo/2018/03/31/19/29/schnitzel-3279045_1280.jpg'
             ? 'assets/images/schnitzel-3279045_1280.jpg'
@@ -180,7 +180,7 @@ List<RedeemRule> genDummySortedRedeemRules({
 }) {
   return List.generate(numRules, (index) {
     final redeemRule = RedeemRule(
-      id: uuid.v4(),
+      id: random.nextInt(maxInteger),
       consumes: (blueprint.numMaxStamps / (numRules - index)).ceil(),
       displayName: '${index + 1} Cookies',
       description: 'Presents ${index + 1} cookies.',

@@ -39,7 +39,7 @@ Future<void> reloadCustomerEntities({
   );
 
   // Bind blueprints to stores
-  final storeMap = stores.fold(<String, Store>{}, (previousValue, store) {
+  final storeMap = stores.fold(<int, Store>{}, (previousValue, store) {
     store.blueprints = [];
     previousValue[store.id] = store;
     return previousValue;
@@ -64,7 +64,7 @@ Future<void> reloadCustomerEntities({
 /// In real practice, all Many-to-One associations are EAGERLY fetched from backend, so response includes every associated blueprint and store.
 Future<Set<StampCard>> listStampCards({
   String? customerId,
-  Set<String>? stampCardIds,
+  Set<int>? stampCardIds,
 }) async {
   if (customerId == null && (stampCardIds == null || stampCardIds.isEmpty)) {
     return {};
@@ -76,12 +76,12 @@ Future<Set<StampCard>> listStampCards({
     {
       if (customerId != null) 'customerId': customerId,
       if (stampCardIds != null && stampCardIds.isNotEmpty)
-        'ids': stampCardIds.toList(),
+        'ids': stampCardIds.map((e) => e.toString()).toList(),
     },
   );
   final res = await httpGet(url); // Can throw e
 
-  List<Map<String, dynamic>> resBody = json.decode(res.body);
+  List<dynamic> resBody = json.decode(res.body);
   Set<StampCard> stampCards = {};
   for (final map in resBody) {
     final stampCard = StampCard.fromJson(map);
@@ -92,8 +92,8 @@ Future<Set<StampCard>> listStampCards({
 
 /// Unlike owner_apis, this doesn't fetch unpublished blueprints.
 Future<Set<StampCardBlueprint>> listBlueprints({
-  String? storeId,
-  Set<String>? blueprintIds,
+  int? storeId,
+  Set<int>? blueprintIds,
 }) async {
   if (storeId == null && (blueprintIds == null || blueprintIds.isEmpty)) {
     return {};
@@ -103,14 +103,14 @@ Future<Set<StampCardBlueprint>> listBlueprints({
     backend_params.apigateway,
     backend_params.customerBlueprintListPath,
     {
-      if (storeId != null) 'storeId': storeId,
+      if (storeId != null) 'storeId': storeId.toString(),
       if (blueprintIds != null && blueprintIds.isNotEmpty)
-        'ids': blueprintIds.toList(),
+        'ids': blueprintIds.map((e) => e.toString()).toList(),
     },
   );
   final res = await httpGet(url); // Can throw e
 
-  List<Map<String, dynamic>> resBody = json.decode(res.body);
+  List<dynamic> resBody = json.decode(res.body);
   Set<StampCardBlueprint> blueprints = {};
   for (final map in resBody) {
     final blueprint = StampCardBlueprint.fromJson(map);
@@ -120,7 +120,7 @@ Future<Set<StampCardBlueprint>> listBlueprints({
 }
 
 Future<StampCardBlueprint> getBlueprint({
-  required String id,
+  required int id,
 }) async {
   final url = Uri.http(
     backend_params.apigateway,
@@ -133,7 +133,7 @@ Future<StampCardBlueprint> getBlueprint({
 
 Future<Set<Store>> listStores({
   // String? ownerId, // Owner service only
-  Set<String>? storeIds,
+  Set<int>? storeIds,
 }) async {
   if (storeIds == null || storeIds.isEmpty) {
     return {};
@@ -143,12 +143,12 @@ Future<Set<Store>> listStores({
     backend_params.apigateway,
     backend_params.customerStoreListPath,
     {
-      'ids': storeIds.toList(),
+      'ids': storeIds.map((e) => e.toString()).toList(),
     },
   );
   final res = await httpGet(url); // Can throw e
 
-  List<Map<String, dynamic>> resBody = json.decode(res.body);
+  List<dynamic> resBody = json.decode(res.body);
   Set<Store> stores = {};
   for (final json in resBody) {
     final store = Store.fromJson(json);
@@ -158,17 +158,17 @@ Future<Set<Store>> listStores({
 }
 
 Future<List<RedeemRule>> listRedeemRules({
-  required String blueprintId,
+  required int blueprintId,
 }) async {
   final url = Uri.http(
     backend_params.apigateway,
     backend_params.customerRedeemRuleListPath,
     {
-      'blueprintId': blueprintId,
+      'blueprintId': blueprintId.toString(),
     },
   );
   final res = await httpGet(url);
-  List<Map<String, dynamic>> resBody = json.decode(res.body);
+  List<dynamic> resBody = json.decode(res.body);
   Set<RedeemRule> redeemRules = {};
   for (final map in resBody) {
     final redeemRule = RedeemRule.fromJson(map);
@@ -179,21 +179,21 @@ Future<List<RedeemRule>> listRedeemRules({
 
 Future<int> getNumIssuedCards({
   required String customerId,
-  required String blueprintId,
+  required int blueprintId,
 }) async {
   final url = Uri.http(
     backend_params.apigateway,
     backend_params.customerNumIssuedCardsPath,
     {
       'customerId': customerId,
-      'blueprintId': blueprintId,
+      'blueprintId': blueprintId.toString(),
     },
   );
   final res = await httpGet(url);
   return int.parse(res.body);
 }
 
-Future<String> postStampCard({
+Future<int> postStampCard({
   required StampCard stampCard,
 }) async {
   final url = Uri.http(
@@ -206,14 +206,14 @@ Future<String> postStampCard({
     url,
     body: json.encode(stampCardJson, toEncodable: customToEncodable),
   );
-  final location = res.headers['Location']!; // e.g., '/api/v1/stampCard/{uuid}'
+  final location = res.headers['location']!; // e.g., '/api/v1/stampCard/{uuid}'
   final newStampCardId =
-      backend_params.stampCardLocationPattern.firstMatch(location)![0]!;
-  return newStampCardId;
+      backend_params.stampCardLocationPattern.firstMatch(location)!.group(1)!;
+  return int.parse(newStampCardId);
 }
 
 Future<StampCard> getStampCard({
-  required String id,
+  required int id,
 }) async {
   final url = Uri.http(
     backend_params.apigateway,
@@ -225,7 +225,7 @@ Future<StampCard> getStampCard({
 }
 
 Future<void> putStampCard({
-  required String id,
+  required int id,
   required StampCard stampCard,
 }) async {
   final url = Uri.http(
@@ -240,7 +240,7 @@ Future<void> putStampCard({
 }
 
 Future<void> softDeleteStampCard({
-  required String id,
+  required int id,
 }) async {
   final url = Uri.http(
     backend_params.apigateway,
@@ -264,9 +264,9 @@ Future<String> postRedeemRequest({
     body: json.encode(redeemRequestJson, toEncodable: customToEncodable),
   );
   final location =
-      res.headers['Location']!; // e.g., '/api/v1/redeemRequest/{uuid}'
+      res.headers['location']!; // e.g., '/api/v1/redeemRequest/{uuid}'
   final newId =
-      backend_params.stampCardLocationPattern.firstMatch(location)![0]!;
+      backend_params.stampCardLocationPattern.firstMatch(location)!.group(1)!;
   return newId;
 }
 
@@ -282,11 +282,14 @@ Future<bool> redeemRequestExists({
 }
 
 Future<bool> redeemExists({
-  required String id,
+  required String redeemRequestId,
 }) async {
   final url = Uri.http(
     backend_params.apigateway,
-    '${backend_params.customerRedeemExistsPath}/$id',
+    backend_params.customerRedeemExistsPath,
+    {
+      'redeemRequestId': redeemRequestId,
+    },
   );
   final res = await httpGet(url);
   return bool.parse(res.body);
@@ -309,7 +312,7 @@ Future<bool> redeemExists({
     throw HttpException('${res.statusCode} ${res.reasonPhrase}: ${res.body}');
   }
 
-  List<Map<String, dynamic>> resBody = json.decode(res.body);
+  List<dynamic> resBody = json.decode(res.body);
   Set<StampCardBlueprint> blueprints = {};
   Set<StampCard> stampCards = {};
   for (final map in resBody) {

@@ -6,6 +6,7 @@ import 'package:carol/models/redeem_request.dart';
 import 'package:carol/models/redeem_rule.dart';
 import 'package:carol/models/stamp_card.dart';
 import 'package:carol/params/app.dart' as app_params;
+import 'package:carol/providers/current_user_provider.dart';
 import 'package:carol/providers/entity_provider.dart';
 import 'package:carol/utils.dart';
 import 'package:carol/widgets/common/circular_progress_indicator_in_button.dart';
@@ -224,7 +225,8 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
     //   final exists = random.nextDouble() < 0.5;
     //   return exists;
     // });
-    final historyExists = await customer_apis.redeemExists(id: redeemRequestId);
+    final historyExists =
+        await customer_apis.redeemExists(redeemRequestId: redeemRequestId);
     return historyExists;
   }
 
@@ -272,9 +274,10 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
   }
 
   Future<String> _postRedeemRequest({
-    required String stampCardId,
-    required String redeemRuleId,
+    required int stampCardId,
+    required int redeemRuleId,
   }) async {
+    final currentUser = ref.read(currentUserProvider)!;
     if (mounted) {
       setState(() {
         redeemButton = TextButton(
@@ -305,8 +308,13 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
     // return uuid.v4();
     final redeemRequest = RedeemRequest(
       id: '',
+      customerId: currentUser.id,
+      customerDisplayName: currentUser.displayName,
       stampCardId: stampCardId,
       redeemRuleId: redeemRuleId,
+      blueprintDisplayName: '',
+      ttlMilliseconds: app_params.watchRedeemRequestDurationSeconds * 1000,
+      isRedeemed: false,
     );
     final redeemRequestId =
         await customer_apis.postRedeemRequest(redeemRequest: redeemRequest);

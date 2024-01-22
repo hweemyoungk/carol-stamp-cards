@@ -333,7 +333,7 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
     // Post StampCard and receive location
     final stampCardDisplayName = cardNameTextField.controller!.text;
     final stampCardToPost = StampCard.fromBlueprint(
-      id: '',
+      id: -1,
       customerId: user.id,
       blueprint: blueprint,
     ).copyWith(displayName: stampCardDisplayName);

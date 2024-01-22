@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 class StoreNotice extends BaseModel {
   final String displayName;
   final String description;
-  final String storeId;
+  final int storeId;
   final IconData? icon;
 
   StoreNotice({

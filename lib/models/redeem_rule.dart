@@ -5,7 +5,7 @@ class RedeemRule extends BaseModel {
   final String displayName;
   final String description;
   final int consumes;
-  final String blueprintId;
+  final int blueprintId;
   final String? imageId;
 
   RedeemRule({
@@ -18,11 +18,11 @@ class RedeemRule extends BaseModel {
   });
 
   RedeemRule copyWith({
-    String? id,
+    int? id,
     String? displayName,
     String? description,
     int? consumes,
-    String? blueprintId,
+    int? blueprintId,
     IconData? icon,
     String? imageId,
   }) {
@@ -40,9 +40,9 @@ class RedeemRule extends BaseModel {
       : displayName = json['displayName'] as String,
         description = json['description'] as String,
         consumes = json['consumes'] as int,
-        blueprintId = json['blueprintId'] as String,
+        blueprintId = json['blueprintId'] as int,
         imageId = json['imageId'] as String?,
-        super(id: json['id'] as String);
+        super(id: json['id']);
 
   Map<String, dynamic> toJson() => {
         'id': id,

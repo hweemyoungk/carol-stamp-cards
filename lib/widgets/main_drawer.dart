@@ -2,6 +2,7 @@ import 'package:carol/apis/customer_apis.dart' as customer_apis;
 import 'package:carol/apis/owner_apis.dart';
 import 'package:carol/providers/active_drawer_item_provider.dart';
 import 'package:carol/providers/current_user_provider.dart';
+import 'package:carol/providers/stamp_card_blueprint_provider.dart';
 import 'package:carol/providers/stamp_cards_init_loaded_provider.dart';
 import 'package:carol/providers/stamp_cards_provider.dart';
 import 'package:carol/providers/store_provider.dart';
@@ -188,6 +189,9 @@ class _DrawerItemState extends ConsumerState<DrawerItem> {
       // });
       final stores = await listStores(ownerId: currentUser.id);
       ownerStoreProviders.tryAddProviders(entities: stores);
+      for (final store in stores) {
+        blueprintProviders.tryAddProviders(entities: store.blueprints ?? []);
+      }
       storesNotifier.appendAll(stores);
       storesInitLoadedNotifier.set(true);
     }
