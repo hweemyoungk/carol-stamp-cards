@@ -2,6 +2,7 @@
 const apigateway = '10.0.2.2:8080';
 const imageStorageHost = '10.0.2.2:8080';
 const imageStoragePath = '/a-image-storage';
+const locationHostname = 'http://localhost:8080';
 
 // Paths
 
@@ -18,6 +19,11 @@ const customerRedeemRequestExistsPath =
 const customerRedeemExistsPath = '/customer/api/v1/redeem/exists'; // Done
 const customerRedeemRuleListPath = '/customer/api/v1/redeemRule/list'; // Done
 
+final customerStampCardLocationPattern =
+    RegExp('(?<=$locationHostname$customerStampCardPath).+');
+final customerRedeemRequestLocationPattern =
+    RegExp('(?<=$locationHostname$customerRedeemRequestPath).+');
+
 // Owner service
 const ownerBlueprintPath = '/owner/api/v1/blueprint'; // Done
 const ownerBlueprintListPath = '/owner/api/v1/blueprint/list'; // Done
@@ -29,18 +35,11 @@ const ownerRedeemPath = '/owner/api/v1/redeem/list';
 const ownerRedeemRuleListPath = '/owner/api/v1/redeemRule/list'; // Done
 const ownerRedeemRequestListPath = '/owner/api/v1/redeemRequest/list'; // Done
 
-// Location
-const backendHostname = 'http://localhost:8080';
-// TODO: Split customer and owner
-const stampCardLocationPrefix =
-    '/customer/api/v1/card/'; // 'http://localhost:8080/customer/api/v1/stampCard/{uuid}'
-final stampCardLocationPattern =
-    RegExp('(?<=$backendHostname$stampCardLocationPrefix).+');
-const stampGrantLocationPrefix =
-    '/api/v1/stampGrant/'; // 'http://localhost:8080/customer/api/v1/stampGrant/{uuid}'
-final stampGrantLocationPattern =
-    RegExp('(?<=$backendHostname$stampGrantLocationPrefix).+');
-const redeemRequestLocationPrefix =
-    '/api/v1/redeemRequest/'; // '/api/v1/redeemRequest/{uuid}'
-final redeemRequestLocationPattern =
-    RegExp('^($redeemRequestLocationPrefix).+');
+final ownerBlueprintLocationPattern =
+    RegExp('(?<=$locationHostname$ownerBlueprintPath).+');
+final ownerStoreLocationPattern =
+    RegExp('(?<=$locationHostname$ownerStorePath).+');
+final ownerRedeemLocationPattern =
+    RegExp('(?<=$locationHostname$ownerRedeemPath).+');
+final ownerStampGrantLocationPattern =
+    RegExp('(?<=$locationHostname$ownerStampGrantPath).+');
