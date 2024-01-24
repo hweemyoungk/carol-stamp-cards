@@ -345,7 +345,7 @@ class _OwnerDesignStoreScreenState
                                                 .colorScheme
                                                 .error,
                                           )
-                                        : redeemRule.id != ''
+                                        : redeemRule.id != -1
                                             ? null
                                             : TextStyle(
                                                 color: Theme.of(context)

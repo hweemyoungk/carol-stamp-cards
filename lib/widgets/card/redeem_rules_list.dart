@@ -1,4 +1,3 @@
-import 'package:carol/models/redeem_rule.dart';
 import 'package:carol/models/stamp_card.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/providers/entity_provider.dart';
@@ -28,12 +27,7 @@ class _RedeemRulesListState extends ConsumerState<RedeemRulesList> {
   @override
   Widget build(BuildContext context) {
     final blueprint = ref.watch(widget.blueprintProvider);
-    final List<RedeemRule>? watchedRedeemRules = blueprint.redeemRules?.map(
-      (redeemRule) {
-        return ref
-            .watch(redeemRuleProviders.tryGetProviderById(id: redeemRule.id)!);
-      },
-    ).toList();
+    final redeemRules = blueprint.redeemRules;
     return Column(
       // mainAxisSize: MainAxisSize.min,
       children: [
@@ -44,7 +38,7 @@ class _RedeemRulesListState extends ConsumerState<RedeemRulesList> {
               .displaySmall!
               .copyWith(color: Theme.of(context).colorScheme.onSecondary),
         ),
-        watchedRedeemRules == null
+        redeemRules == null
             ? Padding(
                 padding: DesignUtils.basicWidgetEdgeInsets(5.0),
                 child: CircularProgressIndicator(
@@ -55,12 +49,19 @@ class _RedeemRulesListState extends ConsumerState<RedeemRulesList> {
             : ListView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: watchedRedeemRules.length,
+                itemCount: redeemRules.length,
                 itemBuilder: (ctx, index) {
-                  final redeemRule = watchedRedeemRules[index];
+                  final redeemRule = redeemRules[index];
+                  final provider = redeemRuleProviders.tryGetProviderById(
+                      id: redeemRule.id)!;
+                  // if (provider == null) {
+                  //   redeemRuleProviders.tryAddProvider(entity: redeemRule);
+                  //   provider = redeemRuleProviders.tryGetProviderById(
+                  //     id: redeemRule.id,
+                  //   )!;
+                  // }
                   return RedeemRuleListItem(
-                    redeemRuleProvider:
-                        redeemRuleProviders.providers[redeemRule.id]!,
+                    redeemRuleProvider: provider,
                     stampCardProvider: widget.stampCardProvider,
                     style: Theme.of(context).textTheme.titleLarge!,
                     color: Theme.of(context).colorScheme.onSecondary,

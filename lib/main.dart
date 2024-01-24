@@ -79,6 +79,7 @@ enum SnackBarLevel {
   info,
   warn,
   error,
+  debug,
 }
 
 extension SnackBarLevelExtension on SnackBarLevel {
@@ -90,6 +91,8 @@ extension SnackBarLevelExtension on SnackBarLevel {
         return theme.colorScheme.error;
       case SnackBarLevel.warn:
         return theme.colorScheme.errorContainer;
+      case SnackBarLevel.debug:
+        return theme.colorScheme.secondaryContainer;
       default:
         return theme.colorScheme.background;
     }
@@ -103,6 +106,8 @@ extension SnackBarLevelExtension on SnackBarLevel {
         return theme.colorScheme.onError;
       case SnackBarLevel.warn:
         return theme.colorScheme.onErrorContainer;
+      case SnackBarLevel.debug:
+        return theme.colorScheme.onSecondaryContainer;
       default:
         return theme.colorScheme.onBackground;
     }

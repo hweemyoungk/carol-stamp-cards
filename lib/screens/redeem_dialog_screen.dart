@@ -324,12 +324,11 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
   void _onPressBack() {
     // If redeemRequestId exists, try deleting RedeemRequest
     if (_redeemRequestId != null) {
-      Future.delayed(
-        const Duration(seconds: 2),
-        () {
-          return random.nextDouble() < 0.5;
-        },
-      ).then((deleted) {
+      customer_apis
+          .deleteRedeemRequest(
+        id: _redeemRequestId!,
+      )
+          .then((value) {
         if (mounted) {
           setState(() {
             _redeemStatus = RedeemStatus.redeemCanceled;

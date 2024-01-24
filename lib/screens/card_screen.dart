@@ -305,5 +305,8 @@ class _CardScreenState extends ConsumerState<CardScreen> {
       text: 'Deleted card!',
       level: SnackBarLevel.success,
     );
+    setState(() {
+      _isDeleting = false;
+    });
   }
 }

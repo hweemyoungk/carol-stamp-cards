@@ -94,7 +94,7 @@ Future<int> postBlueprint({
   final location = res.headers['location']!; // e.g., '/api/v1/stampCard/{uuid}'
   final newId = backend_params.ownerBlueprintLocationPattern
       .firstMatch(location)!
-      .group(1)!;
+      .group(0)!;
   return int.parse(newId);
 }
 
@@ -184,7 +184,7 @@ Future<int> postStore({
   );
   final location = res.headers['location']!; // e.g., '/api/v1/stampCard/{uuid}'
   final newId =
-      backend_params.ownerStoreLocationPattern.firstMatch(location)!.group(1)!;
+      backend_params.ownerStoreLocationPattern.firstMatch(location)!.group(0)!;
   return int.parse(newId);
 }
 
@@ -258,7 +258,7 @@ Future<String> grantStamp({
   final location = res.headers['location']!;
   final newId = backend_params.ownerStampGrantLocationPattern
       .firstMatch(location)!
-      .group(1)!;
+      .group(0)!;
   return newId;
 }
 
@@ -284,6 +284,6 @@ Future<String> postRedeem({
   final location = res.headers['location']!; // e.g., '/api/v1/stampCard/{uuid}'
   final newId = backend_params.customerStampCardLocationPattern
       .firstMatch(location)!
-      .group(1)!;
+      .group(0)!;
   return newId;
 }

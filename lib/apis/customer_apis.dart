@@ -8,6 +8,7 @@ import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/models/store.dart';
 import 'package:carol/models/user.dart';
 import 'package:carol/params/backend.dart' as backend_params;
+import 'package:carol/providers/redeem_rule_provider.dart';
 import 'package:carol/providers/stamp_card_blueprint_provider.dart';
 import 'package:carol/providers/stamp_card_provider.dart';
 import 'package:carol/providers/stamp_cards_init_loaded_provider.dart';
@@ -51,6 +52,9 @@ Future<void> reloadCustomerEntities({
   // Register to providers
   customerStoreProviders.tryAddProviders(entities: stores);
   blueprintProviders.tryAddProviders(entities: blueprints);
+  for (final blueprint in blueprints) {
+    redeemRuleProviders.tryAddProviders(entities: blueprint.redeemRules ?? []);
+  }
   stampCardProviders.tryAddProviders(entities: stampCards);
 
   stampCardsNotifier.set(stampCards.toList());
@@ -209,7 +213,7 @@ Future<int> postStampCard({
   final location = res.headers['location']!; // e.g., '/api/v1/stampCard/{uuid}'
   final newStampCardId = backend_params.customerStampCardLocationPattern
       .firstMatch(location)!
-      .group(1)!;
+      .group(0)!;
   return int.parse(newStampCardId);
 }
 
@@ -267,17 +271,28 @@ Future<String> postRedeemRequest({
   final location = res.headers['location']!;
   final newId = backend_params.customerRedeemRequestLocationPattern
       .firstMatch(location)!
-      .group(1)!;
+      .group(0)!;
   return newId;
+}
+
+Future<void> deleteRedeemRequest({
+  required String id,
+}) async {
+  final url = Uri.http(
+    backend_params.apigateway,
+    '${backend_params.customerRedeemRequestPath}/$id',
+  );
+  await httpDelete(url);
+  return;
 }
 
 Future<bool> redeemRequestExists({
   required String id,
 }) async {
-  final url = Uri.http(
-    backend_params.apigateway,
-    '${backend_params.customerRedeemRequestExistsPath}/$id',
-  );
+  final url = Uri.http(backend_params.apigateway,
+      backend_params.customerRedeemRequestExistsPath, {
+    'id': id,
+  });
   final res = await httpGet(url);
   return bool.parse(res.body);
 }

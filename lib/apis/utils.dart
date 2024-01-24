@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:carol/apis/auth_apis.dart';
+import 'package:carol/params/auth.dart' as auth_params;
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
@@ -78,9 +80,17 @@ Future<http.Response> httpPost(
   return res;
 }
 
-Map<String, String> getAuthHeaders() {
+Map<String, String> getAuthHeaders({
+  bool tryRefreshToken = true,
+}) {
+  if (tryRefreshToken) {
+    tryRefreshOidc(
+      currentOidc,
+      expMarginSeconds: auth_params.expMarginSeconds,
+    );
+  }
   final headers = {
-    'Authentication': 'Bearer $accessToken',
+    'Authorization': 'Bearer ${currentOidc['access_token']}',
   };
   return headers;
 }
@@ -101,4 +111,4 @@ Object? customToEncodable(dynamic value) {
 
 final httpClient = http.Client();
 
-late final String accessToken;
+late Map<String, dynamic> currentOidc;

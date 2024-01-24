@@ -1,7 +1,53 @@
+import 'dart:convert';
+
+import 'package:carol/apis/utils.dart';
+import 'package:carol/main.dart';
 import 'package:carol/params/auth.dart' as auth_params;
 import 'package:carol/utils.dart';
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:pkce/pkce.dart';
+
+Future<bool> tryRefreshOidc(
+  Map<String, dynamic> oidc, {
+  int expMarginSeconds = 0,
+}) async {
+  if (validateAccessToken(
+        currentOidc,
+        secondsSinceEpoch: getCurrentTimestampSeconds() - expMarginSeconds,
+      ) ==
+      null) {
+    return false;
+  }
+
+  // Refresh
+  final refreshToken = currentOidc['refresh_token'] as String;
+  final res = await httpPost(
+    getTokenEndpoint(),
+    headers: null,
+    body: {
+      'grant_type': 'refresh_token',
+      'refresh_token': refreshToken,
+      'client_id': auth_params.clientId,
+    },
+    withAuthHeaders: false,
+  );
+  final oidc = json.decode(res.body);
+
+  // Validate
+  final invalidOidcMsgs = validateOidc(oidc);
+  if (invalidOidcMsgs != null) {
+    Carol.showTextSnackBar(
+      text:
+          'Received invalid OIDC token${invalidOidcMsgs.fold('\n- ', (prev, cur) => '$prev\n- $cur')}',
+      level: SnackBarLevel.error,
+    );
+    return false;
+  }
+
+  // Replace
+  currentOidc = oidc;
+  return true;
+}
 
 const alphanumericChars =
     'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
