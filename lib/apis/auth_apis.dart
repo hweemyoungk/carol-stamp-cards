@@ -7,20 +7,24 @@ import 'package:carol/utils.dart';
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:pkce/pkce.dart';
 
-Future<bool> tryRefreshOidc(
+Future<Map<String, dynamic>?> tryRefreshOidc(
   Map<String, dynamic> oidc, {
   int expMarginSeconds = 0,
 }) async {
-  if (validateAccessToken(
-        currentOidc,
-        secondsSinceEpoch: getCurrentTimestampSeconds() - expMarginSeconds,
-      ) ==
-      null) {
-    return false;
-  }
-
   // Refresh
-  final refreshToken = currentOidc['refresh_token'] as String;
+  final refreshToken = oidc['refresh_token'] as String;
+  final currentTimestampSeconds = getCurrentTimestampSeconds();
+  final errorMsg = validateRefreshToken(
+    oidc,
+    secondsSinceEpoch: currentTimestampSeconds,
+  );
+  if (errorMsg != null) {
+    Carol.showTextSnackBar(
+      text: errorMsg,
+      level: SnackBarLevel.debug,
+    );
+    return null;
+  }
   final res = await httpPost(
     getTokenEndpoint(),
     headers: null,
@@ -31,22 +35,20 @@ Future<bool> tryRefreshOidc(
     },
     withAuthHeaders: false,
   );
-  final oidc = json.decode(res.body);
+  final newOidc = json.decode(res.body);
 
   // Validate
-  final invalidOidcMsgs = validateOidc(oidc);
+  final invalidOidcMsgs = validateOidc(newOidc);
   if (invalidOidcMsgs != null) {
     Carol.showTextSnackBar(
       text:
           'Received invalid OIDC token${invalidOidcMsgs.fold('\n- ', (prev, cur) => '$prev\n- $cur')}',
-      level: SnackBarLevel.error,
+      level: SnackBarLevel.debug,
     );
-    return false;
+    return null;
   }
 
-  // Replace
-  currentOidc = oidc;
-  return true;
+  return newOidc;
 }
 
 const alphanumericChars =

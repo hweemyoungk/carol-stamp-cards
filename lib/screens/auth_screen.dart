@@ -63,10 +63,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
     // 1. Get stored credential
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final userCredential = prefs.getString(shared_preferences_params.oidcKey);
+    final oidcString = prefs.getString(shared_preferences_params.oidcKey);
 
     // 2. Validate credential
-    if (userCredential == null) {
+    if (oidcString == null) {
       if (mounted) {
         setState(() {
           _isAutoSigningIn = false;
@@ -75,7 +75,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       return;
     }
 
-    final oidc = json.decode(userCredential);
+    final oidc = json.decode(oidcString);
     final secondsSinceEpoch = getCurrentTimestampSeconds();
 
     final refreshTokenMsg = validateRefreshToken(
@@ -96,29 +96,13 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     }
 
     // 3. Refresh to latest credential
-    final refreshToken = oidc['refresh_token'] as String;
     try {
-      final res = await httpPost(
-        getTokenEndpoint(),
-        headers: null,
-        body: {
-          'grant_type': 'refresh_token',
-          'refresh_token': refreshToken,
-          'client_id': auth_params.clientId,
-        },
-        withAuthHeaders: false,
-      );
-
-      final oidc = json.decode(res.body);
-
-      // Verify OIDC token
-      final invalidOidcMsgs = validateOidc(oidc);
-      if (invalidOidcMsgs != null) {
-        // Invalid OIDC token
+      final newOidc = await tryRefreshOidc(oidc);
+      if (newOidc == null) {
+        // Got invalid OIDC
         prefs.remove(shared_preferences_params.oidcKey);
         Carol.showTextSnackBar(
-          text:
-              'Failed to auto sign in. Please sign in manually.${invalidOidcMsgs.fold('\n- ', (prev, cur) => '$prev\n- $cur')}',
+          text: 'Failed to auto sign in. Please sign in manually.',
           level: SnackBarLevel.error,
         );
         // Pop all
@@ -128,12 +112,17 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         return;
       }
 
+      // Replace
+      currentOidc = newOidc;
+
+      // Set timer
+      setRefreshOidcToggleTimer(oidc: newOidc);
+
       // Store credential
       // TEST: stale refresh token
       // final staleOidc = getStaleRefreshOidc(oidc);
       // prefs.setString(shared_preferences_params.oidcKey, json.encode(staleOidc));
-
-      prefs.setString(shared_preferences_params.oidcKey, res.body);
+      prefs.setString(shared_preferences_params.oidcKey, json.encode(newOidc));
 
       // 5. Navigate to DashboardScreen
       setState(() {
@@ -141,8 +130,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       });
 
       // Set User
-      currentOidc = oidc;
-      final accessTokenPayload = JWT.decode(oidc['access_token']).payload;
+      final accessTokenPayload = JWT.decode(newOidc['access_token']).payload;
       final userId = accessTokenPayload['sub'];
       final userDisplayName = accessTokenPayload['preferred_username'];
 
