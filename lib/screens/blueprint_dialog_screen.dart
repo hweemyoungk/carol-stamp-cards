@@ -379,7 +379,7 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
       );
       redeemRuleProviders.tryAddProviders(entities: fetchedRedeemRules);
       final fetchedBlueprint = blueprint.copyWith(
-        redeemRules: fetchedRedeemRules,
+        redeemRules: fetchedRedeemRules.toList(),
       );
       blueprintNotifier.set(entity: fetchedBlueprint);
       blueprint = fetchedBlueprint;

@@ -30,11 +30,16 @@ const ownerStorePath = '/owner/api/v1/store';
 const ownerStoreListPath = '/owner/api/v1/store/list';
 const ownerStampGrantPath = '/owner/api/v1/stampGrant';
 const ownerStampCardPath = '/owner/api/v1/card';
-const ownerRedeemPath = '/owner/api/v1/redeem'; // TODO: Implement backend
+const ownerRedeemPath = '/owner/api/v1/redeem'; // TODO: Implement front/backend
 const ownerRedeemListPath =
-    '/owner/api/v1/redeem/list'; // TODO: Implement backend
+    '/owner/api/v1/redeem/list'; // TODO: Implement front/backend
 const ownerRedeemRuleListPath = '/owner/api/v1/redeemRule/list';
 const ownerRedeemRequestListPath = '/owner/api/v1/redeemRequest/list';
+const _ownerRedeemRequestApprovePath =
+    '/owner/api/v1/redeemRequest/{id}/approve';
+String ownerRedeemRequestApprovePath(String redeemRequestId) {
+  return _ownerRedeemRequestApprovePath.replaceFirst('{id}', redeemRequestId);
+}
 
 final ownerBlueprintLocationPattern =
     RegExp('(?<=$locationHostname$ownerBlueprintPath/).+');

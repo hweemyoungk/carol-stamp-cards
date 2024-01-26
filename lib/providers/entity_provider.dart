@@ -34,6 +34,9 @@ class EntityProviders<T extends BaseModel> {
       {required int id}) {
     return providers[id];
   }
+
+  Iterable<MapEntry<int, StateNotifierProvider<EntityStateNotifier<T>, T>>>
+      get entries => providers.entries;
 }
 
 class EntityStateNotifier<T extends BaseModel> extends StateNotifier<T> {

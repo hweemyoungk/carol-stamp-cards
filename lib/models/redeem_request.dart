@@ -1,3 +1,6 @@
+import 'package:carol/apis/utils.dart';
+import 'package:flutter/material.dart';
+
 class RedeemRequest {
   final String id;
   final int stampCardId;
@@ -5,7 +8,7 @@ class RedeemRequest {
   final String customerDisplayName;
   final String blueprintDisplayName;
   final int redeemRuleId;
-  final int ttlMilliseconds;
+  final int expMilliseconds;
   final bool isRedeemed;
 
   RedeemRequest({
@@ -15,7 +18,7 @@ class RedeemRequest {
     required this.stampCardId,
     required this.redeemRuleId,
     required this.blueprintDisplayName,
-    required this.ttlMilliseconds,
+    required this.expMilliseconds,
     required this.isRedeemed,
   });
 
@@ -25,7 +28,7 @@ class RedeemRequest {
         customerDisplayName = json['customerDisplayName'] as String,
         redeemRuleId = json['redeemRuleId'] as int,
         blueprintDisplayName = json['blueprintDisplayName'] as String,
-        ttlMilliseconds = json['ttlMilliseconds'] as int,
+        expMilliseconds = json['expMilliseconds'] as int,
         isRedeemed = json['isRedeemed'] as bool,
         id = json['id'] as String;
 
@@ -36,7 +39,15 @@ class RedeemRequest {
         'cardId': stampCardId,
         'redeemRuleId': redeemRuleId,
         'blueprintDisplayName': blueprintDisplayName,
-        'ttlMilliseconds': ttlMilliseconds,
+        'expMilliseconds': expMilliseconds,
         'isRedeemed': isRedeemed,
       };
+
+  int get ttlMilliseconds =>
+      expMilliseconds - getCurrentTimestampMilliseconds();
+
+  bool get expired => ttlMilliseconds < 0;
+
+  Text get remainingSecondsWidget =>
+      Text('${(ttlMilliseconds / 1000).floor().toString()}s');
 }

@@ -87,7 +87,7 @@ Future<http.Response> httpPost(
 }
 
 Future<Map<String, String>> getAuthHeaders() async {
-  if (refreshOidc) {
+  if (_refreshOidc) {
     final newOidc = await tryRefreshOidc(
       currentOidc,
       expMarginSeconds: auth_params.expMarginSeconds,
@@ -123,11 +123,11 @@ void setRefreshOidcToggleTimer({required Map<String, dynamic> oidc}) {
     delaySeconds = accessTokenExpiresInSeconds - auth_params.expMarginSeconds;
   }
 
-  refreshOidc = false;
+  _refreshOidc = false;
   Future.delayed(
     Duration(seconds: delaySeconds),
     () {
-      refreshOidc = true;
+      _refreshOidc = true;
     },
   );
 }
@@ -146,7 +146,13 @@ Object? customToEncodable(dynamic value) {
   return value;
 }
 
+int getCurrentTimestampMilliseconds() =>
+    DateTime.timestamp().millisecondsSinceEpoch;
+
+int getCurrentTimestampSeconds() =>
+    (getCurrentTimestampMilliseconds() / 1000).ceil();
+
 final httpClient = http.Client();
 
-bool refreshOidc = true;
+bool _refreshOidc = true;
 late Map<String, dynamic> currentOidc;

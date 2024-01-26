@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer' as developer;
 
 import 'package:app_links/app_links.dart';
 import 'package:carol/apis/auth_apis.dart';
@@ -130,6 +131,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       });
 
       // Set User
+      developer.log('[+]access token: ${newOidc['access_token']}');
+
       final accessTokenPayload = JWT.decode(newOidc['access_token']).payload;
       final userId = accessTokenPayload['sub'];
       final userDisplayName = accessTokenPayload['preferred_username'];

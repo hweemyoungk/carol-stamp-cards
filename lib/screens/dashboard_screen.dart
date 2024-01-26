@@ -21,10 +21,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     if (activeDrawerItemEnum == DrawerItemEnum.customer) {
       content = CustomerScreen();
     } else if (activeDrawerItemEnum == DrawerItemEnum.owner) {
-      content = const OwnerScreen();
+      content = OwnerScreen();
     } else {
-      content = const Scaffold(
-        body: Center(child: Text('Not implemented yet...')),
+      content = Scaffold(
+        appBar: AppBar(),
+        body: const Center(child: Text('Not implemented yet...')),
       );
     }
 

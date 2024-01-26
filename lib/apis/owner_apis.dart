@@ -3,12 +3,51 @@ import 'dart:convert';
 import 'package:carol/apis/utils.dart';
 import 'package:carol/data/dummy_data.dart';
 import 'package:carol/models/redeem.dart';
+import 'package:carol/models/redeem_request.dart';
 import 'package:carol/models/redeem_rule.dart';
 import 'package:carol/models/stamp_card.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/models/store.dart';
 import 'package:carol/params/backend.dart' as backend_params;
+import 'package:carol/providers/redeem_requests_init_loaded_provider.dart';
+import 'package:carol/providers/redeem_requests_provider.dart';
+import 'package:carol/providers/redeem_rule_provider.dart';
+import 'package:carol/providers/stamp_card_blueprint_provider.dart';
+import 'package:carol/providers/store_provider.dart';
 import 'package:carol/utils.dart';
+
+Future<void> reloadOwnerRedeemRequests({
+  required RedeemRequestsInitLoadedNotifier
+      ownerRedeemRequestsInitLoadedNotifier,
+  required RedeemRequestsNotifier ownerRedeemRequestsNotifier,
+  required String ownerId,
+}) async {
+  ownerRedeemRequestsInitLoadedNotifier.set(false);
+
+  // Load redeem requests
+  final redeemRequests = await listRedeemRequests(ownerId: ownerId);
+  ownerRedeemRequestsNotifier.set(redeemRequests);
+
+  // Load associated redeem rules
+  final redeemRules = await listRedeemRules(
+    ids: redeemRequests.map((e) => e.redeemRuleId).toSet(),
+  );
+  redeemRuleProviders.tryAddProviders(entities: redeemRules);
+
+  // Load associated blueprints
+  final blueprints = await listBlueprints(
+    blueprintIds: redeemRules.map((e) => e.blueprintId).toSet(),
+  );
+  blueprintProviders.tryAddProviders(entities: blueprints);
+
+  // Load associated stores
+  final stores = await listStores(
+    storeIds: blueprints.map((e) => e.storeId).toSet(),
+  );
+  ownerStoreProviders.tryAddProviders(entities: stores);
+
+  ownerRedeemRequestsInitLoadedNotifier.set(true);
+}
 
 Future<List<RedeemRule>> listDummyRedeemRules({
   required StampCardBlueprint blueprint,
@@ -22,14 +61,20 @@ Future<List<RedeemRule>> listDummyRedeemRules({
   );
 }
 
-Future<List<RedeemRule>> listRedeemRules({
-  required int blueprintId,
+Future<Set<RedeemRule>> listRedeemRules({
+  int? blueprintId,
+  Set<int>? ids,
 }) async {
+  if (blueprintId == null && (ids == null || ids.isEmpty)) {
+    return {};
+  }
   final url = Uri.http(
     backend_params.apigateway,
     backend_params.ownerRedeemRuleListPath,
     {
-      'blueprintId': blueprintId.toString(),
+      if (blueprintId != null) 'blueprintId': blueprintId.toString(),
+      if (ids != null && ids.isNotEmpty)
+        'ids': ids.map((e) => e.toString()).toList(),
     },
   );
   final res = await httpGet(url);
@@ -39,7 +84,37 @@ Future<List<RedeemRule>> listRedeemRules({
     final redeemRule = RedeemRule.fromJson(map);
     redeemRules.add(redeemRule);
   }
-  return redeemRules.toList();
+  return redeemRules;
+}
+
+Future<List<RedeemRequest>> listRedeemRequests({
+  required String ownerId,
+}) async {
+  final url = Uri.http(
+    backend_params.apigateway,
+    backend_params.ownerRedeemRequestListPath,
+    {
+      'ownerId': ownerId,
+    },
+  );
+  final res = await httpGet(url);
+  List<dynamic> resBody = json.decode(res.body);
+  Set<RedeemRequest> redeemRequests = {};
+  for (final map in resBody) {
+    final redeemRule = RedeemRequest.fromJson(map);
+    redeemRequests.add(redeemRule);
+  }
+  return redeemRequests.toList();
+}
+
+Future<void> approveRedeemRequest({
+  required String redeemRequestId,
+}) async {
+  final url = Uri.http(
+    backend_params.apigateway,
+    backend_params.ownerRedeemRequestApprovePath(redeemRequestId),
+  );
+  await httpPost(url);
 }
 
 /// Unlike customer_apis, this fetches unpublished blueprints as well.

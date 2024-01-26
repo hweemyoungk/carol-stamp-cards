@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 
 import 'package:carol/apis/customer_apis.dart' as customer_apis;
 import 'package:carol/main.dart';
@@ -126,6 +127,7 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
         stampCardId: stampCard.id,
         redeemRuleId: redeemRule.id,
       );
+      developer.log('[+]RedeemRequestId: $_redeemRequestId');
     }
 
     // 2. Watch request exists
@@ -173,6 +175,8 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
         text: 'Redeem success!',
         level: SnackBarLevel.success,
       );
+
+      // Refresh Card
     } else {
       // 3-2. If not, redeem failed. (probably because owner didn't allowed or timeout)
       // 3-2.1. Change Progress with to Refresh widget
@@ -313,7 +317,7 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
       stampCardId: stampCardId,
       redeemRuleId: redeemRuleId,
       blueprintDisplayName: '',
-      ttlMilliseconds: app_params.watchRedeemRequestDurationSeconds * 1000,
+      expMilliseconds: -1,
       isRedeemed: false,
     );
     final redeemRequestId =

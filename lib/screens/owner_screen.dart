@@ -1,25 +1,38 @@
+import 'package:carol/apis/owner_apis.dart';
 import 'package:carol/models/stamp_card.dart';
+import 'package:carol/providers/current_user_provider.dart';
+import 'package:carol/providers/redeem_requests_init_loaded_provider.dart';
+import 'package:carol/providers/redeem_requests_provider.dart';
 import 'package:carol/screens/owner_design_store_screen.dart';
 import 'package:carol/screens/owner_scan_qr_screen.dart';
 import 'package:carol/widgets/main_drawer.dart';
+import 'package:carol/widgets/redeem_requests_explorer/redeem_requests_explorer.dart';
 import 'package:carol/widgets/stores_explorer/stores_explorer.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class OwnerScreen extends StatefulWidget {
-  const OwnerScreen({super.key});
+class OwnerScreen extends ConsumerStatefulWidget {
+  OwnerScreen({super.key});
+
+  final ownerScreenBodies = {
+    0: const StoresExplorer(),
+    1: const RedeemRequestsExplorer(),
+  };
 
   @override
-  State<OwnerScreen> createState() => _OwnerScreenState();
+  ConsumerState<OwnerScreen> createState() => _OwnerScreenState();
 }
 
-class _OwnerScreenState extends State<OwnerScreen> {
+class _OwnerScreenState extends ConsumerState<OwnerScreen> {
+  int _activeBottomItemIndex = 0;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
-          const Positioned(
-            child: StoresExplorer(),
+          Positioned(
+            child: widget.ownerScreenBodies[_activeBottomItemIndex]!,
           ),
           Positioned(
             bottom: 30,
@@ -34,14 +47,23 @@ class _OwnerScreenState extends State<OwnerScreen> {
       ),
       appBar: AppBar(
         title: const Text('Owner\'s Screen'),
-        actions: [
-          IconButton(
-            onPressed: _onPressNewStore,
-            icon: const Icon(Icons.add),
+        actions: _getAppBarActions(),
+      ),
+      drawer: const MainDrawer(),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _activeBottomItemIndex,
+        onTap: _onTapBottomItem,
+        items: const [
+          BottomNavigationBarItem(
+            label: 'Stores',
+            icon: Icon(Icons.store),
+          ),
+          BottomNavigationBarItem(
+            label: 'Redeem Requests',
+            icon: Icon(Icons.approval),
           ),
         ],
       ),
-      drawer: const MainDrawer(),
     );
   }
 
@@ -65,5 +87,63 @@ class _OwnerScreenState extends State<OwnerScreen> {
     //   return;
     // }
     // Carol.showTextSnackBar(text: 'Got stamp card id: ${qr.stampCardId}');
+  }
+
+  void _onTapBottomItem(int value) {
+    if (value == 1) {
+      // RedeemRequestExplorer
+      final ownerRedeemRequestsInitLoaded =
+          ref.read(ownerRedeemRequestsInitLoadedProvider);
+      final ownerRedeemRequestsInitLoadedNotifier =
+          ref.read(ownerRedeemRequestsInitLoadedProvider.notifier);
+      final ownerRedeemRequestsNotifier =
+          ref.read(ownerRedeemRequestsProvider.notifier);
+      final currentUser = ref.read(currentUserProvider)!;
+
+      if (!ownerRedeemRequestsInitLoaded) {
+        reloadOwnerRedeemRequests(
+          ownerRedeemRequestsInitLoadedNotifier:
+              ownerRedeemRequestsInitLoadedNotifier,
+          ownerRedeemRequestsNotifier: ownerRedeemRequestsNotifier,
+          ownerId: currentUser.id,
+        );
+      }
+    }
+
+    if (mounted) {
+      setState(() {
+        _activeBottomItemIndex = value;
+      });
+    }
+  }
+
+  List<Widget>? _getAppBarActions() {
+    if (_activeBottomItemIndex == 0) {
+      return [
+        IconButton(
+          onPressed: _onPressNewStore,
+          icon: const Icon(Icons.add),
+        ),
+      ];
+    } else {
+      final ownerRedeemRequestsInitLoadedNotifier =
+          ref.read(ownerRedeemRequestsInitLoadedProvider.notifier);
+      final ownerRedeemRequestsNotifier =
+          ref.read(ownerRedeemRequestsProvider.notifier);
+      final ownerId = ref.read(currentUserProvider)!.id;
+      return [
+        IconButton(
+          onPressed: () {
+            reloadOwnerRedeemRequests(
+              ownerRedeemRequestsInitLoadedNotifier:
+                  ownerRedeemRequestsInitLoadedNotifier,
+              ownerRedeemRequestsNotifier: ownerRedeemRequestsNotifier,
+              ownerId: ownerId,
+            );
+          },
+          icon: const Icon(Icons.refresh),
+        ),
+      ];
+    }
   }
 }

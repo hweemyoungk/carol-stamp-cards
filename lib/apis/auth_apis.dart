@@ -119,9 +119,6 @@ List<String>? validateOidc(Map<String, dynamic> oidc) {
   return msgs;
 }
 
-int getCurrentTimestampSeconds() =>
-    (DateTime.timestamp().millisecondsSinceEpoch / 1000).ceil();
-
 String? validateNotBeforePolicy(
   Map<String, dynamic> oidc, {
   required int secondsSinceEpoch,
