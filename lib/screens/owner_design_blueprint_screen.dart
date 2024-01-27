@@ -37,6 +37,7 @@ class _OwnerDesignStoreScreenState
   late TextEditingController _maxStampController;
   late int _numMaxStamps;
   late int _numMaxRedeems;
+  late int _numMaxIssuesPerCustomer;
   late int _numMaxIssues;
   // late DateTime _lastModifiedDate;
   final List<RedeemRule> _redeemRules = [];
@@ -254,14 +255,15 @@ class _OwnerDesignStoreScreenState
                             ),
                           ),
                         ),
-                        // late int _numMaxIssues;
+                        // late int _numMaxIssuesPerCustomer;
                         Padding(
                           padding: DesignUtils.basicWidgetEdgeInsets(),
                           child: SizedBox(
                             width: 100,
                             child: TextFormField(
-                              initialValue:
-                                  widget.blueprint?.numMaxStamps.toString(),
+                              initialValue: widget
+                                  .blueprint?.numMaxIssuesPerCustomer
+                                  .toString(),
                               style: Theme.of(context)
                                   .textTheme
                                   .bodyLarge!
@@ -280,6 +282,40 @@ class _OwnerDesignStoreScreenState
                                     int.parse(value) < 1 ||
                                     100 < int.parse(value)) {
                                   return 'Must be in 1~100';
+                                }
+                                return null;
+                              },
+                              keyboardType: TextInputType.number,
+                              onSaved: (newValue) {
+                                _numMaxIssuesPerCustomer = int.parse(newValue!);
+                              },
+                            ),
+                          ),
+                        ),
+                        // late int _numMaxIssues;
+                        Padding(
+                          padding: DesignUtils.basicWidgetEdgeInsets(),
+                          child: SizedBox(
+                            width: 100,
+                            child: TextFormField(
+                              initialValue:
+                                  widget.blueprint?.numMaxIssues.toString(),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyLarge!
+                                  .copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onBackground),
+                              decoration: const InputDecoration(
+                                label: Text('Max Total Issues(0 for infinite)'),
+                              ),
+                              validator: (value) {
+                                // 0 is infinite
+                                if (value == null ||
+                                    int.tryParse(value) == null ||
+                                    int.parse(value) < 0) {
+                                  return 'Must be 0+ integer';
                                 }
                                 return null;
                               },
@@ -516,6 +552,7 @@ class _OwnerDesignStoreScreenState
         lastModifiedDate: DateTime.now(),
         expirationDate: _expirationDate!,
         numMaxRedeems: _numMaxRedeems,
+        numMaxIssuesPerCustomer: _numMaxIssuesPerCustomer,
         numMaxIssues: _numMaxIssues,
         storeId: store.id,
         bgImageUrl: null,
@@ -606,6 +643,7 @@ class _OwnerDesignStoreScreenState
         lastModifiedDate: DateTime.now(),
         expirationDate: _expirationDate!,
         numMaxRedeems: _numMaxRedeems,
+        numMaxIssuesPerCustomer: _numMaxIssuesPerCustomer,
         numMaxIssues: _numMaxIssues,
         storeId: store.id,
         bgImageUrl: null,

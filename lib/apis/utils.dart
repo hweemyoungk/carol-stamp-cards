@@ -46,7 +46,7 @@ Future<http.Response> httpDelete(
 Future<http.Response> httpPut(
   Uri url, {
   Map<String, String>? headers = const {
-    'Content-Type': 'application/json',
+    'Content-Type': 'application/json;charset=UTF-8',
   },
   Object? body,
 }) async {
@@ -67,7 +67,7 @@ Future<http.Response> httpPut(
 Future<http.Response> httpPost(
   Uri url, {
   Map<String, String>? headers = const {
-    'Content-Type': 'application/json',
+    'Content-Type': 'application/json;charset=UTF-8',
   },
   Object? body,
   bool withAuthHeaders = true,

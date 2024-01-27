@@ -8,6 +8,7 @@ class StampCardBlueprint extends BaseModel {
   final String stampGrantCondDescription;
   final int numMaxStamps;
   final int numMaxRedeems;
+  final int numMaxIssuesPerCustomer;
   final int numMaxIssues;
   final DateTime lastModifiedDate;
   final DateTime expirationDate;
@@ -25,6 +26,7 @@ class StampCardBlueprint extends BaseModel {
     required this.lastModifiedDate,
     required this.expirationDate,
     required this.numMaxRedeems,
+    required this.numMaxIssuesPerCustomer,
     required this.numMaxIssues,
     required this.storeId,
     required this.bgImageUrl,
@@ -38,6 +40,7 @@ class StampCardBlueprint extends BaseModel {
         stampGrantCondDescription = json['stampGrantCondDescription'] as String,
         numMaxStamps = json['numMaxStamps'] as int,
         numMaxRedeems = json['numMaxRedeems'] as int,
+        numMaxIssuesPerCustomer = json['numMaxIssuesPerCustomer'] as int,
         numMaxIssues = json['numMaxIssues'] as int,
         lastModifiedDate =
             DateTime.fromMillisecondsSinceEpoch(json['lastModifiedDate']),
@@ -64,6 +67,7 @@ class StampCardBlueprint extends BaseModel {
     String? stampGrantCondDescription,
     int? numMaxStamps,
     int? numMaxRedeems,
+    int? numMaxIssuesPerCustomer,
     int? numMaxIssues,
     DateTime? lastModifiedDate,
     DateTime? expirationDate,
@@ -81,6 +85,8 @@ class StampCardBlueprint extends BaseModel {
           stampGrantCondDescription ?? this.stampGrantCondDescription,
       numMaxStamps: numMaxStamps ?? this.numMaxStamps,
       numMaxRedeems: numMaxRedeems ?? this.numMaxRedeems,
+      numMaxIssuesPerCustomer:
+          numMaxIssuesPerCustomer ?? this.numMaxIssuesPerCustomer,
       numMaxIssues: numMaxIssues ?? this.numMaxIssues,
       lastModifiedDate: lastModifiedDate ?? this.lastModifiedDate,
       expirationDate: expirationDate ?? this.expirationDate,
@@ -99,6 +105,7 @@ class StampCardBlueprint extends BaseModel {
         'numMaxStamps': numMaxStamps,
         'numMaxRedeems': numMaxRedeems,
         'numMaxIssues': numMaxIssues,
+        'numMaxIssuesPerCustomer': numMaxIssuesPerCustomer,
         'lastModifiedDate': lastModifiedDate,
         'expirationDate': expirationDate,
         'storeId': storeId,

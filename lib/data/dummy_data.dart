@@ -47,7 +47,8 @@ List<StampCardBlueprint> genDummyBlueprints({
       expirationDate:
           DateTime.now().add(Duration(days: random.nextInt(50) + 1)),
       numMaxRedeems: random.nextInt(4), // 0~3, where 0 is infinite
-      numMaxIssues: random.nextInt(3) + 1, // 1~3
+      numMaxIssuesPerCustomer: random.nextInt(3) + 1, // 1~3
+      numMaxIssues: random.nextInt(101), // 0~100, where 0 is infinite
       storeId: storeId ?? random.nextInt(maxInteger),
       bgImageUrl: random.nextDouble() < 1.0
           // ? 'https://cdn.pixabay.com/photo/2018/03/31/19/29/schnitzel-3279045_1280.jpg'
