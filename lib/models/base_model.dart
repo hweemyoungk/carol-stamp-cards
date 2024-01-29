@@ -1,7 +1,11 @@
 abstract class BaseModel {
   final int id;
+  final bool isDeleted;
 
-  BaseModel({required this.id});
+  BaseModel({
+    required this.id,
+    required this.isDeleted,
+  });
 
   @override
   bool operator ==(Object other) =>

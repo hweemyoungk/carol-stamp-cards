@@ -10,6 +10,7 @@ class RedeemRule extends BaseModel {
 
   RedeemRule({
     required super.id,
+    required super.isDeleted,
     required this.displayName,
     required this.description,
     required this.consumes,
@@ -19,6 +20,7 @@ class RedeemRule extends BaseModel {
 
   RedeemRule copyWith({
     int? id,
+    bool? isDeleted,
     String? displayName,
     String? description,
     int? consumes,
@@ -28,6 +30,7 @@ class RedeemRule extends BaseModel {
   }) {
     return RedeemRule(
       id: id ?? this.id,
+      isDeleted: isDeleted ?? this.isDeleted,
       displayName: displayName ?? this.displayName,
       description: description ?? this.description,
       consumes: consumes ?? this.consumes,
@@ -42,10 +45,14 @@ class RedeemRule extends BaseModel {
         consumes = json['consumes'] as int,
         blueprintId = json['blueprintId'] as int,
         imageId = json['imageId'] as String?,
-        super(id: json['id']);
+        super(
+          id: json['id'],
+          isDeleted: json['isDeleted'],
+        );
 
   Map<String, dynamic> toJson() => {
         'id': id,
+        'isDeleted': isDeleted,
         'displayName': displayName,
         'description': description,
         'consumes': consumes,

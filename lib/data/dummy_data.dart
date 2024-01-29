@@ -19,6 +19,7 @@ List<StoreNotice> genDummyNotices({
   return List.generate(numNotices, (index) {
     final notice = StoreNotice(
       id: random.nextInt(maxInteger),
+      isDeleted: false,
       displayName: 'Notice ${index + 1} from store!',
       description:
           'Amet irure ut incididunt officia eiusmod nisi ullamco dolore. Dolore non incididunt eu nisi id commodo aute elit laborum voluptate incididunt. Incididunt aute nisi do eu dolore duis. Exercitation enim minim eiusmod veniam officia exercitation labore est velit est consequat qui. Do anim officia ut sunt. Ut elit aute dolor duis in excepteur. Consectetur deserunt ut proident quis enim.',
@@ -36,6 +37,7 @@ List<StampCardBlueprint> genDummyBlueprints({
   return List.generate(numBlueprints, (index) {
     final blueprint = StampCardBlueprint(
       id: random.nextInt(maxInteger),
+      isDeleted: false,
       displayName: 'Blueprint ${index + 1}',
       description:
           'Dolor incididunt ipsum labore incididunt reprehenderit laborum quis ut Lorem enim mollit nisi velit. Fugiat occaecat et quis duis labore et et. Cupidatat et eu fugiat tempor nostrud. Cupidatat cupidatat aliquip aliquip quis. In minim officia irure qui eiusmod incididunt minim sunt reprehenderit.',
@@ -97,6 +99,7 @@ List<Store> genDummyStores({
   return List.generate(numStores, (index) {
     final store = Store(
       id: random.nextInt(maxInteger),
+      isDeleted: false,
       displayName: 'H\'s Bakery $index',
       description:
           'Commodo irure ad adipisicing anim. Pariatur amet culpa nulla magna deserunt commodo est consequat. Aliqua mollit nostrud mollit reprehenderit enim Lorem veniam adipisicing mollit est. Officia anim aliqua anim ea aliqua laboris.\nUt in nostrud mollit elit exercitation mollit. Minim nulla aliqua commodo mollit. Excepteur cupidatat culpa incididunt esse fugiat magna aliquip consectetur. Enim exercitation cillum pariatur adipisicing. Incididunt ut consectetur commodo elit officia tempor cupidatat irure enim non occaecat reprehenderit. Eiusmod fugiat irure officia nulla aliquip aliqua incididunt nulla laboris in id esse. Est aliquip et culpa deserunt fugiat eiusmod fugiat velit dolor voluptate anim et.',
@@ -149,6 +152,7 @@ List<StampCard> genDummyStampCards({
       final isInactive = wasUsedOut || wasDiscarded;
       final stampCard = StampCard(
         id: random.nextInt(maxInteger),
+        isDeleted: false,
         displayName: 'Card Name $index',
         numCollectedStamps: numCollectedStamps,
         numGoalStamps: numGoalStamps,
@@ -182,6 +186,7 @@ List<RedeemRule> genDummySortedRedeemRules({
   return List.generate(numRules, (index) {
     final redeemRule = RedeemRule(
       id: random.nextInt(maxInteger),
+      isDeleted: false,
       consumes: (blueprint.numMaxStamps / (numRules - index)).ceil(),
       displayName: '${index + 1} Cookies',
       description: 'Presents ${index + 1} cookies.',

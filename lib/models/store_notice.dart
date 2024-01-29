@@ -9,6 +9,7 @@ class StoreNotice extends BaseModel {
 
   StoreNotice({
     required super.id,
+    required super.isDeleted,
     required this.displayName,
     required this.description,
     required this.storeId,

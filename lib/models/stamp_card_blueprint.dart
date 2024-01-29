@@ -19,6 +19,7 @@ class StampCardBlueprint extends BaseModel {
 
   StampCardBlueprint({
     required super.id,
+    required super.isDeleted,
     required this.displayName,
     required this.description,
     required this.stampGrantCondDescription,
@@ -54,7 +55,10 @@ class StampCardBlueprint extends BaseModel {
             : [
                 for (final map in json['redeemRules']) RedeemRule.fromJson(map),
               ],
-        super(id: json['id'] as int);
+        super(
+          id: json['id'] as int,
+          isDeleted: json['isDeleted'] as bool,
+        );
 
   bool get wasExpired {
     return DateTime.now().isAfter(expirationDate);
@@ -62,6 +66,7 @@ class StampCardBlueprint extends BaseModel {
 
   StampCardBlueprint copyWith({
     int? id,
+    bool? isDeleted,
     String? displayName,
     String? description,
     String? stampGrantCondDescription,
@@ -79,6 +84,7 @@ class StampCardBlueprint extends BaseModel {
   }) {
     return StampCardBlueprint(
       id: id ?? this.id,
+      isDeleted: isDeleted ?? this.isDeleted,
       displayName: displayName ?? this.displayName,
       description: description ?? this.description,
       stampGrantCondDescription:
@@ -99,6 +105,7 @@ class StampCardBlueprint extends BaseModel {
 
   Map<String, dynamic> toJson() => {
         'id': id,
+        'isDeleted': isDeleted,
         'displayName': displayName,
         'description': description,
         'stampGrantCondDescription': stampGrantCondDescription,

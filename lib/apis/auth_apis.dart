@@ -151,13 +151,10 @@ String? validateAccessToken(
     if (accessTokenPayload['exp'] < secondsSinceEpoch) {
       return 'Access token expired';
     }
-    if (!accessTokenPayload['email_verified']) {
-      return 'Email not verified';
-    }
+    return _validateEmailVerified(accessToken);
   } catch (e) {
     return 'ERROR during parsing access token';
   }
-  return null;
 }
 
 String? validateIdToken(
@@ -173,13 +170,10 @@ String? validateIdToken(
     if (idTokenPayload['exp'] < secondsSinceEpoch) {
       return 'ID token expired';
     }
-    if (!idTokenPayload['email_verified']) {
-      return 'Email not verified';
-    }
+    return _validateEmailVerified(idToken);
   } catch (e) {
     return 'ERROR during parsing ID token';
   }
-  return null;
 }
 
 String? validateRefreshToken(
@@ -200,6 +194,14 @@ String? validateRefreshToken(
     }
   } catch (e) {
     return 'ERROR during parsing refresh token';
+  }
+  return null;
+}
+
+String? _validateEmailVerified(JWT jwt) {
+  final emailVerified = jwt.payload['email_verified'] as bool?;
+  if (emailVerified == null || !emailVerified) {
+    return 'Email not verified';
   }
   return null;
 }

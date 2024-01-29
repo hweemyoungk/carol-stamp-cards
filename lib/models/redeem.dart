@@ -8,6 +8,7 @@ class Redeem extends BaseModel {
 
   Redeem({
     required super.id,
+    required super.isDeleted,
     required this.numStampsBefore,
     required this.numStampsAfter,
     required this.redeemRuleId,
@@ -16,6 +17,7 @@ class Redeem extends BaseModel {
 
   Map<String, dynamic> toJson() => {
         'id': id,
+        'isDeleted': isDeleted,
         'numStampsBefore': numStampsBefore,
         'numStampsAfter': numStampsAfter,
         'redeemRuleId': redeemRuleId,

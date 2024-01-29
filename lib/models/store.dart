@@ -20,6 +20,7 @@ class Store extends BaseModel {
 
   Store({
     required super.id,
+    required super.isDeleted,
     required this.displayName,
     required this.description,
     required this.zipcode,
@@ -49,10 +50,14 @@ class Store extends BaseModel {
                 for (final map in json['blueprints'])
                   StampCardBlueprint.fromJson(map),
               ],
-        super(id: json['id'] as int);
+        super(
+          id: json['id'] as int,
+          isDeleted: json['isDeleted'] as bool,
+        );
 
   Store copyWith({
     int? id,
+    bool? isDeleted,
     String? displayName,
     String? description,
     String? zipcode,
@@ -68,6 +73,7 @@ class Store extends BaseModel {
   }) {
     return Store(
       id: id ?? this.id,
+      isDeleted: isDeleted ?? this.isDeleted,
       displayName: displayName ?? this.displayName,
       description: description ?? this.description,
       zipcode: zipcode ?? this.zipcode,
@@ -84,6 +90,7 @@ class Store extends BaseModel {
 
   Map<String, dynamic> toJson() => {
         'id': id,
+        'isDeleted': isDeleted,
         'displayName': displayName,
         'description': description,
         'zipcode': zipcode,

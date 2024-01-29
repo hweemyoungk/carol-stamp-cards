@@ -291,6 +291,7 @@ class _OwnerDesignStoreScreenState
       // final location = uuid.v4();
       final storeToPost = Store(
         id: -1,
+        isDeleted: false,
         address: _address,
         description: _description,
         displayName: _displayName,

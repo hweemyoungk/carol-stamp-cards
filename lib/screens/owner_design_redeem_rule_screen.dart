@@ -191,6 +191,7 @@ class _OwnerDesignRedeemRuleScreenState
       // Create
       final newRedeemRule = RedeemRule(
         id: -1,
+        isDeleted: false,
         displayName: _displayName,
         description: _description,
         consumes: _consumes,
