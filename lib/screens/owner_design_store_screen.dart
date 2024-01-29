@@ -287,8 +287,6 @@ class _OwnerDesignStoreScreenState
 
     if (widget.designMode == StoreDesignMode.create) {
       // POST Store
-      // await DesignUtils.delaySeconds(2);
-      // final location = uuid.v4();
       final storeToPost = Store(
         id: -1,
         isDeleted: false,
@@ -303,23 +301,34 @@ class _OwnerDesignStoreScreenState
         bgImageUrl: null,
         profileImageUrl: null,
       );
-      final newId = await owner_apis.postStore(store: storeToPost);
+      final int newId;
+      try {
+        newId = await owner_apis.postStore(store: storeToPost);
+      } on Exception catch (e) {
+        Carol.showExceptionSnackBar(
+          e,
+          contextMessage: 'Failed to save new store.',
+        );
+        if (mounted) {
+          setState(() {
+            _status = StoreDesignStatus.userInput;
+          });
+        }
+        return;
+      }
 
       // Get Store
-      // final newStore = Store(
-      //   address: _address,
-      //   description: _description,
-      //   displayName: _displayName,
-      //   id: location,
-      //   lat: _lat,
-      //   lng: _lng,
-      //   ownerId: currentUser.id,
-      //   phone: _phone,
-      //   zipcode: _zipcode,
-      //   bgImageUrl: null,
-      //   profileImageUrl: null,
-      // );
-      final newStore = await owner_apis.getStore(id: newId);
+      final Store newStore;
+      try {
+        newStore = await owner_apis.getStore(id: newId);
+      } on Exception catch (e) {
+        Carol.showExceptionSnackBar(
+          e,
+          contextMessage: 'Failed to get newly create store information.',
+        );
+        return;
+      }
+
       ownerStoreProviders.tryAddProvider(entity: newStore);
       ownerStoresNotifier.prepend(newStore);
       Carol.showTextSnackBar(
@@ -350,23 +359,35 @@ class _OwnerDesignStoreScreenState
         phone: _phone,
         zipcode: _zipcode,
       );
-      await owner_apis.putStore(
-        id: storeToPut.id,
-        store: storeToPut,
-      );
+      try {
+        await owner_apis.putStore(
+          id: storeToPut.id,
+          store: storeToPut,
+        );
+      } on Exception catch (e) {
+        Carol.showExceptionSnackBar(
+          e,
+          contextMessage: 'Failed to modify store.',
+        );
+        if (mounted) {
+          setState(() {
+            _status = StoreDesignStatus.userInput;
+          });
+        }
+        return;
+      }
 
       // Get Store
-      // await DesignUtils.delaySeconds(2);
-      // final modifiedStore = widget.store!.copyWith(
-      //   address: _address,
-      //   description: _description,
-      //   displayName: _displayName,
-      //   lat: _lat,
-      //   lng: _lng,
-      //   phone: _phone,
-      //   zipcode: _zipcode,
-      // );
-      final modifiedStore = await owner_apis.getStore(id: storeToPut.id);
+      final Store modifiedStore;
+      try {
+        modifiedStore = await owner_apis.getStore(id: storeToPut.id);
+      } on Exception catch (e) {
+        Carol.showExceptionSnackBar(
+          e,
+          contextMessage: 'Failed to get modified store information.',
+        );
+        return;
+      }
       storeNotifier.set(entity: modifiedStore);
 
       Carol.showTextSnackBar(

@@ -584,18 +584,7 @@ class _OwnerDesignStoreScreenState
     });
 
     if (widget.designMode == BlueprintDesignMode.create) {
-      // // POST blueprint and get location
-      // await DesignUtils.delaySeconds(1);
-      // final location = uuid.v4();
-      // final redeemRuleTasks = _redeemRules.map((redeemRule) async {
-      //   // POST every RedeemRule and get location
-      //   await DesignUtils.delaySeconds(1);
-      //   final location = uuid.v4();
-      //   final postedRedeemRule = redeemRule.copyWith(id: location);
-      //   redeemRuleProviders.tryAddProvider(entity: postedRedeemRule);
-      //   return postedRedeemRule;
-      // });
-      // final processedRedeemRules = await Future.wait(redeemRuleTasks);
+      // POST blueprint and get location
       final blueprintToPost = StampCardBlueprint(
         id: -1,
         isDeleted: false,
@@ -613,27 +602,29 @@ class _OwnerDesignStoreScreenState
         isPublishing: _isPublishing,
         redeemRules: _redeemRules,
       );
-      final newBlueprintId =
-          await owner_apis.postBlueprint(blueprint: blueprintToPost);
+      final int newBlueprintId;
+      try {
+        newBlueprintId =
+            await owner_apis.postBlueprint(blueprint: blueprintToPost);
+      } on Exception catch (e) {
+        Carol.showExceptionSnackBar(
+          e,
+          contextMessage: 'Failed to save new blueprint.',
+        );
+        return;
+      }
 
       // Get blueprint(with redeemRules)
-      // final newBlueprint = StampCardBlueprint(
-      //   id: location,
-      //   displayName: _displayName,
-      //   description: _description,
-      //   stampGrantCondDescription: _stampGrantCondDescription,
-      //   numMaxStamps: _numMaxStamps,
-      //   lastModifiedDate: DateTime.now(),
-      //   expirationDate: _expirationDate!,
-      //   numMaxRedeems: _numMaxRedeems,
-      //   numMaxIssues: _numMaxIssues,
-      //   storeId: store.id,
-      //   icon: null,
-      //   bgImageUrl: null,
-      //   isPublishing: _isPublishing,
-      //   redeemRules: processedRedeemRules,
-      // );
-      final newBlueprint = await owner_apis.getBlueprint(id: newBlueprintId);
+      final StampCardBlueprint newBlueprint;
+      try {
+        newBlueprint = await owner_apis.getBlueprint(id: newBlueprintId);
+      } on Exception catch (e) {
+        Carol.showExceptionSnackBar(
+          e,
+          contextMessage: 'Failed to get newly created blueprint information.',
+        );
+        return;
+      }
       blueprintProviders.tryAddProvider(entity: newBlueprint);
       if (store.blueprints == null) {
         // Should not happen: Blueprints must be fetched already.
@@ -658,36 +649,6 @@ class _OwnerDesignStoreScreenState
       );
 
       // PUT blueprint
-      // final putBlueprintTask = DesignUtils.delaySeconds(2);
-      // final redeemRuleTasks = _redeemRules.map((redeemRule) async {
-      //   if (redeemRule.id == '') {
-      //     // POST redeemRule and get location
-      //     await DesignUtils.delaySeconds(1);
-      //     final postedRedeemRule = redeemRule.copyWith(id: uuid.v4());
-      //     redeemRuleProviders.tryAddProvider(entity: postedRedeemRule);
-      //     return postedRedeemRule;
-      //   } else {
-      //     final redeemRuleProvider =
-      //         redeemRuleProviders.tryGetProviderById(id: redeemRule.id)!;
-      //     final redeemRuleNotifier = ref.read(redeemRuleProvider.notifier);
-      //     final putRedeemRule = await putBlueprintTask.then(
-      //       (value) {
-      //         // PUT redeemRule
-      //         DesignUtils.delaySeconds(2);
-      //         return redeemRule.copyWith();
-      //       },
-      //     );
-      //     if (redeemRuleProviders.tryGetProviderById(id: putRedeemRule.id) ==
-      //         null) {
-      //       // RedeemRule can't be deleted. Should not happen.
-      //       throw Exception('Yeah we are fxcked...');
-      //     }
-      //     redeemRuleNotifier.set(entity: putRedeemRule);
-      //     return putRedeemRule;
-      //   }
-      // });
-      // final processedRedeemRules = await Future.wait(redeemRuleTasks);
-
       final blueprintToPut = StampCardBlueprint(
         id: widget.blueprint!.id,
         isDeleted: false,
@@ -705,27 +666,31 @@ class _OwnerDesignStoreScreenState
         isPublishing: _isPublishing,
         redeemRules: _redeemRules,
       );
-      await owner_apis.putBlueprint(
-        id: widget.blueprint!.id,
-        blueprint: blueprintToPut,
-      );
+      try {
+        await owner_apis.putBlueprint(
+          id: widget.blueprint!.id,
+          blueprint: blueprintToPut,
+        );
+      } on Exception catch (e) {
+        Carol.showExceptionSnackBar(
+          e,
+          contextMessage: 'Failed to modify blueprint.',
+        );
+        return;
+      }
 
       // Get blueprint
-      // final modifiedBlueprint = blueprint.copyWith(
-      //   displayName: _displayName,
-      //   description: _description,
-      //   stampGrantCondDescription: _stampGrantCondDescription,
-      //   numMaxStamps: _numMaxStamps,
-      //   lastModifiedDate: DateTime.now(),
-      //   expirationDate: _expirationDate!,
-      //   numMaxRedeems: _numMaxRedeems,
-      //   numMaxIssues: _numMaxIssues,
-      //   isPublishing: _isPublishing,
-      //   redeemRules: processedRedeemRules,
-      // );
-
-      final modifiedBlueprint =
-          await owner_apis.getBlueprint(id: widget.blueprint!.id);
+      final StampCardBlueprint modifiedBlueprint;
+      try {
+        modifiedBlueprint =
+            await owner_apis.getBlueprint(id: widget.blueprint!.id);
+      } on Exception catch (e) {
+        Carol.showExceptionSnackBar(
+          e,
+          contextMessage: 'Failed to get modified blueprint information.',
+        );
+        return;
+      }
       if (blueprintProviders.tryGetProviderById(id: widget.blueprint!.id) ==
           null) {
         // Very unlikely but what if blueprint was deleted while modifying?

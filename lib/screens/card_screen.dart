@@ -295,11 +295,16 @@ class _CardScreenState extends ConsumerState<CardScreen> {
     //     isInactive: true,
     //   ),
     // );
-    await customer_apis.softDeleteStampCard(id: stampCard.id);
+    try {
+      await customer_apis.softDeleteStampCard(id: stampCard.id);
+    } on Exception catch (e) {
+      Carol.showExceptionSnackBar(
+        e,
+        contextMessage: 'Failed to delete card.',
+      );
+    }
 
-    // Get StampCard
-    final deletedStampCard = await customer_apis.getStampCard(id: stampCard.id);
-    stampCardNotifier.set(entity: deletedStampCard);
+    stampCardNotifier.dispose();
 
     Carol.showTextSnackBar(
       text: 'Deleted card!',

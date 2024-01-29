@@ -164,14 +164,31 @@ class _CustomerDesignStampCardScreenState
       displayName: _displayName,
       numGoalStamps: _numGoalStamps,
     );
-    await customer_apis.putStampCard(
-      id: stampCardToPut.id,
-      stampCard: stampCardToPut,
-    );
+    try {
+      await customer_apis.putStampCard(
+        id: stampCardToPut.id,
+        stampCard: stampCardToPut,
+      );
+    } on Exception catch (e) {
+      Carol.showExceptionSnackBar(
+        e,
+        contextMessage: 'Failed to mofify card.',
+      );
+      return;
+    }
 
     // Get StampCard
-    final modifiedStampCard =
-        await customer_apis.getStampCard(id: stampCardToPut.id);
+    final StampCard modifiedStampCard;
+    try {
+      modifiedStampCard =
+          await customer_apis.getStampCard(id: stampCardToPut.id);
+    } on Exception catch (e) {
+      Carol.showExceptionSnackBar(
+        e,
+        contextMessage: 'Failed to get modified card information.',
+      );
+      return;
+    }
     stampCardNotifier.set(entity: modifiedStampCard);
 
     Carol.showTextSnackBar(

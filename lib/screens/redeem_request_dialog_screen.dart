@@ -1,4 +1,5 @@
 import 'package:carol/apis/owner_apis.dart';
+import 'package:carol/apis/utils.dart';
 import 'package:carol/main.dart';
 import 'package:carol/models/redeem_request.dart';
 import 'package:carol/models/redeem_rule.dart';
@@ -174,25 +175,30 @@ class _RedeemRequestDialogScreenState
   Future<void> _onPressApprove() async {
     try {
       await approveRedeemRequest(redeemRequestId: widget.redeemRequest.id);
+    } on Exception catch (e) {
+      if (mounted) {
+        setState(() {
+          _status = ApprovalStatus.approveFailed;
+        });
+      }
+      await Future.delayed(durationOneSecond);
+      Carol.showExceptionSnackBar(
+        e,
+        contextMessage: 'Failed to approve redeem request.',
+      );
+      return;
+    }
+
+    if (mounted) {
       setState(() {
         _status = ApprovalStatus.approveSuccessful;
-        // widget.redeemRequest.isRedeemed = true;
       });
-      await Future.delayed(const Duration(seconds: 1));
-      Carol.showTextSnackBar(
-        text: 'Approved redeem request!',
-        level: SnackBarLevel.success,
-      );
-    } catch (e) {
-      setState(() {
-        _status = ApprovalStatus.approveFailed;
-      });
-      await Future.delayed(const Duration(seconds: 1));
-      Carol.showTextSnackBar(
-        text: 'Failed to approve: ${e.toString()}',
-        level: SnackBarLevel.error,
-      );
     }
+    await Future.delayed(durationOneSecond);
+    Carol.showTextSnackBar(
+      text: 'Approved redeem request!',
+      level: SnackBarLevel.success,
+    );
 
     if (mounted) {
       Navigator.of(context).pop();

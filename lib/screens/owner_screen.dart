@@ -1,4 +1,5 @@
 import 'package:carol/apis/owner_apis.dart';
+import 'package:carol/main.dart';
 import 'package:carol/models/stamp_card.dart';
 import 'package:carol/providers/current_user_provider.dart';
 import 'package:carol/providers/redeem_requests_init_loaded_provider.dart';
@@ -106,7 +107,12 @@ class _OwnerScreenState extends ConsumerState<OwnerScreen> {
               ownerRedeemRequestsInitLoadedNotifier,
           ownerRedeemRequestsNotifier: ownerRedeemRequestsNotifier,
           ownerId: currentUser.id,
-        );
+        ).onError<Exception>((error, stackTrace) {
+          Carol.showExceptionSnackBar(
+            error,
+            contextMessage: 'Failed to load redeem requests.',
+          );
+        });
       }
     }
 
@@ -139,7 +145,12 @@ class _OwnerScreenState extends ConsumerState<OwnerScreen> {
                   ownerRedeemRequestsInitLoadedNotifier,
               ownerRedeemRequestsNotifier: ownerRedeemRequestsNotifier,
               ownerId: ownerId,
-            );
+            ).onError<Exception>((error, stackTrace) {
+              Carol.showExceptionSnackBar(
+                error,
+                contextMessage: 'Failed to load redeem requests.',
+              );
+            });
           },
           icon: const Icon(Icons.refresh),
         ),

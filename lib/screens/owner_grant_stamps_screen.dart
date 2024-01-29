@@ -194,10 +194,23 @@ class _OwnerGrantStampsScreenState
     });
 
     // POST StampGrant
-    await grantStamp(
-      stampCardId: widget.stampCard.id,
-      numStamps: _numGrant,
-    );
+    try {
+      await grantStamp(
+        stampCardId: widget.stampCard.id,
+        numStamps: _numGrant,
+      );
+    } on Exception catch (e) {
+      Carol.showExceptionSnackBar(
+        e,
+        contextMessage: 'Failed to grant stamp(s).',
+      );
+      if (mounted) {
+        setState(() {
+          _status = GrantStatus.userInput;
+        });
+      }
+      return;
+    }
 
     Carol.showTextSnackBar(
       text: 'Grant successful!',

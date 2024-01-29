@@ -83,7 +83,7 @@ Future<Set<StampCard>> listStampCards({
         'ids': stampCardIds.map((e) => e.toString()).toList(),
     },
   );
-  final res = await httpGet(url); // Can throw e
+  final res = await httpGet(url);
 
   List<dynamic> resBody = json.decode(res.body);
   Set<StampCard> stampCards = {};
@@ -112,7 +112,7 @@ Future<Set<StampCardBlueprint>> listBlueprints({
         'ids': blueprintIds.map((e) => e.toString()).toList(),
     },
   );
-  final res = await httpGet(url); // Can throw e
+  final res = await httpGet(url);
 
   List<dynamic> resBody = json.decode(res.body);
   Set<StampCardBlueprint> blueprints = {};
@@ -150,7 +150,7 @@ Future<Set<Store>> listStores({
       'ids': storeIds.map((e) => e.toString()).toList(),
     },
   );
-  final res = await httpGet(url); // Can throw e
+  final res = await httpGet(url);
 
   List<dynamic> resBody = json.decode(res.body);
   Set<Store> stores = {};
@@ -310,33 +310,3 @@ Future<bool> redeemExists({
   final res = await httpGet(url);
   return bool.parse(res.body);
 }
-
-/* Future<(Set<StampCard>, Set<StampCardBlueprint>)> listStampCardsWithBlueprint({
-  required String customerId,
-}) async {
-  // TODO: http
-  final url = Uri.http(
-    params.apigateway,
-    '/customer/api/v1/stampCard',
-    {
-      'customerId': customerId,
-      'withBlueprint': true,
-    },
-  );
-  final res = await http.get(url);
-  if (400 <= res.statusCode) {
-    throw HttpException('${res.statusCode} ${res.reasonPhrase}: ${res.body}');
-  }
-
-  List<dynamic> resBody = json.decode(res.body);
-  Set<StampCardBlueprint> blueprints = {};
-  Set<StampCard> stampCards = {};
-  for (final map in resBody) {
-    final blueprint = StampCardBlueprint.fromJson(map['blueprint']);
-    blueprints.add(blueprint);
-    map['blueprintId'] = blueprint.id;
-    final stampCard = StampCard.fromJson(map);
-    stampCards.add(stampCard);
-  }
-  return (stampCards, blueprints);
-} */

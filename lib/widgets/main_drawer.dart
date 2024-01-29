@@ -1,5 +1,7 @@
 import 'package:carol/apis/customer_apis.dart' as customer_apis;
 import 'package:carol/apis/owner_apis.dart';
+import 'package:carol/main.dart';
+import 'package:carol/models/store.dart';
 import 'package:carol/providers/active_drawer_item_provider.dart';
 import 'package:carol/providers/current_user_provider.dart';
 import 'package:carol/providers/stamp_card_blueprint_provider.dart';
@@ -148,12 +150,23 @@ class _DrawerItemState extends ConsumerState<DrawerItem> {
       final customerStoresInitLoadedNotifier =
           ref.read(customerStoresInitLoadedProvider.notifier);
       final customerStoresNotifier = ref.read(customerStoresProvider.notifier);
-      customer_apis.reloadCustomerEntities(
+      customer_apis
+          .reloadCustomerEntities(
         currentUser: currentUser,
         stampCardsInitLoadedNotifier: stampCardsInitLoadedNotifier,
         stampCardsNotifier: stampCardsNotifier,
         customerStoresInitLoadedNotifier: customerStoresInitLoadedNotifier,
         customerStoresNotifier: customerStoresNotifier,
+      )
+          .onError(
+        (error, stackTrace) {
+          if (error is Exception) {
+            Carol.showExceptionSnackBar(
+              error,
+              contextMessage: 'Failed to load customer entities.',
+            );
+          }
+        },
       );
     } else if (widget.drawerItemEnum == DrawerItemEnum.owner &&
         ref.read(ownerStoresInitLoadedProvider) == false) {
@@ -173,21 +186,16 @@ class _DrawerItemState extends ConsumerState<DrawerItem> {
       storesNotifier.appendAll(loadedStores);
       storesInitLoadedNotifier.set(true);
     } else {
-      // // Dummy: Top down
-      // await DesignUtils.delaySeconds(2);
-      // // Stores
-      // final stores = genDummyOwnerStores(
-      //   numStores: 2,
-      //   ownerId: currentUser.id,
-      // );
-      // // Blueprints
-      // stores.forEach((store) {
-      //   final blueprints = genDummyBlueprints(
-      //     numBlueprints: 2,
-      //     storeId: store.id,
-      //   );
-      // });
-      final stores = await listStores(ownerId: currentUser.id);
+      final Set<Store> stores;
+      try {
+        stores = await listStores(ownerId: currentUser.id);
+      } on Exception catch (e) {
+        Carol.showExceptionSnackBar(
+          e,
+          contextMessage: 'Failed to get stores information.',
+        );
+        return;
+      }
       ownerStoreProviders.tryAddProviders(entities: stores);
       for (final store in stores) {
         blueprintProviders.tryAddProviders(entities: store.blueprints ?? []);

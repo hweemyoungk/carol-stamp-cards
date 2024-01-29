@@ -173,14 +173,31 @@ class _OwnerScanQrScreenState extends ConsumerState<OwnerScanQrScreen> {
 
         final stampCardTask = owner_apis.getStampCard(id: qr.stampCardId);
         final blueprintTask = owner_apis.getBlueprint(id: qr.blueprintId);
-        final [stampCard as StampCard, blueprint as StampCardBlueprint] =
-            await Future.wait(
+        final StampCard stampCard;
+        final StampCardBlueprint blueprint;
+        try {
           [
-            stampCardTask,
-            blueprintTask,
-          ],
-          eagerError: true,
-        );
+            stampCard as StampCard,
+            blueprint as StampCardBlueprint,
+          ] = await Future.wait(
+            [
+              stampCardTask,
+              blueprintTask,
+            ],
+            eagerError: true,
+          );
+        } on Exception catch (e) {
+          Carol.showExceptionSnackBar(
+            e,
+            contextMessage:
+                'Failed to get customer\'s stamp card and blueprint information.',
+          );
+          if (mounted) {
+            Navigator.of(context).pop();
+          }
+          return;
+        }
+
         // No need to register to providers: temporary data for redeem process.
 
         if (mounted) {

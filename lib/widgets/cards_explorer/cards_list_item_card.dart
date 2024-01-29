@@ -1,4 +1,6 @@
 import 'package:carol/apis/customer_apis.dart' as customer_apis;
+import 'package:carol/main.dart';
+import 'package:carol/models/redeem_rule.dart';
 import 'package:carol/models/stamp_card.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/providers/entity_provider.dart';
@@ -165,12 +167,15 @@ class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
     final StampCardBlueprint blueprint;
     if (blueprintProvider == null) {
       // Get Blueprint
-      // await DesignUtils.delaySeconds(1);
-      // blueprint = genDummyBlueprints(
-      //   numBlueprints: 1,
-      //   storeId: stampCard.storeId,
-      // )[0];
-      blueprint = await customer_apis.getBlueprint(id: stampCard.blueprintId);
+      try {
+        blueprint = await customer_apis.getBlueprint(id: stampCard.blueprintId);
+      } on Exception catch (e) {
+        Carol.showExceptionSnackBar(
+          e,
+          contextMessage: 'Failed to get blueprint information.',
+        );
+        return;
+      }
       blueprintProviders.tryAddProvider(entity: blueprint);
       blueprintProvider =
           blueprintProviders.tryGetProviderById(id: stampCard.blueprintId)!;
@@ -179,35 +184,53 @@ class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
     }
 
     if (blueprint.redeemRules == null) {
+      if (!mounted) return;
+
       // List RedeemRules
-      if (mounted) {
-        final blueprintNotifier = ref.read(blueprintProvider.notifier);
-        // await Future.delayed(const Duration(seconds: 1));
-        // final redeemRules = genDummySortedRedeemRules(
-        //   blueprint: blueprint,
-        //   numRules: random.nextInt(3) + 1, // 1~3
-        // );
-        final redeemRules = await customer_apis.listRedeemRules(
+      final blueprintNotifier = ref.read(blueprintProvider.notifier);
+      final List<RedeemRule> redeemRules;
+      try {
+        redeemRules = await customer_apis.listRedeemRules(
           blueprintId: stampCard.blueprintId,
         );
-        redeemRuleProviders.tryAddProviders(entities: redeemRules);
-        blueprintNotifier.set(
-          entity: blueprint.copyWith(
-            redeemRules: redeemRules,
-          ),
+      } on Exception catch (e) {
+        Carol.showExceptionSnackBar(
+          e,
+          contextMessage: 'Failed to get redeem rules information.',
         );
+        return;
       }
+      redeemRuleProviders.tryAddProviders(entities: redeemRules);
+      blueprintNotifier.set(
+        entity: blueprint.copyWith(
+          redeemRules: redeemRules,
+        ),
+      );
     }
   }
 
   Future<void> _onPressFavoriteIcon() async {
-    final stampCard = ref.read(widget.stampCardProvider);
+    final originalStampCard = ref.read(widget.stampCardProvider);
     final notifier = ref.read(widget.stampCardProvider.notifier);
     // React first
-    notifier.set(entity: stampCard.copyWith(isFavorite: !stampCard.isFavorite));
-    final updatedFavorite = await _toggleFavorite(stampCard: stampCard);
+    notifier.set(
+        entity: originalStampCard.copyWith(
+            isFavorite: !originalStampCard.isFavorite));
+    final bool updatedFavorite;
+    try {
+      updatedFavorite = await _toggleFavorite(stampCard: originalStampCard);
+    } on Exception catch (e) {
+      Carol.showExceptionSnackBar(
+        e,
+        contextMessage: 'Failed to toggle favorite.',
+      );
+      // Restore
+      notifier.set(entity: originalStampCard);
+      return;
+    }
     // Apply backend response
-    notifier.set(entity: stampCard.copyWith(isFavorite: updatedFavorite));
+    notifier.set(
+        entity: originalStampCard.copyWith(isFavorite: updatedFavorite));
   }
 
   Future<bool> _toggleFavorite({

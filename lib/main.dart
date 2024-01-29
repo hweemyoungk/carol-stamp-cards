@@ -1,3 +1,10 @@
+import 'dart:async';
+import 'dart:io';
+
+import 'package:carol/apis/exceptions/bad_request.dart';
+import 'package:carol/apis/exceptions/server_error.dart';
+import 'package:carol/apis/exceptions/unauthenticated.dart';
+import 'package:carol/apis/exceptions/unauthorized.dart';
 import 'package:carol/screens/auth_screen.dart';
 import 'package:carol/screens/dashboard_screen.dart';
 import 'package:flutter/material.dart';
@@ -70,6 +77,67 @@ class Carol extends StatelessWidget {
         duration: Duration(seconds: seconds),
         backgroundColor: level.backgroundColor,
       ),
+    );
+  }
+
+  static void showExceptionSnackBar(Exception e, {String? contextMessage}) {
+    final sb = StringBuffer();
+    if (contextMessage != null) {
+      sb
+        ..write(contextMessage)
+        ..write('\n');
+    }
+    if (e is ServerError) {
+      sb.write(
+          'Server failed to process your data. Please contact administrator if this problem persists.');
+      showTextSnackBar(
+        text: sb.toString(),
+        level: SnackBarLevel.error,
+        seconds: 10,
+      );
+      return;
+    }
+    if (e is BadRequest) {
+      sb.write('Your data looks stale. Please refresh and try again.');
+      showTextSnackBar(
+        text: sb.toString(),
+        level: SnackBarLevel.error,
+        seconds: 10,
+      );
+      return;
+    }
+    if (e is Unauthenticated || e is Unauthorized) {
+      sb.write('Your credential looks stale. Please sign in again.');
+      showTextSnackBar(
+        text: sb.toString(),
+        level: SnackBarLevel.error,
+        seconds: 10,
+      );
+      return;
+    }
+    if (e is TimeoutException) {
+      sb.write('Server looks busy. Please wait a while and try again.');
+      showTextSnackBar(
+        text: sb.toString(),
+        level: SnackBarLevel.warn,
+        seconds: 10,
+      );
+      return;
+    }
+    if (e is SocketException) {
+      sb.write('Your connection looks unstable. Please recover and try again.');
+      showTextSnackBar(
+        text: sb.toString(),
+        level: SnackBarLevel.warn,
+        seconds: 10,
+      );
+      return;
+    }
+    sb.write('Unexpected error occured: ${e.toString()}');
+    showTextSnackBar(
+      text: sb.toString(),
+      level: SnackBarLevel.error,
+      seconds: 10,
     );
   }
 }

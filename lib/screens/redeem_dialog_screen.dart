@@ -121,14 +121,12 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
     });
 
     // 1. Post RedeemRequest and receive location.
-    // Trigger customerService.initRedeemRequest
-    if (_redeemStatus == RedeemStatus.redeeming) {
-      _redeemRequestId = await _postRedeemRequest(
-        stampCardId: stampCard.id,
-        redeemRuleId: redeemRule.id,
-      );
-      developer.log('[+]RedeemRequestId: $_redeemRequestId');
-    }
+    _redeemRequestId = await _postRedeemRequest(
+      stampCardId: stampCard.id,
+      redeemRuleId: redeemRule.id,
+    );
+    if (_redeemRequestId == null) return;
+    developer.log('[+]RedeemRequestId: $_redeemRequestId');
 
     // 2. Watch request exists
     await _watchRedeemRequestExist();
@@ -140,17 +138,9 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
             redeemRequestId: _redeemRequestId!,
           );
 
+    if (hasRedeemHistory == null) return;
     if (hasRedeemHistory) {
       // 3-1. If exists, redeem succeeded.
-      // 3-1.1. Close Dialog and refresh CardScreen
-      // final updatedNumCollectedStamps =
-      //     stampCard.numCollectedStamps - redeemRule.consumes;
-      // final updatedStampCard = stampCard.copyWith(
-      //   numCollectedStamps: updatedNumCollectedStamps,
-      // );
-      // stampCardNotifier.set(entity: updatedStampCard);
-      // Get StampCard
-
       // 3-1.2. Change Progress widget to Completed widget
       if (mounted) {
         setState(() {
@@ -165,18 +155,26 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
             ),
           );
         });
+
+        // Get StampCard
         final refreshStampCardTask =
             customer_apis.getStampCard(id: stampCard.id).then((value) {
+          // Refresh Card
           stampCardNotifier.set(entity: value);
+        }).onError<Exception>((error, stackTrace) {
+          Carol.showExceptionSnackBar(
+            error,
+            contextMessage: 'Failed to refresh card information after redeem.',
+          );
         });
+
         await Future.wait([refreshStampCardTask, DesignUtils.delaySeconds(1)]);
       }
+
       Carol.showTextSnackBar(
         text: 'Redeem success!',
         level: SnackBarLevel.success,
       );
-
-      // Refresh Card
     } else {
       // 3-2. If not, redeem failed. (probably because owner didn't allowed or timeout)
       // 3-2.1. Change Progress with to Refresh widget
@@ -206,7 +204,7 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
     }
   }
 
-  Future<bool> _redeemHistoryExists({
+  Future<bool?> _redeemHistoryExists({
     required String redeemRequestId,
   }) async {
     if (mounted) {
@@ -224,14 +222,15 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
       });
     }
 
-    // final historyExistsTask = Future(() async {
-    //   await Future.delayed(Duration(seconds: random.nextInt(3) + 1));
-    //   final exists = random.nextDouble() < 0.5;
-    //   return exists;
-    // });
-    final historyExists =
-        await customer_apis.redeemExists(redeemRequestId: redeemRequestId);
-    return historyExists;
+    try {
+      return await customer_apis.redeemExists(redeemRequestId: redeemRequestId);
+    } on Exception catch (e) {
+      Carol.showExceptionSnackBar(
+        e,
+        contextMessage: 'Failed to check redeem exists.',
+      );
+      return null;
+    }
   }
 
   Future<void> _watchRedeemRequestExist() async {
@@ -260,6 +259,11 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
         });
       }
 
+      if (_redeemRequestId == null) {
+        // Lost redeem request id
+        return;
+      }
+
       // Every n seconds...
       if (i % app_params.watchRedeemRequestIntervalSeconds == 0) {
         // Call api
@@ -269,7 +273,12 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
               exists = false;
             }
           },
-        );
+        ).onError<Exception>((error, stackTrace) {
+          Carol.showExceptionSnackBar(
+            error,
+            contextMessage: 'Failed to check redeem request exists.',
+          );
+        });
       }
 
       // Wait for one second
@@ -277,7 +286,7 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
     }
   }
 
-  Future<String> _postRedeemRequest({
+  Future<String?> _postRedeemRequest({
     required int stampCardId,
     required int redeemRuleId,
   }) async {
@@ -320,24 +329,32 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
       expMilliseconds: -1,
       isRedeemed: false,
     );
-    final redeemRequestId =
-        await customer_apis.postRedeemRequest(redeemRequest: redeemRequest);
-    return redeemRequestId;
+    try {
+      return await customer_apis.postRedeemRequest(
+          redeemRequest: redeemRequest);
+    } on Exception catch (e) {
+      Carol.showExceptionSnackBar(
+        e,
+        contextMessage: 'Failed to save new redeem request.',
+      );
+      return null;
+    }
   }
 
   void _onPressBack() {
     // If redeemRequestId exists, try deleting RedeemRequest
     if (_redeemRequestId != null) {
-      customer_apis
-          .deleteRedeemRequest(
-        id: _redeemRequestId!,
-      )
-          .then((value) {
+      customer_apis.deleteRedeemRequest(id: _redeemRequestId!).then((value) {
         if (mounted) {
           setState(() {
             _redeemStatus = RedeemStatus.redeemCanceled;
           });
         }
+      }).onError<Exception>((error, stackTrace) {
+        Carol.showExceptionSnackBar(
+          error,
+          contextMessage: 'Failed to cancel redeem request.',
+        );
       });
     }
     Navigator.of(context).pop();

@@ -18,39 +18,40 @@ String formatRemaining(Duration duration) {
     return 'Already passed';
   }
   int remaining = duration.inSeconds;
-  String str = '';
+  final sb = StringBuffer();
+
   // 1y = 31536000 s
   final year = (remaining / 31536000).floor();
   if (0 < year) {
-    str = '$str${year}y ';
+    sb.write('${year}y ');
   }
   remaining = remaining % 3153600;
   // 1M = 2628000 s
   final month = (remaining / 2628000).floor();
   if (0 < month) {
-    str = '$str${month}M ';
+    sb.write('${month}M ');
   }
   remaining = remaining % 2628000;
   // 1d = 86400 s
   final day = (remaining / 86400).floor();
   if (0 < day) {
-    str = '$str${day}d ';
+    sb.write('${day}d ');
   }
   remaining = remaining % 86400;
   // 1H = 3600 s
   final hour = (remaining / 3600).floor();
   if (0 < hour) {
-    str = '$str${hour}h ';
+    sb.write('${hour}h ');
   }
   remaining = remaining % 3600;
   // 1m = 60 s
   final minute = (remaining / 60).floor();
   if (0 < minute) {
-    str = '$str${minute}m ';
+    sb.write('${minute}m ');
   }
-  remaining = remaining % 60;
 
-  return '$str left';
+  sb.write('left');
+  return sb.toString();
 }
 
 class DesignUtils {

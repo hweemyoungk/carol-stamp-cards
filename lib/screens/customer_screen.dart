@@ -1,4 +1,6 @@
 import 'package:carol/apis/customer_apis.dart' as customer_apis;
+import 'package:carol/main.dart';
+import 'package:carol/models/store.dart';
 import 'package:carol/providers/current_user_provider.dart';
 import 'package:carol/providers/customer_screen_reloading_provider.dart';
 import 'package:carol/providers/stamp_cards_init_loaded_provider.dart';
@@ -103,10 +105,16 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
       final storeIds = stampCards.map((e) => e.storeId).toSet();
 
       // Get Stores
-      // final stores = storeIds.map((storeId) =>
-      //     ref.read(customerStoreProviders.tryGetProviderById(id: storeId)!));
-      // await DesignUtils.delaySeconds(2);
-      final stores = await customer_apis.listStores(storeIds: storeIds);
+      final Set<Store> stores;
+      try {
+        stores = await customer_apis.listStores(storeIds: storeIds);
+      } on Exception catch (e) {
+        Carol.showExceptionSnackBar(
+          e,
+          contextMessage: 'Failed to get stores information.',
+        );
+        return;
+      }
       customerStoreProviders.tryAddProviders(entities: stores);
 
       customerStoresNotifier.appendAll(stores);
@@ -126,13 +134,20 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
     final customerStoresNotifier = ref.read(customerStoresProvider.notifier);
 
     customerScreenReloadingNotifier.set(true);
-    await customer_apis.reloadCustomerEntities(
-      currentUser: currentUser,
-      stampCardsInitLoadedNotifier: stampCardsInitLoadedNotifier,
-      stampCardsNotifier: stampCardsNotifier,
-      customerStoresInitLoadedNotifier: customerStoresInitLoadedNotifier,
-      customerStoresNotifier: customerStoresNotifier,
-    );
+    try {
+      await customer_apis.reloadCustomerEntities(
+        currentUser: currentUser,
+        stampCardsInitLoadedNotifier: stampCardsInitLoadedNotifier,
+        stampCardsNotifier: stampCardsNotifier,
+        customerStoresInitLoadedNotifier: customerStoresInitLoadedNotifier,
+        customerStoresNotifier: customerStoresNotifier,
+      );
+    } on Exception catch (e) {
+      Carol.showExceptionSnackBar(
+        e,
+        contextMessage: 'Failed to load customer entities.',
+      );
+    }
     customerScreenReloadingNotifier.set(false);
   }
 }

@@ -1,25 +1,43 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:carol/apis/auth_apis.dart';
+import 'package:carol/apis/exceptions/bad_request.dart';
+import 'package:carol/apis/exceptions/server_error.dart';
+import 'package:carol/apis/exceptions/unauthenticated.dart';
+import 'package:carol/apis/exceptions/unauthorized.dart';
 import 'package:carol/params/auth.dart' as auth_params;
+import 'package:carol/params/app.dart' as app_params;
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
+import 'package:retry/retry.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
 Future<http.Response> httpGet(
   Uri url, {
   bool withAuthHeaders = true,
+  http.Client? client,
 }) async {
-  final res = await httpClient.get(
-    url,
-    headers: {
-      if (withAuthHeaders) ...await getAuthHeaders(),
-    },
-  );
-  if (400 <= res.statusCode) {
-    throw HttpException('${res.statusCode} ${res.reasonPhrase}: ${res.body}');
+  final httpClient = client ?? http.Client();
+  try {
+    final res = await retryOptions.retry(
+      () async {
+        return httpClient.get(
+          url,
+          headers: {
+            if (withAuthHeaders) ...await getAuthHeaders(),
+          },
+        ).timeout(const Duration(seconds: app_params.httpTimeoutSeconds));
+      },
+      retryIf: (e) => e is SocketException || e is TimeoutException,
+    );
+    _handleResponse(res);
+    return res;
+  } finally {
+    if (client == null) {
+      httpClient.close();
+    }
   }
-  return res;
 }
 
 Future<http.Response> httpDelete(
@@ -28,19 +46,30 @@ Future<http.Response> httpDelete(
     'Content-Type': 'application/json;charset=utf-8',
   },
   Object? body,
+  http.Client? client,
 }) async {
-  final res = await httpClient.delete(
-    url,
-    headers: {
-      ...await getAuthHeaders(),
-      if (headers != null) ...headers,
-    },
-    body: body,
-  );
-  if (400 <= res.statusCode) {
-    throw HttpException('${res.statusCode} ${res.reasonPhrase}: ${res.body}');
+  final httpClient = client ?? http.Client();
+  try {
+    final res = await retryOptions.retry(
+      () async {
+        return httpClient.delete(
+          url,
+          headers: {
+            ...await getAuthHeaders(),
+            if (headers != null) ...headers,
+          },
+          body: body,
+        );
+      },
+      retryIf: (e) => e is SocketException || e is TimeoutException,
+    );
+    _handleResponse(res);
+    return res;
+  } finally {
+    if (client == null) {
+      httpClient.close();
+    }
   }
-  return res;
 }
 
 Future<http.Response> httpPut(
@@ -49,19 +78,30 @@ Future<http.Response> httpPut(
     'Content-Type': 'application/json;charset=UTF-8',
   },
   Object? body,
+  http.Client? client,
 }) async {
-  final res = await httpClient.put(
-    url,
-    headers: {
-      ...await getAuthHeaders(),
-      if (headers != null) ...headers,
-    },
-    body: body,
-  );
-  if (400 <= res.statusCode) {
-    throw HttpException('${res.statusCode} ${res.reasonPhrase}: ${res.body}');
+  final httpClient = client ?? http.Client();
+  try {
+    final res = await retryOptions.retry(
+      () async {
+        return httpClient.put(
+          url,
+          headers: {
+            ...await getAuthHeaders(),
+            if (headers != null) ...headers,
+          },
+          body: body,
+        );
+      },
+      retryIf: (e) => e is SocketException || e is TimeoutException,
+    );
+    _handleResponse(res);
+    return res;
+  } finally {
+    if (client == null) {
+      httpClient.close();
+    }
   }
-  return res;
 }
 
 Future<http.Response> httpPost(
@@ -71,19 +111,30 @@ Future<http.Response> httpPost(
   },
   Object? body,
   bool withAuthHeaders = true,
+  http.Client? client,
 }) async {
-  final res = await httpClient.post(
-    url,
-    headers: {
-      if (withAuthHeaders) ...await getAuthHeaders(),
-      if (headers != null) ...headers,
-    },
-    body: body,
-  );
-  if (400 <= res.statusCode) {
-    throw HttpException('${res.statusCode} ${res.reasonPhrase}: ${res.body}');
+  final httpClient = client ?? http.Client();
+  try {
+    final res = await retryOptions.retry(
+      () async {
+        return httpClient.post(
+          url,
+          headers: {
+            if (withAuthHeaders) ...await getAuthHeaders(),
+            if (headers != null) ...headers,
+          },
+          body: body,
+        );
+      },
+      retryIf: (e) => e is SocketException || e is TimeoutException,
+    );
+    _handleResponse(res);
+    return res;
+  } finally {
+    if (client == null) {
+      httpClient.close();
+    }
   }
-  return res;
 }
 
 Future<Map<String, String>> getAuthHeaders() async {
@@ -107,6 +158,42 @@ Future<Map<String, String>> getAuthHeaders() async {
     'Authorization': 'Bearer ${currentOidc['access_token']}',
   };
   return headers;
+}
+
+void _handleResponse(http.Response res) {
+  if (res.statusCode < 400) {
+    return;
+  }
+
+  if (500 <= res.statusCode) {
+    throw ServerError(
+      '${res.statusCode} Server Error: ${res.body}',
+      uri: res.request?.url,
+    );
+  }
+
+  if (res.statusCode == 400) {
+    throw BadRequest(
+      '400 Bad Request: ${res.body}',
+      uri: res.request?.url,
+    );
+  }
+
+  if (res.statusCode == 401) {
+    throw Unauthenticated(
+      '401 Unauthenticated: ${res.body}',
+      uri: res.request?.url,
+    );
+  }
+
+  if (res.statusCode == 403) {
+    throw Unauthorized(
+      '403 Unauthorized: ${res.body}',
+      uri: res.request?.url,
+    );
+  }
+
+  throw HttpException('${res.statusCode} ${res.reasonPhrase}: ${res.body}');
 }
 
 void setRefreshOidcToggleTimer({required Map<String, dynamic> oidc}) {
@@ -152,7 +239,8 @@ int getCurrentTimestampMilliseconds() =>
 int getCurrentTimestampSeconds() =>
     (getCurrentTimestampMilliseconds() / 1000).ceil();
 
-final httpClient = http.Client();
+const retryOptions = RetryOptions(maxAttempts: app_params.httpMaxRetry);
+const durationOneSecond = Duration(seconds: 1);
 
 bool _refreshOidc = true;
 late Map<String, dynamic> currentOidc;

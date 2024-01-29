@@ -145,13 +145,21 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       currentUserNotifier.set(currentUser);
 
       // Load Init Entities: Landing page is CustomerScreen, so load Customer Cards and Stores
-      await customer_apis.reloadCustomerEntities(
-        currentUser: currentUser,
-        customerStoresInitLoadedNotifier: customerStoresInitLoadedNotifier,
-        customerStoresNotifier: customerStoresNotifier,
-        stampCardsInitLoadedNotifier: stampCardsInitLoadedNotifier,
-        stampCardsNotifier: stampCardsNotifier,
-      );
+      try {
+        await customer_apis.reloadCustomerEntities(
+          currentUser: currentUser,
+          customerStoresInitLoadedNotifier: customerStoresInitLoadedNotifier,
+          customerStoresNotifier: customerStoresNotifier,
+          stampCardsInitLoadedNotifier: stampCardsInitLoadedNotifier,
+          stampCardsNotifier: stampCardsNotifier,
+        );
+      } on Exception catch (e) {
+        Carol.showExceptionSnackBar(
+          e,
+          contextMessage: 'Failed to load customer entities.',
+        );
+        // Proceed to next screen
+      }
 
       // Next Screen
       if (mounted) {
@@ -241,7 +249,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     } else {
       // authStatus == AuthStatus.authenticated
       authButton = ElevatedButton(
-        onPressed: null,
+        onPressed: () {
+          Navigator.of(context).pushReplacementNamed(
+            '/dashboard',
+          );
+        },
         style: authButtonStyle,
         child: Text(
           'You are signed in, ${currentUser!.displayName}!',
@@ -453,21 +465,13 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       return;
     }
 
-    // Dummy
-    // Set User
-    // oidc['']
     currentOidc = oidc;
+
+    // Set User
     final accessTokenPayload = JWT.decode(oidc['access_token']).payload;
     final userId = accessTokenPayload['sub'];
     final userDisplayName = accessTokenPayload['preferred_username'];
 
-    // currentUser = await DesignUtils.delaySeconds(1).then(
-    //   (value) => User(
-    //     id: userId,
-    //     displayName: userDisplayName,
-    //     profileImageUrl: 'assets/images/schnitzel-3279045_1280.jpg',
-    //   ),
-    // );
     final currentUser = User(
       id: userId,
       displayName: userDisplayName,
@@ -476,14 +480,21 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     currentUserNotifier.set(currentUser);
 
     // Load Init Entities: Landing page is CustomerScreen, so load Customer Cards and Stores
-    await customer_apis.reloadCustomerEntities(
-      currentUser: currentUser,
-      customerStoresInitLoadedNotifier: customerStoresInitLoadedNotifier,
-      customerStoresNotifier: customerStoresNotifier,
-      stampCardsInitLoadedNotifier: stampCardsInitLoadedNotifier,
-      stampCardsNotifier: stampCardsNotifier,
-    );
-    // await customer_apis_dummy.reloadCustomerEntities(ref);
+    try {
+      await customer_apis.reloadCustomerEntities(
+        currentUser: currentUser,
+        customerStoresInitLoadedNotifier: customerStoresInitLoadedNotifier,
+        customerStoresNotifier: customerStoresNotifier,
+        stampCardsInitLoadedNotifier: stampCardsInitLoadedNotifier,
+        stampCardsNotifier: stampCardsNotifier,
+      );
+    } on Exception catch (e) {
+      Carol.showExceptionSnackBar(
+        e,
+        contextMessage: 'Failed to load customer entities.',
+      );
+      // Proceed to next screen
+    }
 
     // Next Screen
     if (mounted) {

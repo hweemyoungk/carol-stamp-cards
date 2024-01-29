@@ -1,6 +1,7 @@
 import 'package:carol/apis/customer_apis.dart' as customer_apis;
 import 'package:carol/apis/owner_apis.dart' as owner_apis;
 import 'package:carol/main.dart';
+import 'package:carol/models/redeem_rule.dart';
 import 'package:carol/models/stamp_card.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/models/user.dart';
@@ -234,26 +235,42 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
       }
     }
 
-    // Check max issues
-    Future<bool> numMaxIssuesTask = blueprint.numMaxIssues == 0
-        ? Future.value(false)
-        : _violatedNumMaxIssues(
-            user: user,
-            blueprint: blueprint,
-          ).then((violated) {
-            if (violated) {
-              if (mounted) {
-                setState(() {
-                  _issueStatus = _IssueStatus.notIssuable;
-                  // _isIssuable = false;
-                  _alertRows.add(
-                    const AlertRow(text: 'Exceeded max number of issues'),
-                  );
-                });
-              }
-            }
-            return violated;
+    // Check max issues per customer
+    Future<bool> numMaxIssuesTask;
+    if (blueprint.numMaxIssuesPerCustomer == 0) {
+      numMaxIssuesTask = Future.value(false);
+    } else {
+      numMaxIssuesTask = _violatedNumMaxIssues(
+        user: user,
+        blueprint: blueprint,
+      ).then((violated) {
+        if (violated) {
+          if (mounted) {
+            setState(() {
+              _issueStatus = _IssueStatus.notIssuable;
+              _alertRows.add(
+                const AlertRow(text: 'Exceeded max number of issues.'),
+              );
+            });
+          }
+        }
+        return violated;
+      }).onError<Exception>((error, stackTrace) {
+        Carol.showExceptionSnackBar(
+          error,
+          contextMessage: 'Failed to get number of issued cards.',
+        );
+        if (mounted) {
+          setState(() {
+            _issueStatus = _IssueStatus.notIssuable;
+            _alertRows.add(
+              const AlertRow(text: 'Failed to get number of issued cards.'),
+            );
           });
+        }
+        return true;
+      });
+    }
 
     // Assume another check
     // Future<bool> veryLongTask = DesignUtils.delaySeconds(5).then((value) {
@@ -338,11 +355,29 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
       blueprint: blueprint,
     ).copyWith(displayName: stampCardDisplayName);
 
-    final newStampCardId =
-        await customer_apis.postStampCard(stampCard: stampCardToPost);
+    final int newStampCardId;
+    try {
+      newStampCardId =
+          await customer_apis.postStampCard(stampCard: stampCardToPost);
+    } on Exception catch (e) {
+      Carol.showExceptionSnackBar(
+        e,
+        contextMessage: 'Failed to save new card.',
+      );
+      return null;
+    }
 
     // Get StampCard
-    final newStampCard = await customer_apis.getStampCard(id: newStampCardId);
+    final StampCard newStampCard;
+    try {
+      newStampCard = await customer_apis.getStampCard(id: newStampCardId);
+    } on Exception catch (e) {
+      Carol.showExceptionSnackBar(
+        e,
+        contextMessage: 'Failed to get newly created stamp card information.',
+      );
+      return null;
+    }
     stampCardProviders.tryAddProvider(entity: newStampCard);
     stampCardsNotifier.prepend(newStampCard, sort: false);
 
@@ -374,9 +409,18 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
       //   blueprintNotifier.set(entity: fetchedBlueprint);
       //   blueprint = fetchedBlueprint;
       // });
-      final fetchedRedeemRules = await owner_apis.listRedeemRules(
-        blueprintId: blueprint.id,
-      );
+      final Set<RedeemRule> fetchedRedeemRules;
+      try {
+        fetchedRedeemRules = await owner_apis.listRedeemRules(
+          blueprintId: blueprint.id,
+        );
+      } on Exception catch (e) {
+        Carol.showExceptionSnackBar(
+          e,
+          contextMessage: 'Failed to get redeem rules information.',
+        );
+        return;
+      }
       redeemRuleProviders.tryAddProviders(entities: fetchedRedeemRules);
       final fetchedBlueprint = blueprint.copyWith(
         redeemRules: fetchedRedeemRules.toList(),
