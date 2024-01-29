@@ -105,8 +105,13 @@ class _OwnerDesignStoreScreenState
                         style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                             color: Theme.of(context).colorScheme.onBackground),
                         maxLength: 50,
-                        decoration: const InputDecoration(
-                          label: Text('Display Name'),
+                        decoration: InputDecoration(
+                          label: Text(
+                            'Display Name',
+                            style: TextStyle(
+                              color: onBackgroundTernary,
+                            ),
+                          ),
                         ),
                         validator: (value) {
                           if (value == null ||
@@ -130,8 +135,13 @@ class _OwnerDesignStoreScreenState
                         style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                             color: Theme.of(context).colorScheme.onBackground),
                         maxLength: 1000,
-                        decoration: const InputDecoration(
-                          label: Text('Description'),
+                        decoration: InputDecoration(
+                          label: Text(
+                            'Description',
+                            style: TextStyle(
+                              color: onBackgroundTernary,
+                            ),
+                          ),
                         ),
                         validator: (value) {
                           if (value == null ||
@@ -156,8 +166,13 @@ class _OwnerDesignStoreScreenState
                         style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                             color: Theme.of(context).colorScheme.onBackground),
                         maxLength: 1000,
-                        decoration: const InputDecoration(
-                          label: Text('Stamp Grant Conditions'),
+                        decoration: InputDecoration(
+                          label: Text(
+                            'Stamp Grant Conditions',
+                            style: TextStyle(
+                              color: onBackgroundTernary,
+                            ),
+                          ),
                         ),
                         validator: (value) {
                           if (value == null ||
@@ -191,8 +206,13 @@ class _OwnerDesignStoreScreenState
                                           .colorScheme
                                           .onBackground),
                               // double _lng;
-                              decoration: const InputDecoration(
-                                label: Text('Max Stamps'),
+                              decoration: InputDecoration(
+                                label: Text(
+                                  'Max Stamps',
+                                  style: TextStyle(
+                                    color: onBackgroundTernary,
+                                  ),
+                                ),
                               ),
                               validator: (value) {
                                 if (value == null ||
@@ -235,8 +255,13 @@ class _OwnerDesignStoreScreenState
                                           .colorScheme
                                           .onBackground),
                               // double _lng;
-                              decoration: const InputDecoration(
-                                label: Text('Max Redeems'),
+                              decoration: InputDecoration(
+                                label: Text(
+                                  'Max Redeems',
+                                  style: TextStyle(
+                                    color: onBackgroundTernary,
+                                  ),
+                                ),
                               ),
                               validator: (value) {
                                 // 0 is infinite
@@ -255,6 +280,12 @@ class _OwnerDesignStoreScreenState
                             ),
                           ),
                         ),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         // late int _numMaxIssuesPerCustomer;
                         Padding(
                           padding: DesignUtils.basicWidgetEdgeInsets(),
@@ -272,8 +303,13 @@ class _OwnerDesignStoreScreenState
                                           .colorScheme
                                           .onBackground),
                               // double _lng;
-                              decoration: const InputDecoration(
-                                label: Text('Max Issues per customer'),
+                              decoration: InputDecoration(
+                                label: Text(
+                                  'Max Issues per customer',
+                                  style: TextStyle(
+                                    color: onBackgroundTernary,
+                                  ),
+                                ),
                               ),
                               validator: (value) {
                                 // 0 is infinite
@@ -307,8 +343,13 @@ class _OwnerDesignStoreScreenState
                                       color: Theme.of(context)
                                           .colorScheme
                                           .onBackground),
-                              decoration: const InputDecoration(
-                                label: Text('Max Total Issues(0 for infinite)'),
+                              decoration: InputDecoration(
+                                label: Text(
+                                  'Max Total Issues\n(0 for infinite)',
+                                  style: TextStyle(
+                                    color: onBackgroundTernary,
+                                  ),
+                                ),
                               ),
                               validator: (value) {
                                 // 0 is infinite
@@ -461,12 +502,24 @@ class _OwnerDesignStoreScreenState
                                               .colorScheme
                                               .error),
                                 )
-                              : Text(
-                                  formatter.format(_expirationDate!),
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyLarge!
-                                      .copyWith(color: onBackgroundTernary),
+                              : Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      '${timeFormatter.format(_expirationDate!)} ${dateFormatter.format(_expirationDate!)} ${_expirationDate!.timeZoneName} (UTC+${_expirationDate!.timeZoneOffset.inHours})',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge!
+                                          .copyWith(color: onBackgroundTernary),
+                                    ),
+                                    Text(
+                                      '(${formatRemaining(_expirationDate!.difference(DateTime.now()))})',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge!
+                                          .copyWith(color: onBackgroundTernary),
+                                    ),
+                                  ],
                                 ),
                         ),
                         Padding(
@@ -545,6 +598,7 @@ class _OwnerDesignStoreScreenState
       // final processedRedeemRules = await Future.wait(redeemRuleTasks);
       final blueprintToPost = StampCardBlueprint(
         id: -1,
+        isDeleted: false,
         displayName: _displayName,
         description: _description,
         stampGrantCondDescription: _stampGrantCondDescription,
@@ -636,6 +690,7 @@ class _OwnerDesignStoreScreenState
 
       final blueprintToPut = StampCardBlueprint(
         id: widget.blueprint!.id,
+        isDeleted: false,
         displayName: _displayName,
         description: _description,
         stampGrantCondDescription: _stampGrantCondDescription,
@@ -696,7 +751,7 @@ class _OwnerDesignStoreScreenState
 
   void _onPressSelectExpDate() async {
     final now = DateTime.now();
-    final firstDate = now.add(const Duration(days: 1));
+    final firstDate = now;
     final lastDate = DateTime(now.year + 1, now.month, now.day);
     // Show date picker
     final selectedDate = await showDatePicker(
@@ -705,8 +760,27 @@ class _OwnerDesignStoreScreenState
       firstDate: firstDate,
       lastDate: lastDate,
     );
+    if (selectedDate == null) {
+      return;
+    }
+
+    if (!mounted) return;
+    final selectedTime =
+        await showTimePicker(context: context, initialTime: TimeOfDay.now());
+    if (selectedTime == null) {
+      return;
+    }
+
+    if (!mounted) return;
     setState(() {
-      _expirationDate = selectedDate;
+      final target = DateTime(
+        selectedDate.year,
+        selectedDate.month,
+        selectedDate.day,
+        selectedTime.hour,
+        selectedTime.minute,
+      );
+      _expirationDate = target;
     });
   }
 
