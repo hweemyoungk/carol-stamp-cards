@@ -106,8 +106,12 @@ List<String>? validateOidc(Map<String, dynamic> oidc) {
   );
 
   // refresh_token
+  final refreshTokenMsg = validateRefreshToken(
+    oidc,
+    secondsSinceEpoch: secondsSinceEpoch,
+  );
 
-  final msgs = [revokedTokenMsg, accessTokenMsg, idTokenMsg]
+  final msgs = [revokedTokenMsg, accessTokenMsg, idTokenMsg, refreshTokenMsg]
       .where((msg) => msg != null)
       .cast<String>()
       .toList();
@@ -142,13 +146,13 @@ String? validateAccessToken(
     return 'Access token not found';
   }
   try {
-    // final String accessToken = oidc['access_token'];
-    // final accessTokenPayload = json.decode(String.fromCharCodes(
-    //     base64.decode(base64.normalize(accessToken.split('.')[1]))));
     final accessToken = JWT.decode(oidc['access_token']);
     final accessTokenPayload = accessToken.payload;
     if (accessTokenPayload['exp'] < secondsSinceEpoch) {
       return 'Access token expired';
+    }
+    if (!accessTokenPayload['email_verified']) {
+      return 'Email not verified';
     }
   } catch (e) {
     return 'ERROR during parsing access token';
@@ -164,13 +168,13 @@ String? validateIdToken(
     return 'ID token not found';
   }
   try {
-    // final String idToken = oidc['id_token'];
-    // final idTokenPayload = json.decode(String.fromCharCodes(
-    //     base64.decode(base64.normalize(idToken.split('.')[1]))));
     final idToken = JWT.decode(oidc['id_token']);
     final idTokenPayload = idToken.payload;
     if (idTokenPayload['exp'] < secondsSinceEpoch) {
       return 'ID token expired';
+    }
+    if (!idTokenPayload['email_verified']) {
+      return 'Email not verified';
     }
   } catch (e) {
     return 'ERROR during parsing ID token';
