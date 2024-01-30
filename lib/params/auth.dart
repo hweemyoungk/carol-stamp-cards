@@ -3,4 +3,6 @@ const realmName = 'alicia-auth-test-1';
 const clientId = 'pkce-client-id';
 const redirectUri = 'cards.carol.scheme://carol.cards/auth/callback';
 
+const accountPath = '/realms/$realmName/account';
+
 const expMarginSeconds = 30;

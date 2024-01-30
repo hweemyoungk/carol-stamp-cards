@@ -1,7 +1,9 @@
 import 'package:carol/apis/customer_apis.dart' as customer_apis;
 import 'package:carol/apis/owner_apis.dart';
+import 'package:carol/apis/utils.dart';
 import 'package:carol/main.dart';
 import 'package:carol/models/store.dart';
+import 'package:carol/params/auth.dart';
 import 'package:carol/providers/active_drawer_item_provider.dart';
 import 'package:carol/providers/current_user_provider.dart';
 import 'package:carol/providers/stamp_card_blueprint_provider.dart';
@@ -44,24 +46,33 @@ class MainDrawer extends ConsumerWidget {
       child: avatar,
     );
     return Drawer(
+      width: 250,
       backgroundColor: Theme.of(context).colorScheme.primaryContainer,
       child: Column(
         children: [
           DrawerHeader(
-            child: Row(
-              children: [
-                profileIcon,
-                Padding(
-                  padding: DesignUtils.basicWidgetEdgeInsets(),
-                  child: Text(
-                    currentUser.displayName,
-                    style: Theme.of(context).textTheme.headlineLarge!.copyWith(
-                          color:
-                              Theme.of(context).colorScheme.onPrimaryContainer,
-                        ),
+            child: TextButton(
+              onPressed: _onPressAccount,
+              child: Row(
+                children: [
+                  profileIcon,
+                  Expanded(
+                    child: Text(
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      // currentUser.displayName,
+                      'Current User With Long Name',
+                      style:
+                          Theme.of(context).textTheme.headlineLarge!.copyWith(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onPrimaryContainer,
+                              ),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           const Column(
@@ -102,6 +113,11 @@ class MainDrawer extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _onPressAccount() async {
+    final url = Uri.http(keycloakHostname, accountPath);
+    await launchInBrowserView(url);
   }
 }
 

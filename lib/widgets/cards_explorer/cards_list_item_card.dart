@@ -44,7 +44,7 @@ class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
               child: stampCard.bgImageUrl == null
                   ? Image.memory(
                       kTransparentImage,
-                      height: 200,
+                      height: 300,
                       width: double.infinity,
                       fit: BoxFit.cover,
                     )
@@ -53,7 +53,7 @@ class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
                       // image: NetworkImage(stampCard.imageUrl!),
                       image: AssetImage(stampCard.bgImageUrl!),
                       fit: BoxFit.cover,
-                      height: 200,
+                      height: 300,
                       width: double.infinity,
                     ),
             ),
