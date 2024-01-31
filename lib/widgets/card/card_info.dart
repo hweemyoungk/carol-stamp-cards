@@ -20,6 +20,7 @@ class CardInfo extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
+          textAlign: TextAlign.center,
           stampCard.displayName,
           style: Theme.of(context)
               .textTheme

@@ -55,6 +55,8 @@ String formatRemaining(Duration duration) {
 }
 
 class DesignUtils {
+  static const dummyImage =
+      AssetImage('assets/images/schnitzel-3279045_1280.jpg');
   static IconData stampIcon = Icons.star;
 
   static EdgeInsets basicWidgetEdgeInsets([double scale = 1.0]) {

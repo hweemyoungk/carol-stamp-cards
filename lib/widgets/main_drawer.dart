@@ -61,8 +61,7 @@ class MainDrawer extends ConsumerWidget {
                       textAlign: TextAlign.center,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      // currentUser.displayName,
-                      'Current User With Long Name',
+                      currentUser.displayName,
                       style:
                           Theme.of(context).textTheme.headlineLarge!.copyWith(
                                 color: Theme.of(context)
@@ -88,6 +87,10 @@ class MainDrawer extends ConsumerWidget {
                   DrawerItem(
                     text: 'Owner',
                     drawerItemEnum: DrawerItemEnum.owner,
+                  ),
+                  DrawerItem(
+                    text: 'Membership',
+                    drawerItemEnum: DrawerItemEnum.membership,
                   ),
                   DrawerItem(
                     text: 'Settings',
@@ -187,6 +190,8 @@ class _DrawerItemState extends ConsumerState<DrawerItem> {
     } else if (widget.drawerItemEnum == DrawerItemEnum.owner &&
         ref.read(ownerStoresInitLoadedProvider) == false) {
       _loadOwnerEntities();
+    } else if (widget.drawerItemEnum == DrawerItemEnum.membership) {
+      // NOOP: contents are loaded from access token
     }
   }
 
@@ -225,6 +230,7 @@ class _DrawerItemState extends ConsumerState<DrawerItem> {
 enum DrawerItemEnum {
   customer,
   owner,
+  membership,
   settings,
   termsOfUse,
   privacyPolicy,

@@ -19,7 +19,6 @@ import 'package:carol/providers/stamp_cards_provider.dart';
 import 'package:carol/providers/stores_init_loaded_provider.dart';
 import 'package:carol/providers/stores_provider.dart';
 import 'package:carol/utils.dart';
-import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pkce/pkce.dart';
@@ -42,7 +41,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   void initState() {
     super.initState();
     _bindAuthCallback();
-    _tryAutoSignIn(ignore: false);
+    _tryAutoSignIn(ignore: true);
   }
 
   Future<void> _tryAutoSignIn({bool ignore = false}) async {
@@ -54,6 +53,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       }
       return;
     }
+    final authStatusNotifier = ref.read(authStatusProvider.notifier);
     final stampCardsInitLoadedNotifier =
         ref.read(stampCardsInitLoadedProvider.notifier);
     final stampCardsNotifier = ref.read(stampCardsProvider.notifier);
@@ -97,83 +97,85 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     }
 
     // 3. Refresh to latest credential
+    final Map<String, dynamic>? newOidc;
     try {
-      final newOidc = await tryRefreshOidc(oidc);
-      if (newOidc == null) {
-        // Got invalid OIDC
-        prefs.remove(shared_preferences_params.oidcKey);
-        Carol.showTextSnackBar(
-          text: 'Failed to auto sign in. Please sign in manually.',
-          level: SnackBarLevel.error,
-        );
-        // Pop all
-        if (mounted) {
-          Navigator.of(context).popUntil(ModalRoute.withName('/auth'));
-        }
-        return;
-      }
-
-      // Replace
-      currentOidc = newOidc;
-
-      // Set timer
-      setRefreshOidcToggleTimer(oidc: newOidc);
-
-      // Store credential
-      // TEST: stale refresh token
-      // final staleOidc = getStaleRefreshOidc(oidc);
-      // prefs.setString(shared_preferences_params.oidcKey, json.encode(staleOidc));
-      prefs.setString(shared_preferences_params.oidcKey, json.encode(newOidc));
-
-      // 5. Navigate to DashboardScreen
-      setState(() {
-        _isAutoSigningIn = false;
-      });
-
-      // Set User
-      developer.log('[+]access token: ${newOidc['access_token']}');
-
-      final accessTokenPayload = JWT.decode(newOidc['access_token']).payload;
-      final userId = accessTokenPayload['sub'];
-      final userDisplayName = accessTokenPayload['preferred_username'];
-
-      final currentUser = User(
-        id: userId,
-        displayName: userDisplayName,
-        profileImageUrl: 'assets/images/schnitzel-3279045_1280.jpg',
-      );
-      currentUserNotifier.set(currentUser);
-
-      // Load Init Entities: Landing page is CustomerScreen, so load Customer Cards and Stores
-      try {
-        await customer_apis.reloadCustomerEntities(
-          currentUser: currentUser,
-          customerStoresInitLoadedNotifier: customerStoresInitLoadedNotifier,
-          customerStoresNotifier: customerStoresNotifier,
-          stampCardsInitLoadedNotifier: stampCardsInitLoadedNotifier,
-          stampCardsNotifier: stampCardsNotifier,
-        );
-      } on Exception catch (e) {
-        Carol.showExceptionSnackBar(
-          e,
-          contextMessage: 'Failed to load customer entities.',
-        );
-        // Proceed to next screen
-      }
-
-      // Next Screen
-      if (mounted) {
-        Navigator.of(context).pushReplacementNamed(
-          '/dashboard',
-        );
-      }
+      newOidc = await tryRefreshOidc(oidc);
     } on Exception catch (e) {
+      Carol.showExceptionSnackBar(
+        e,
+        contextMessage: 'Failed to auto-sign-in.',
+      );
+      authStatusNotifier.set(AuthStatus.unauthenticated);
+      if (mounted) {
+        setState(() {
+          _isAutoSigningIn = false;
+        });
+      }
+      return;
+    }
+
+    if (newOidc == null) {
+      // Got invalid OIDC
+      prefs.remove(shared_preferences_params.oidcKey);
       Carol.showTextSnackBar(
-        text: e.toString(),
-        seconds: 10,
+        text: 'Failed to auto sign in. Please sign in manually.',
         level: SnackBarLevel.error,
       );
+      // Pop all
+      if (mounted) {
+        Navigator.of(context).popUntil(ModalRoute.withName('/auth'));
+      }
       return;
+    }
+
+    // Replace
+    currentOidc = newOidc;
+
+    // Set timer
+    setRefreshOidcToggleTimer(oidc: newOidc);
+
+    // Store credential
+    // TEST: stale refresh token
+    // final staleOidc = getStaleRefreshOidc(oidc);
+    // prefs.setString(shared_preferences_params.oidcKey, json.encode(staleOidc));
+    prefs.setString(shared_preferences_params.oidcKey, json.encode(newOidc));
+
+    // 5. Navigate to DashboardScreen
+    setState(() {
+      _isAutoSigningIn = false;
+    });
+
+    // Set User
+    developer.log('[+]access token: ${newOidc['access_token']}');
+
+    final currentUser = User(
+      oidc: newOidc,
+      profileImageUrl: 'assets/images/schnitzel-3279045_1280.jpg',
+    );
+    currentUserNotifier.set(currentUser);
+
+    // Load Init Entities: Landing page is CustomerScreen, so load Customer Cards and Stores
+    try {
+      await customer_apis.reloadCustomerEntities(
+        currentUser: currentUser,
+        customerStoresInitLoadedNotifier: customerStoresInitLoadedNotifier,
+        customerStoresNotifier: customerStoresNotifier,
+        stampCardsInitLoadedNotifier: stampCardsInitLoadedNotifier,
+        stampCardsNotifier: stampCardsNotifier,
+      );
+    } on Exception catch (e) {
+      Carol.showExceptionSnackBar(
+        e,
+        contextMessage: 'Failed to load customer entities.',
+      );
+      // Proceed to next screen
+    }
+
+    // Next Screen
+    if (mounted) {
+      Navigator.of(context).pushReplacementNamed(
+        '/dashboard',
+      );
     }
   }
 
@@ -457,24 +459,20 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       authStatusNotifier.set(AuthStatus.authenticated);
     } on Exception catch (e) {
       authStatusNotifier.set(AuthStatus.unauthenticated);
-      Carol.showTextSnackBar(
-        text: e.toString(),
-        seconds: 10,
-        level: SnackBarLevel.error,
+      Carol.showExceptionSnackBar(
+        e,
+        contextMessage: 'Failed to sign in.',
       );
       return;
     }
 
+    developer.log('[+]access token: ${oidc['access_token']}');
+
     currentOidc = oidc;
 
     // Set User
-    final accessTokenPayload = JWT.decode(oidc['access_token']).payload;
-    final userId = accessTokenPayload['sub'];
-    final userDisplayName = accessTokenPayload['preferred_username'];
-
     final currentUser = User(
-      id: userId,
-      displayName: userDisplayName,
+      oidc: oidc,
       profileImageUrl: 'assets/images/schnitzel-3279045_1280.jpg',
     );
     currentUserNotifier.set(currentUser);
@@ -493,7 +491,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         e,
         contextMessage: 'Failed to load customer entities.',
       );
-      // Proceed to next screen
     }
 
     // Next Screen

@@ -1,5 +1,6 @@
 import 'package:carol/providers/active_drawer_item_provider.dart';
 import 'package:carol/screens/customer_screen.dart';
+import 'package:carol/screens/membership_screen.dart';
 import 'package:carol/screens/owner_screen.dart';
 import 'package:carol/widgets/main_drawer.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +23,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       content = CustomerScreen();
     } else if (activeDrawerItemEnum == DrawerItemEnum.owner) {
       content = OwnerScreen();
+    } else if (activeDrawerItemEnum == DrawerItemEnum.membership) {
+      content = MembershipScreen();
     } else {
       content = Scaffold(
         appBar: AppBar(),

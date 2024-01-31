@@ -125,7 +125,7 @@ class Carol extends StatelessWidget {
       return;
     }
     if (e is SocketException) {
-      sb.write('Your connection looks unstable. Please recover and try again.');
+      sb.write('Server is under maintenance. Please wait a while try again.');
       showTextSnackBar(
         text: sb.toString(),
         level: SnackBarLevel.warn,
