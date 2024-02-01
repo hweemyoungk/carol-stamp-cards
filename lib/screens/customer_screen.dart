@@ -102,7 +102,7 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
     } else {
       // Get storeIds from stampCards
       final stampCards = ref.read(stampCardsProvider);
-      final storeIds = stampCards.map((e) => e.storeId).toSet();
+      final storeIds = stampCards.map((e) => e.store).toSet();
 
       // Get Stores
       final Set<Store> stores;

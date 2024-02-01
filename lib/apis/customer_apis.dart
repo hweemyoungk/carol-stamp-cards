@@ -31,29 +31,34 @@ Future<void> reloadCustomerEntities({
   );
 
   // Blueprints
-  final blueprints = await listBlueprints(
-    blueprintIds: stampCards.map((e) => e.blueprintId).toSet(),
-  );
+  // final blueprints = await listBlueprints(
+  //   blueprintIds: stampCards.map((e) => e.blueprint).toSet(),
+  // );
+  final blueprints =
+      stampCards.map((stampCard) => stampCard.blueprint!).toSet();
+
   // Stores
-  final stores = await listStores(
-    storeIds: blueprints.map((e) => e.storeId).toSet(),
-  );
+  // final stores = await listStores(
+  //   storeIds: blueprints.map((e) => e.storeId).toSet(),
+  // );
+  final stores = blueprints.map((blueprint) => blueprint.store!).toSet();
 
   // Bind blueprints to stores
-  final storeMap = stores.fold(<int, Store>{}, (previousValue, store) {
-    store.blueprints = [];
-    previousValue[store.id] = store;
-    return previousValue;
-  });
-  for (final blueprint in blueprints) {
-    storeMap[blueprint.storeId]!.blueprints!.add(blueprint);
-  }
+  // Already join fetched blueprints
+  // final storeMap = stores.fold(<int, Store>{}, (previousValue, store) {
+  //   store.blueprints = [];
+  //   previousValue[store.id] = store;
+  //   return previousValue;
+  // });
+  // for (final blueprint in blueprints) {
+  //   storeMap[blueprint.storeId]!.blueprints!.add(blueprint);
+  // }
 
   // Register to providers
   customerStoreProviders.tryAddProviders(entities: stores);
   blueprintProviders.tryAddProviders(entities: blueprints);
   for (final blueprint in blueprints) {
-    redeemRuleProviders.tryAddProviders(entities: blueprint.redeemRules ?? []);
+    redeemRuleProviders.tryAddProviders(entities: blueprint._redeemRules ?? []);
   }
   stampCardProviders.tryAddProviders(entities: stampCards);
 
@@ -63,9 +68,11 @@ Future<void> reloadCustomerEntities({
   customerStoresInitLoadedNotifier.set(true);
 }
 
-/// Assumes blueprint is not fetched (null).
-///
-/// In real practice, all Many-to-One associations are EAGERLY fetched from backend, so response includes every associated blueprint and store.
+/// Fetches cards for customer.<br>
+/// <ol>Every card has a non-null blueprint<b>(A)</b>.</ol>
+/// <ol>Every blueprint<b>(A)</b> has a non-null store<b>(B)</b> and <i>null</i> redeemRules.</ol>
+/// <ol>Every store<b>(B)</b> has a non-null set of blueprint<b>(C)</b>s.</ol>
+/// <ol>Every blueprint<b>(C)</b> has <i>null</i> redeemRules.</ol>
 Future<Set<StampCard>> listStampCards({
   String? customerId,
   Set<int>? stampCardIds,
@@ -159,6 +166,18 @@ Future<Set<Store>> listStores({
     stores.add(store);
   }
   return stores;
+}
+
+Future<Store> getStore({
+  required int id,
+}) async {
+  final url = Uri.http(
+    backend_params.apigateway,
+    '${backend_params.customerStorePath}/$id',
+  );
+  final res = await httpGet(url);
+  Map<String, dynamic> resBody = json.decode(res.body);
+  return Store.fromJson(resBody);
 }
 
 Future<List<RedeemRule>> listRedeemRules({

@@ -398,7 +398,7 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
     var blueprint = ref.read(widget.blueprintProvider);
     final blueprintNotifier = ref.read(widget.blueprintProvider.notifier);
     // Set _redeemRules
-    if (blueprint.redeemRules == null) {
+    if (blueprint._redeemRules == null) {
       setState(() {
         _isFetchingRedeemRules = true;
       });

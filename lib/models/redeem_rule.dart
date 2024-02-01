@@ -1,12 +1,16 @@
 import 'package:carol/models/base_model.dart';
+import 'package:carol/models/redeem.dart';
+import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:flutter/material.dart';
 
 class RedeemRule extends BaseModel {
   final String displayName;
   final String description;
   final int consumes;
-  final int blueprintId;
   final String? imageId;
+  final StampCardBlueprint? blueprint;
+  final int blueprintId;
+  final Set<Redeem>? redeems;
 
   RedeemRule({
     required super.id,
@@ -16,6 +20,8 @@ class RedeemRule extends BaseModel {
     required this.consumes,
     this.imageId,
     required this.blueprintId,
+    required this.blueprint,
+    required this.redeems,
   });
 
   RedeemRule copyWith({
@@ -24,9 +30,10 @@ class RedeemRule extends BaseModel {
     String? displayName,
     String? description,
     int? consumes,
-    int? blueprintId,
-    IconData? icon,
     String? imageId,
+    int? blueprintId,
+    StampCardBlueprint? blueprint,
+    Set<Redeem>? redeems,
   }) {
     return RedeemRule(
       id: id ?? this.id,
@@ -34,8 +41,10 @@ class RedeemRule extends BaseModel {
       displayName: displayName ?? this.displayName,
       description: description ?? this.description,
       consumes: consumes ?? this.consumes,
-      blueprintId: blueprintId ?? this.blueprintId,
       imageId: imageId ?? this.imageId,
+      blueprintId: blueprintId ?? this.blueprintId,
+      blueprint: blueprint ?? this.blueprint,
+      redeems: redeems ?? this.redeems,
     );
   }
 
@@ -43,8 +52,16 @@ class RedeemRule extends BaseModel {
       : displayName = json['displayName'] as String,
         description = json['description'] as String,
         consumes = json['consumes'] as int,
-        blueprintId = json['blueprintId'] as int,
         imageId = json['imageId'] as String?,
+        blueprintId = json['blueprintId'] as int,
+        blueprint = json['blueprint'] == null
+            ? null
+            : StampCardBlueprint.fromJson(json['blueprint']),
+        redeems = json['redeems'] == null
+            ? null
+            : {
+                for (final map in json['redeems']) Redeem.fromJson(map),
+              },
         super(
           id: json['id'],
           isDeleted: json['isDeleted'],
@@ -56,8 +73,14 @@ class RedeemRule extends BaseModel {
         'displayName': displayName,
         'description': description,
         'consumes': consumes,
-        'blueprintId': blueprintId,
         'imageId': imageId,
+        'blueprintId': blueprintId,
+        'blueprint': blueprint?.toJson(),
+        'redeems': redeems == null
+            ? null
+            : [
+                for (final redeem in redeems!) redeem.toJson(),
+              ],
       };
 
   Widget consumesWidget(TextStyle style, Color color) => SizedBox(
@@ -87,3 +110,6 @@ class RedeemRule extends BaseModel {
     // ).toString();
   }
 }
+
+final Map<int, RedeemRule> customerRedeemRulePool = {};
+final Map<int, RedeemRule> ownerRedeemRulePool = {};

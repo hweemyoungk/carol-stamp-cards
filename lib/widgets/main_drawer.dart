@@ -219,7 +219,7 @@ class _DrawerItemState extends ConsumerState<DrawerItem> {
       }
       ownerStoreProviders.tryAddProviders(entities: stores);
       for (final store in stores) {
-        blueprintProviders.tryAddProviders(entities: store.blueprints ?? []);
+        blueprintProviders.tryAddProviders(entities: store._blueprints ?? []);
       }
       storesNotifier.appendAll(stores);
       storesInitLoadedNotifier.set(true);

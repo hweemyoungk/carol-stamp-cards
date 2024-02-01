@@ -166,8 +166,8 @@ List<StampCard> genDummyStampCards({
         isDiscarded: wasDiscarded,
         isInactive: isInactive,
         customerId: customerId ?? uuid.v4(),
-        storeId: blueprint?.storeId ?? random.nextInt(maxInteger),
-        blueprintId: blueprint?.id ?? random.nextInt(maxInteger),
+        store: blueprint?.storeId ?? random.nextInt(maxInteger),
+        blueprint: blueprint?.id ?? random.nextInt(maxInteger),
         bgImageId: random.nextDouble() < 0.5
             // ? 'https://cdn.pixabay.com/photo/2018/03/31/19/29/schnitzel-3279045_1280.jpg'
             ? 'assets/images/schnitzel-3279045_1280.jpg'

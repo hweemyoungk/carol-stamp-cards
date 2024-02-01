@@ -27,7 +27,7 @@ class _RedeemRulesListState extends ConsumerState<RedeemRulesList> {
   @override
   Widget build(BuildContext context) {
     final blueprint = ref.watch(widget.blueprintProvider);
-    final redeemRules = blueprint.redeemRules;
+    final redeemRules = blueprint._redeemRules;
     return Column(
       // mainAxisSize: MainAxisSize.min,
       children: [

@@ -58,7 +58,7 @@ class _RedeemRequestDialogScreenState
       }
 
       // blueprint expired?
-      if (ref.read(widget.blueprintProvider).wasExpired) {
+      if (ref.read(widget.blueprintProvider).isExpired) {
         _notApprovableReason = 'Blueprint already expired';
         return;
       }

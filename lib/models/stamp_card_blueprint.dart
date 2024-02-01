@@ -1,5 +1,6 @@
 import 'package:carol/models/base_model.dart';
 import 'package:carol/models/redeem_rule.dart';
+import 'package:carol/models/store.dart';
 import 'package:flutter/material.dart';
 
 class StampCardBlueprint extends BaseModel {
@@ -12,10 +13,11 @@ class StampCardBlueprint extends BaseModel {
   final int numMaxIssues;
   final DateTime lastModifiedDate;
   final DateTime expirationDate;
-  final int storeId;
   final String? bgImageUrl;
   final bool isPublishing;
-  List<RedeemRule>? redeemRules;
+  final Store? store;
+  final int storeId;
+  final Set<RedeemRule>? redeemRules;
 
   StampCardBlueprint({
     required super.id,
@@ -29,9 +31,10 @@ class StampCardBlueprint extends BaseModel {
     required this.numMaxRedeems,
     required this.numMaxIssuesPerCustomer,
     required this.numMaxIssues,
-    required this.storeId,
     required this.bgImageUrl,
     required this.isPublishing,
+    required this.store,
+    required this.storeId,
     required this.redeemRules,
   });
 
@@ -47,22 +50,19 @@ class StampCardBlueprint extends BaseModel {
             DateTime.fromMillisecondsSinceEpoch(json['lastModifiedDate']),
         expirationDate =
             DateTime.fromMillisecondsSinceEpoch(json['expirationDate']),
-        storeId = json['storeId'] as int,
         bgImageUrl = json['bgImageUrl'] as String?,
         isPublishing = json['isPublishing'] as bool,
+        store = json['store'] == null ? null : Store.fromJson(json['store']),
+        storeId = json['storeId'] as int,
         redeemRules = json['redeemRules'] == null
             ? null
-            : [
+            : {
                 for (final map in json['redeemRules']) RedeemRule.fromJson(map),
-              ],
+              },
         super(
           id: json['id'] as int,
           isDeleted: json['isDeleted'] as bool,
         );
-
-  bool get wasExpired {
-    return DateTime.now().isAfter(expirationDate);
-  }
 
   StampCardBlueprint copyWith({
     int? id,
@@ -76,11 +76,12 @@ class StampCardBlueprint extends BaseModel {
     int? numMaxIssues,
     DateTime? lastModifiedDate,
     DateTime? expirationDate,
-    int? storeId,
     IconData? icon,
     String? bgImageUrl,
     bool? isPublishing,
-    List<RedeemRule>? redeemRules,
+    Store? store,
+    int? storeId,
+    Set<RedeemRule>? redeemRules,
   }) {
     return StampCardBlueprint(
       id: id ?? this.id,
@@ -96,9 +97,10 @@ class StampCardBlueprint extends BaseModel {
       numMaxIssues: numMaxIssues ?? this.numMaxIssues,
       lastModifiedDate: lastModifiedDate ?? this.lastModifiedDate,
       expirationDate: expirationDate ?? this.expirationDate,
-      storeId: storeId ?? this.storeId,
       bgImageUrl: bgImageUrl ?? this.bgImageUrl,
       isPublishing: isPublishing ?? this.isPublishing,
+      store: store ?? this.store,
+      storeId: storeId ?? this.storeId,
       redeemRules: redeemRules ?? this.redeemRules,
     );
   }
@@ -115,13 +117,21 @@ class StampCardBlueprint extends BaseModel {
         'numMaxIssuesPerCustomer': numMaxIssuesPerCustomer,
         'lastModifiedDate': lastModifiedDate,
         'expirationDate': expirationDate,
-        'storeId': storeId,
         'bgImageUrl': bgImageUrl,
         'isPublishing': isPublishing,
+        'store': store?.toJson(),
+        'storeId': storeId,
         'redeemRules': redeemRules == null
             ? null
             : [
                 for (final redeemRule in redeemRules!) redeemRule.toJson(),
               ],
       };
+
+  bool get isExpired {
+    return DateTime.now().isAfter(expirationDate);
+  }
 }
+
+final Map<int, StampCardBlueprint> customerBlueprintPool = {};
+final Map<int, StampCardBlueprint> ownerBlueprintPool = {};

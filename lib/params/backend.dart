@@ -12,6 +12,8 @@ const customerStampCardListPath = '/customer/api/v1/card/list';
 const customerNumIssuedCardsPath = '/customer/api/v1/card/numIssues';
 const customerBlueprintPath = '/customer/api/v1/blueprint';
 const customerBlueprintListPath = '/customer/api/v1/blueprint/list';
+// TODO: Implement backend
+const customerStorePath = '/customer/api/v1/store';
 const customerStoreListPath = '/customer/api/v1/store/list';
 const customerRedeemRequestPath = '/customer/api/v1/redeemRequest';
 const customerRedeemRequestExistsPath = '/customer/api/v1/redeemRequest/exists';

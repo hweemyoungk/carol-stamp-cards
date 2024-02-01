@@ -47,10 +47,10 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     }
 
     final store = ref.read(widget.storeProvider);
-    if (store.blueprints != null) {
+    if (store._blueprints != null) {
       // Already fetched. No need to load blueprints
       setState(() {
-        _blueprints.addAll(store.blueprints!);
+        _blueprints.addAll(store._blueprints!);
         _blueprintsInitLoaded = true;
       });
       return;
@@ -81,9 +81,9 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     // final watchedBlueprints = _blueprints.map((blueprint) {
     //   return ref.watch(blueprintProviders.tryGetProvider(entity: blueprint)!);
     // }).toList();
-    final watchedBlueprints = store.blueprints == null
+    final watchedBlueprints = store._blueprints == null
         ? <StampCardBlueprint>[]
-        : store.blueprints!
+        : store._blueprints!
             .map((blueprint) => ref
                 .watch(blueprintProviders.tryGetProvider(entity: blueprint)!))
             .toList();

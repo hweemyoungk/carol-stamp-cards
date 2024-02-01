@@ -61,7 +61,7 @@ class _OwnerDesignStoreScreenState
       _expirationDate = blueprint.expirationDate;
       // Set _redeemRules
       // RedeemRules must be fetched in _BlueprintDialogScreenState._onPressModify
-      _redeemRules.addAll(blueprint.redeemRules!);
+      _redeemRules.addAll(blueprint._redeemRules!);
     }
   }
 
@@ -626,13 +626,13 @@ class _OwnerDesignStoreScreenState
         return;
       }
       blueprintProviders.tryAddProvider(entity: newBlueprint);
-      if (store.blueprints == null) {
+      if (store._blueprints == null) {
         // Should not happen: Blueprints must be fetched already.
         throw Exception('Blueprints must be fetched already for store');
       } else {
         storeNotifier.set(
             entity: store
-                .copyWith(blueprints: [newBlueprint, ...store.blueprints!]));
+                .copyWith(blueprints: [newBlueprint, ...store._blueprints!]));
       }
 
       Carol.showTextSnackBar(

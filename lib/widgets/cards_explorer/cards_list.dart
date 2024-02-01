@@ -56,7 +56,7 @@ class _CardsListState extends ConsumerState<CardsList> {
                     stampCardProvider: stampCardProviders.tryGetProviderById(
                         id: stampCard.id)!,
                     blueprintProvider: blueprintProviders.tryGetProviderById(
-                        id: stampCard.blueprintId)!,
+                        id: stampCard._blueprint)!,
                   );
                 },
               ),

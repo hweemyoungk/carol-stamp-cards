@@ -163,12 +163,12 @@ class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
   Future<void> _loadRedeemRules() async {
     final stampCard = ref.read(widget.stampCardProvider);
     var blueprintProvider =
-        blueprintProviders.tryGetProviderById(id: stampCard.blueprintId);
+        blueprintProviders.tryGetProviderById(id: stampCard._blueprint);
     final StampCardBlueprint blueprint;
     if (blueprintProvider == null) {
       // Get Blueprint
       try {
-        blueprint = await customer_apis.getBlueprint(id: stampCard.blueprintId);
+        blueprint = await customer_apis.getBlueprint(id: stampCard._blueprint);
       } on Exception catch (e) {
         Carol.showExceptionSnackBar(
           e,
@@ -178,12 +178,12 @@ class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
       }
       blueprintProviders.tryAddProvider(entity: blueprint);
       blueprintProvider =
-          blueprintProviders.tryGetProviderById(id: stampCard.blueprintId)!;
+          blueprintProviders.tryGetProviderById(id: stampCard._blueprint)!;
     } else {
       blueprint = ref.read(blueprintProvider);
     }
 
-    if (blueprint.redeemRules == null) {
+    if (blueprint._redeemRules == null) {
       if (!mounted) return;
 
       // List RedeemRules
@@ -191,7 +191,7 @@ class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
       final List<RedeemRule> redeemRules;
       try {
         redeemRules = await customer_apis.listRedeemRules(
-          blueprintId: stampCard.blueprintId,
+          blueprintId: stampCard._blueprint,
         );
       } on Exception catch (e) {
         Carol.showExceptionSnackBar(

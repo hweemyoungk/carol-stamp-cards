@@ -193,13 +193,15 @@ class _CardScreenState extends ConsumerState<CardScreen> {
     );
   }
 
-  void _onPressLoadStoreInfo() {
+  void _onPressLoadStoreInfo() async {
     final stampCard = ref.read(widget.stampCardProvider);
-    final storeProvider =
-        customerStoreProviders.tryGetProviderById(id: stampCard.storeId)!;
-    Navigator.of(context).push(MaterialPageRoute(
-      builder: (context) => StoreScreen(storeProvider: storeProvider),
-    ));
+    final storeProvider = customerStoreProviders.tryGetProviderById(
+        id: await stampCard.blueprint.then((value) => value.storeId))!;
+    if (mounted) {
+      Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => StoreScreen(storeProvider: storeProvider),
+      ));
+    }
   }
 
   void _onPressDeleteCard() {
