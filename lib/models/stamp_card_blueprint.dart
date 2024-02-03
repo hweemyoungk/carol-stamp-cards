@@ -3,7 +3,7 @@ import 'package:carol/models/redeem_rule.dart';
 import 'package:carol/models/store.dart';
 import 'package:flutter/material.dart';
 
-class StampCardBlueprint extends BaseModel {
+class Blueprint extends BaseModel {
   final String displayName;
   final String description;
   final String stampGrantCondDescription;
@@ -19,7 +19,7 @@ class StampCardBlueprint extends BaseModel {
   final int storeId;
   final Set<RedeemRule>? redeemRules;
 
-  StampCardBlueprint({
+  Blueprint({
     required super.id,
     required super.isDeleted,
     required this.displayName,
@@ -38,7 +38,7 @@ class StampCardBlueprint extends BaseModel {
     required this.redeemRules,
   });
 
-  StampCardBlueprint.fromJson(Map<String, dynamic> json)
+  Blueprint.fromJson(Map<String, dynamic> json)
       : displayName = json['displayName'] as String,
         description = json['description'] as String,
         stampGrantCondDescription = json['stampGrantCondDescription'] as String,
@@ -64,7 +64,7 @@ class StampCardBlueprint extends BaseModel {
           isDeleted: json['isDeleted'] as bool,
         );
 
-  StampCardBlueprint copyWith({
+  Blueprint copyWith({
     int? id,
     bool? isDeleted,
     String? displayName,
@@ -83,7 +83,7 @@ class StampCardBlueprint extends BaseModel {
     int? storeId,
     Set<RedeemRule>? redeemRules,
   }) {
-    return StampCardBlueprint(
+    return Blueprint(
       id: id ?? this.id,
       isDeleted: isDeleted ?? this.isDeleted,
       displayName: displayName ?? this.displayName,
@@ -132,6 +132,3 @@ class StampCardBlueprint extends BaseModel {
     return DateTime.now().isAfter(expirationDate);
   }
 }
-
-final Map<int, StampCardBlueprint> customerBlueprintPool = {};
-final Map<int, StampCardBlueprint> ownerBlueprintPool = {};

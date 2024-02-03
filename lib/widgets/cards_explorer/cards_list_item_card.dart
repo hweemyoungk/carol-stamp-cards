@@ -1,25 +1,17 @@
 import 'package:carol/apis/customer_apis.dart' as customer_apis;
 import 'package:carol/main.dart';
-import 'package:carol/models/redeem_rule.dart';
 import 'package:carol/models/stamp_card.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
-import 'package:carol/providers/entity_provider.dart';
-import 'package:carol/providers/redeem_rule_provider.dart';
-import 'package:carol/providers/stamp_card_blueprint_provider.dart';
 import 'package:carol/screens/card_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 class CardsListItemCard extends ConsumerStatefulWidget {
-  final StateNotifierProvider<EntityStateNotifier<StampCard>, StampCard>
-      stampCardProvider;
-  final StateNotifierProvider<EntityStateNotifier<StampCardBlueprint>,
-      StampCardBlueprint> blueprintProvider;
+  final StampCard card;
   const CardsListItemCard({
     super.key,
-    required this.stampCardProvider,
-    required this.blueprintProvider,
+    required this.card,
   });
 
   @override
@@ -29,7 +21,7 @@ class CardsListItemCard extends ConsumerStatefulWidget {
 class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
   @override
   Widget build(BuildContext context) {
-    final stampCard = ref.watch(widget.stampCardProvider);
+    final stampCard = widget.card;
     return Card(
       margin: const EdgeInsets.all(10),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -152,23 +144,18 @@ class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
 
     Navigator.of(context).push(MaterialPageRoute(
       builder: (ctx) {
-        return CardScreen(
-          stampCardProvider: widget.stampCardProvider,
-          blueprintProvider: widget.blueprintProvider,
-        );
+        return const CardScreen();
       },
     ));
   }
 
   Future<void> _loadRedeemRules() async {
-    final stampCard = ref.read(widget.stampCardProvider);
-    var blueprintProvider =
-        blueprintProviders.tryGetProviderById(id: stampCard._blueprint);
-    final StampCardBlueprint blueprint;
-    if (blueprintProvider == null) {
-      // Get Blueprint
+    final stampCard = widget.card;
+    final Blueprint blueprint;
+    if (stampCard.blueprint?.redeemRules == null) {
+      // Get Blueprint with non-null redeemRules
       try {
-        blueprint = await customer_apis.getBlueprint(id: stampCard._blueprint);
+        blueprint = await customer_apis.getBlueprint(id: stampCard.blueprintId);
       } on Exception catch (e) {
         Carol.showExceptionSnackBar(
           e,
@@ -176,75 +163,33 @@ class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
         );
         return;
       }
-      blueprintProviders.tryAddProvider(entity: blueprint);
-      blueprintProvider =
-          blueprintProviders.tryGetProviderById(id: stampCard._blueprint)!;
+      // TODO: customer propagate Blueprint with non-null redeemRules
     } else {
-      blueprint = ref.read(blueprintProvider);
-    }
-
-    if (blueprint._redeemRules == null) {
-      if (!mounted) return;
-
-      // List RedeemRules
-      final blueprintNotifier = ref.read(blueprintProvider.notifier);
-      final List<RedeemRule> redeemRules;
-      try {
-        redeemRules = await customer_apis.listRedeemRules(
-          blueprintId: stampCard._blueprint,
-        );
-      } on Exception catch (e) {
-        Carol.showExceptionSnackBar(
-          e,
-          contextMessage: 'Failed to get redeem rules information.',
-        );
-        return;
-      }
-      redeemRuleProviders.tryAddProviders(entities: redeemRules);
-      blueprintNotifier.set(
-        entity: blueprint.copyWith(
-          redeemRules: redeemRules,
-        ),
-      );
+      blueprint = stampCard.blueprint!;
     }
   }
 
   Future<void> _onPressFavoriteIcon() async {
-    final originalStampCard = ref.read(widget.stampCardProvider);
-    final notifier = ref.read(widget.stampCardProvider.notifier);
-    // React first
-    notifier.set(
-        entity: originalStampCard.copyWith(
-            isFavorite: !originalStampCard.isFavorite));
+    // TODO: React first
+
     final bool updatedFavorite;
     try {
-      updatedFavorite = await _toggleFavorite(stampCard: originalStampCard);
+      updatedFavorite = await _toggleFavorite(stampCard: widget.card);
     } on Exception catch (e) {
       Carol.showExceptionSnackBar(
         e,
         contextMessage: 'Failed to toggle favorite.',
       );
-      // Restore
-      notifier.set(entity: originalStampCard);
+      // TODO: Restore
+
       return;
     }
-    // Apply backend response
-    notifier.set(
-        entity: originalStampCard.copyWith(isFavorite: updatedFavorite));
+    // TODO: Apply backend response
   }
 
   Future<bool> _toggleFavorite({
     required StampCard stampCard,
   }) async {
-    // return Future.delayed(
-    //   const Duration(seconds: 1),
-    //   () {
-    //     // Case: broken integrity by 10%
-    //     final integrity = random.nextDouble() < 0.9;
-    //     if (!integrity) print('[-]Broken integrity!');
-    //     return integrity ? !stampCard.isFavorite : stampCard.isFavorite;
-    //   },
-    // );
     final stampCardToPut = stampCard.copyWith(
       isFavorite: !stampCard.isFavorite,
     );

@@ -5,8 +5,18 @@ import 'package:carol/apis/exceptions/bad_request.dart';
 import 'package:carol/apis/exceptions/server_error.dart';
 import 'package:carol/apis/exceptions/unauthenticated.dart';
 import 'package:carol/apis/exceptions/unauthorized.dart';
+import 'package:carol/models/stamp_card.dart';
 import 'package:carol/screens/auth_screen.dart';
+import 'package:carol/screens/blueprint_dialog_screen.dart';
+import 'package:carol/screens/card_screen.dart';
+import 'package:carol/screens/customer_design_stamp_card_screen.dart';
+import 'package:carol/screens/customer_screen.dart';
 import 'package:carol/screens/dashboard_screen.dart';
+import 'package:carol/screens/owner_design_blueprint_screen.dart';
+import 'package:carol/screens/owner_design_store_screen.dart';
+import 'package:carol/screens/owner_scan_qr_screen.dart';
+import 'package:carol/screens/owner_screen.dart';
+import 'package:carol/screens/store_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -59,6 +69,44 @@ class Carol extends StatelessWidget {
       routes: {
         '/auth': (context) => const AuthScreen(),
         '/dashboard': (context) => const DashboardScreen(),
+        '/customer': (context) => CustomerScreen(),
+        '/customer#cards-explorer#cards-list#cards-list-item/card': (context) =>
+            const CardScreen(),
+        '/dashboard/customer/card/modify': (context) =>
+            const CustomerDesignStampCardScreen(),
+        '/customer/card/store': (context) => const StoreScreen(),
+        '/customer#stores-explorer#stores-list#stores-list-item/store':
+            (context) => const StoreScreen(),
+        '/customer/store/blueprint-dialog': (context) =>
+            const BlueprintDialogScreen(
+              blueprintDialogMode: BlueprintDialogMode.customer,
+            ),
+        '/owner': (context) => OwnerScreen(),
+        '/owner#stores-explorer#stores-list/new-store': (context) =>
+            const OwnerDesignStoreScreen(
+              designMode: StoreDesignMode.create,
+            ),
+        '/owner/scan-qr': (context) => const OwnerScanQrScreen(),
+        // TODO
+        // '/owner#rr-explorer#rr-list#rr-list-item/redeem-request-dialog': (context) => const RedeemRequestDialogScreen(),
+        '/owner#stores-explorer#stores-list#stores-item/store': (context) =>
+            const StoreScreen(),
+        '/owner/store/modify': (context) => const OwnerDesignStoreScreen(
+              designMode: StoreDesignMode.modify,
+            ),
+        '/owner/store/new-blueprint': (context) =>
+            const OwnerDesignBlueprintScreen(
+              designMode: BlueprintDesignMode.create,
+            ),
+        '/owner/store/blueprint-dialog': (context) =>
+            const BlueprintDialogScreen(
+              blueprintDialogMode: BlueprintDialogMode.owner,
+            ),
+        '/owner/store/blueprint-dialog/modify': (context) =>
+            const OwnerDesignBlueprintScreen(
+              designMode: BlueprintDesignMode.modify,
+              // originalBlueprint: blueprint,
+            ),
       },
     );
   }
@@ -139,6 +187,10 @@ class Carol extends StatelessWidget {
       level: SnackBarLevel.error,
       seconds: 10,
     );
+  }
+
+  static void customerPropagateCard(StampCard newCard) {
+    // TODO: Implement
   }
 }
 

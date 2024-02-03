@@ -1,14 +1,10 @@
-import 'dart:core';
+/* import 'dart:core';
 
 import 'package:carol/models/redeem_rule.dart';
 import 'package:carol/models/stamp_card.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/models/store.dart';
 import 'package:carol/models/store_notice.dart';
-import 'package:carol/providers/redeem_rule_provider.dart';
-import 'package:carol/providers/stamp_card_blueprint_provider.dart';
-import 'package:carol/providers/stamp_card_provider.dart';
-import 'package:carol/providers/store_provider.dart';
 import 'package:carol/utils.dart';
 import 'package:flutter/material.dart';
 
@@ -30,12 +26,12 @@ List<StoreNotice> genDummyNotices({
   });
 }
 
-List<StampCardBlueprint> genDummyBlueprints({
+List<Blueprint> genDummyBlueprints({
   int numBlueprints = 3,
   int? storeId,
 }) {
   return List.generate(numBlueprints, (index) {
-    final blueprint = StampCardBlueprint(
+    final blueprint = Blueprint(
       id: random.nextInt(maxInteger),
       isDeleted: false,
       displayName: 'Blueprint ${index + 1}',
@@ -126,7 +122,7 @@ List<Store> genDummyStores({
 List<StampCard> genDummyStampCards({
   int numCards = 3,
   String? customerId,
-  StampCardBlueprint? blueprint,
+  Blueprint? blueprint,
 }) {
   return List.generate(
     numCards,
@@ -180,7 +176,7 @@ List<StampCard> genDummyStampCards({
 }
 
 List<RedeemRule> genDummySortedRedeemRules({
-  required StampCardBlueprint blueprint,
+  required Blueprint blueprint,
   int numRules = 10,
 }) {
   return List.generate(numRules, (index) {
@@ -200,3 +196,4 @@ List<RedeemRule> genDummySortedRedeemRules({
     return redeemRule;
   });
 }
+ */

@@ -15,7 +15,7 @@ class Store extends BaseModel {
   final String? bgImageUrl;
   final String? profileImageUrl;
   final String ownerId;
-  final Set<StampCardBlueprint>? blueprints;
+  final Set<Blueprint>? blueprints;
 
   Store({
     required super.id,
@@ -47,8 +47,7 @@ class Store extends BaseModel {
         blueprints = json['blueprints'] == null
             ? null
             : {
-                for (final map in json['blueprints'])
-                  StampCardBlueprint.fromJson(map),
+                for (final map in json['blueprints']) Blueprint.fromJson(map),
               },
         super(
           id: json['id'] as int,
@@ -89,7 +88,7 @@ class Store extends BaseModel {
     String? bgImageUrl,
     String? profileImageUrl,
     String? ownerId,
-    Set<StampCardBlueprint>? blueprints,
+    Set<Blueprint>? blueprints,
   }) {
     return Store(
       id: id ?? this.id,

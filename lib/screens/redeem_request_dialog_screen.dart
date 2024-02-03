@@ -5,7 +5,6 @@ import 'package:carol/models/redeem_request.dart';
 import 'package:carol/models/redeem_rule.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/models/store.dart';
-import 'package:carol/providers/entity_provider.dart';
 import 'package:carol/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,8 +13,8 @@ import 'package:transparent_image/transparent_image.dart';
 class RedeemRequestDialogScreen extends ConsumerStatefulWidget {
   final RedeemRequest redeemRequest;
   final StateNotifierProvider<EntityStateNotifier<Store>, Store> storeProvider;
-  final StateNotifierProvider<EntityStateNotifier<StampCardBlueprint>,
-      StampCardBlueprint> blueprintProvider;
+  final StateNotifierProvider<EntityStateNotifier<Blueprint>, Blueprint>
+      blueprintProvider;
   final StateNotifierProvider<EntityStateNotifier<RedeemRule>, RedeemRule>
       redeemRuleProvider;
   const RedeemRequestDialogScreen({

@@ -1,6 +1,7 @@
 import 'package:carol/models/redeem_request.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+// TODO: Replace with ListNotifier
 class RedeemRequestsNotifier extends StateNotifier<List<RedeemRequest>> {
   RedeemRequestsNotifier() : super([]);
 

@@ -1,33 +1,33 @@
 import 'package:carol/apis/customer_apis.dart' as customer_apis;
 import 'package:carol/apis/owner_apis.dart' as owner_apis;
 import 'package:carol/main.dart';
-import 'package:carol/models/redeem_rule.dart';
 import 'package:carol/models/stamp_card.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/models/user.dart';
-import 'package:carol/providers/current_user_provider.dart';
-import 'package:carol/providers/entity_provider.dart';
-import 'package:carol/providers/redeem_rule_provider.dart';
-import 'package:carol/providers/stamp_card_provider.dart';
-import 'package:carol/providers/stamp_cards_provider.dart';
-import 'package:carol/providers/store_provider.dart';
+import 'package:carol/providers/blueprint_notifier.dart';
+import 'package:carol/screens/auth_screen.dart';
 import 'package:carol/screens/owner_design_blueprint_screen.dart';
 import 'package:carol/utils.dart';
 import 'package:carol/widgets/blueprint/blueprint_info.dart';
-import 'package:carol/widgets/common/circular_progress_indicator_in_button.dart';
+import 'package:carol/widgets/cards_explorer/cards_list.dart';
+import 'package:carol/widgets/common/loading.dart';
+import 'package:carol/widgets/stores_explorer/stores_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+final customerBlueprintDialogScreenBlueprintProvider =
+    StateNotifierProvider<BlueprintNotifier, Blueprint?>(
+        (ref) => BlueprintNotifier(null));
+final ownerBlueprintDialogScreenBlueprintProvider =
+    StateNotifierProvider<BlueprintNotifier, Blueprint?>(
+        (ref) => BlueprintNotifier(null));
+
 class BlueprintDialogScreen extends ConsumerStatefulWidget {
+  final BlueprintDialogMode blueprintDialogMode;
   const BlueprintDialogScreen({
     super.key,
-    required this.blueprintProvider,
     required this.blueprintDialogMode,
   });
-
-  final StateNotifierProvider<EntityStateNotifier<StampCardBlueprint>,
-      StampCardBlueprint> blueprintProvider;
-  final BlueprintDialogMode blueprintDialogMode;
 
   @override
   ConsumerState<BlueprintDialogScreen> createState() =>
@@ -38,20 +38,30 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
   final List<Widget> _alertRows = [];
   Widget? _unissuableAlerts;
   late Widget _issueButton;
-  late TextFormField cardNameTextField;
+  late TextFormField _cardNameTextField;
 
   _IssueStatus _issueStatus = _IssueStatus.checkingIssuability;
-  bool _isFetchingRedeemRules = false;
+
+  Blueprint? _watchBlueprint() {
+    if (widget.blueprintDialogMode == BlueprintDialogMode.customer) {
+      return ref.watch(customerBlueprintDialogScreenBlueprintProvider);
+    }
+    return ref.watch(ownerBlueprintDialogScreenBlueprintProvider);
+  }
 
   @override
   Widget build(BuildContext context) {
     final currentUser = ref.watch(currentUserProvider)!;
-    final blueprint = ref.watch(widget.blueprintProvider);
+    final blueprint = _watchBlueprint();
+    if (blueprint == null) {
+      return const Loading(message: 'Loading Blueprint...');
+    }
 
     final blueprintInfo = BlueprintInfo(
       blueprint: blueprint,
       textColor: Theme.of(context).colorScheme.onSecondary,
     );
+
     final backButton = TextButton(
       style: TextButton.styleFrom(
           backgroundColor: Theme.of(context).colorScheme.background),
@@ -62,6 +72,7 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
         style: TextStyle(color: Theme.of(context).colorScheme.onBackground),
       ),
     );
+
     final dialogTitle = Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -78,12 +89,15 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
           blueprint: blueprint,
         );
       }
+
       _setIssueButton();
+
       _unissuableAlerts = _issueStatus == _IssueStatus.checkingIssuability ||
               _issueStatus == _IssueStatus.issuable
           ? null
           : Column(children: _alertRows);
-      cardNameTextField = TextFormField(
+
+      _cardNameTextField = TextFormField(
         controller: TextEditingController(text: blueprint.displayName),
         enabled: _issueStatus == _IssueStatus.issuable,
         decoration: InputDecoration(
@@ -95,6 +109,7 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
         // initialValue: blueprint.displayName,
         style: const TextStyle(fontSize: 24),
       );
+
       return AlertDialog(
         title: dialogTitle,
         content: SingleChildScrollView(
@@ -105,7 +120,7 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
               blueprintInfo,
               Padding(
                 padding: DesignUtils.basicWidgetEdgeInsets(),
-                child: cardNameTextField,
+                child: _cardNameTextField,
               ),
               if (_unissuableAlerts != null) _unissuableAlerts!,
               backButton,
@@ -131,20 +146,13 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
                   disabledBackgroundColor:
                       Theme.of(context).colorScheme.tertiaryContainer,
                 ),
-                onPressed: _isFetchingRedeemRules ? null : _onPressModify,
-                child: _isFetchingRedeemRules
-                    ? CircularProgressIndicatorInButton(
-                        color:
-                            Theme.of(context).colorScheme.onTertiaryContainer,
-                      )
-                    : Text(
-                        'Modify',
-                        textAlign: TextAlign.end,
-                        style: TextStyle(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onTertiaryContainer),
-                      ),
+                onPressed: _onPressModify,
+                child: Text(
+                  'Modify',
+                  textAlign: TextAlign.end,
+                  style: TextStyle(
+                      color: Theme.of(context).colorScheme.onTertiaryContainer),
+                ),
               ),
               backButton,
             ],
@@ -215,7 +223,7 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
 
   Future<void> _checkIssuable({
     required User user,
-    required StampCardBlueprint blueprint,
+    required Blueprint blueprint,
   }) async {
     if (mounted) {
       setState(() {
@@ -272,33 +280,14 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
       });
     }
 
-    // Assume another check
-    // Future<bool> veryLongTask = DesignUtils.delaySeconds(5).then((value) {
-    //   if (random.nextDouble() < 0.9) {
-    //     return false;
-    //   }
-    //   if (mounted) {
-    //     setState(() {
-    //       _issueStatus = _IssueStatus.notIssuable;
-    //       // _isIssuable = false;
-    //       _alertRows.add(
-    //         const AlertRow(text: 'Violated very long check task'),
-    //       );
-    //     });
-    //   }
-    //   return true;
-    // });
-
     final tasks = [
       numMaxIssuesTask,
-      // veryLongTask,
     ];
     final violations = await Future.wait(tasks);
     if (violations.every((violated) => !violated)) {
       if (mounted) {
         setState(() {
           _issueStatus = _IssueStatus.issuable;
-          // _isIssuable = true;
         });
       }
     }
@@ -306,7 +295,7 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
 
   Future<bool> _violatedNumMaxIssues({
     required User user,
-    required StampCardBlueprint blueprint,
+    required Blueprint blueprint,
   }) async {
     final numIssuedCards = await customer_apis.getNumIssuedCards(
       customerId: user.id,
@@ -317,38 +306,47 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
 
   void _onPressIssue() async {
     final currentUser = ref.read(currentUserProvider)!;
-    final blueprint = ref.read(widget.blueprintProvider);
-    if (mounted) {
-      setState(() {
-        _issueStatus = _IssueStatus.issuing;
-      });
-    }
+    final blueprint = ref.read(customerBlueprintDialogScreenBlueprintProvider);
+    if (blueprint == null) return;
+
+    setState(() {
+      _issueStatus = _IssueStatus.issuing;
+    });
     final newStampCard = await issueCard(
       user: currentUser,
       blueprint: blueprint,
     );
 
-    if (mounted) {
-      setState(() {
-        _issueStatus = newStampCard == null
-            ? _IssueStatus.issueFailed
-            : _IssueStatus.issueSuccessful;
-      });
+    if (newStampCard != null) {
+      Carol.showTextSnackBar(
+        text: 'Your card is ready!',
+        level: SnackBarLevel.success,
+      );
+    } else {
+      Carol.showTextSnackBar(
+        text: 'Failed to issue card.',
+        level: SnackBarLevel.error,
+      );
     }
 
-    if (mounted) {
-      Navigator.of(context).pop();
-    }
+    if (!mounted) return;
+    setState(() {
+      _issueStatus = newStampCard == null
+          ? _IssueStatus.issueFailed
+          : _IssueStatus.issueSuccessful;
+    });
+    Navigator.of(context).pop();
   }
 
   Future<StampCard?> issueCard({
     required User user,
-    required StampCardBlueprint blueprint,
+    required Blueprint blueprint,
   }) async {
-    final stampCardsNotifier = ref.read(stampCardsProvider.notifier);
+    final customerCardsNotifier =
+        ref.read(customerCardsListCardsProvider.notifier);
 
     // Post StampCard and receive location
-    final stampCardDisplayName = cardNameTextField.controller!.text;
+    final stampCardDisplayName = _cardNameTextField.controller!.text;
     final stampCardToPost = StampCard.fromBlueprint(
       id: -1,
       customerId: user.id,
@@ -368,9 +366,9 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
     }
 
     // Get StampCard
-    final StampCard newStampCard;
+    final StampCard newCard;
     try {
-      newStampCard = await customer_apis.getStampCard(id: newStampCardId);
+      newCard = await customer_apis.getStampCard(id: newStampCardId);
     } on Exception catch (e) {
       Carol.showExceptionSnackBar(
         e,
@@ -378,14 +376,9 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
       );
       return null;
     }
-    stampCardProviders.tryAddProvider(entity: newStampCard);
-    stampCardsNotifier.prepend(newStampCard, sort: false);
+    customerCardsNotifier.prepend(newCard);
 
-    Carol.showTextSnackBar(
-      text: 'Your card is ready!',
-      level: SnackBarLevel.success,
-    );
-    return newStampCard;
+    return newCard;
   }
 
   void _onPressBack() {
@@ -394,59 +387,48 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
     }
   }
 
-  Future<void> _onPressModify() async {
-    var blueprint = ref.read(widget.blueprintProvider);
-    final blueprintNotifier = ref.read(widget.blueprintProvider.notifier);
+  void _onPressModify() {
+    final ownerStoresNotifier =
+        ref.read(ownerStoresListStoresProvider.notifier);
+    final blueprint = ref.read(customerBlueprintDialogScreenBlueprintProvider);
+    if (blueprint == null) return;
+
     // Set _redeemRules
-    if (blueprint._redeemRules == null) {
-      setState(() {
-        _isFetchingRedeemRules = true;
-      });
-
-      // Await: Fetch redeemRules first
-      // await owner_apis.listDummyRedeemRules(blueprint: blueprint).then((value) {
-      //   final fetchedBlueprint = blueprint.copyWith(redeemRules: value);
-      //   blueprintNotifier.set(entity: fetchedBlueprint);
-      //   blueprint = fetchedBlueprint;
-      // });
-      final Set<RedeemRule> fetchedRedeemRules;
-      try {
-        fetchedRedeemRules = await owner_apis.listRedeemRules(
-          blueprintId: blueprint.id,
-        );
-      } on Exception catch (e) {
-        Carol.showExceptionSnackBar(
-          e,
-          contextMessage: 'Failed to get redeem rules information.',
-        );
-        return;
-      }
-      redeemRuleProviders.tryAddProviders(entities: fetchedRedeemRules);
-      final fetchedBlueprint = blueprint.copyWith(
-        redeemRules: fetchedRedeemRules.toList(),
-      );
-      blueprintNotifier.set(entity: fetchedBlueprint);
-      blueprint = fetchedBlueprint;
-
-      if (mounted) {
-        setState(() {
-          _isFetchingRedeemRules = false;
-        });
-      }
-    }
-    if (mounted) {
-      Navigator.of(context).push(MaterialPageRoute(
-        builder: (context) {
-          final storeProvider =
-              ownerStoreProviders.tryGetProviderById(id: blueprint.storeId)!;
-          return OwnerDesignBlueprintScreen(
-            designMode: BlueprintDesignMode.modify,
-            storeProvider: storeProvider,
-            blueprint: blueprint,
-          );
+    if (blueprint.redeemRules == null) {
+      owner_apis.listRedeemRules(blueprintId: blueprint.id).then((value) {
+        final refreshedBlueprint = blueprint.copyWith(redeemRules: value);
+        final oldStore = blueprint.store!;
+        final oldBlueprints = oldStore.blueprints!;
+        final newBlueprints = oldBlueprints.map((oldBlueprint) {
+          if (oldBlueprint.id == refreshedBlueprint.id) {
+            return refreshedBlueprint;
+          }
+          return oldBlueprint;
+        }).toSet();
+        final newStore = oldStore.copyWith(blueprints: newBlueprints);
+        ownerStoresNotifier.replaceOrPrepend(newStore);
+      }).onError(
+        (error, stackTrace) {
+          if (error is Exception) {
+            Carol.showExceptionSnackBar(
+              error,
+              contextMessage: 'Failed to get redeem rules information',
+            );
+          }
         },
-      ));
+      );
     }
+
+    if (!mounted) return;
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) {
+        return OwnerDesignBlueprintScreen(
+          key: ValueKey(blueprint.id),
+          designMode: BlueprintDesignMode.modify,
+          blueprint: blueprint,
+        );
+      },
+    ));
   }
 }
 

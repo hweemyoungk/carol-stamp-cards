@@ -2,25 +2,22 @@ import 'package:carol/apis/owner_apis.dart' as owner_apis;
 import 'package:carol/main.dart';
 import 'package:carol/models/redeem_rule.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
-import 'package:carol/models/store.dart';
-import 'package:carol/providers/entity_provider.dart';
-import 'package:carol/providers/stamp_card_blueprint_provider.dart';
 import 'package:carol/screens/owner_design_redeem_rule_screen.dart';
+import 'package:carol/screens/store_screen.dart';
 import 'package:carol/utils.dart';
 import 'package:carol/widgets/common/icon_button_in_progress.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class OwnerDesignBlueprintScreen extends ConsumerStatefulWidget {
+  final BlueprintDesignMode designMode;
+  final Blueprint? blueprint;
+
   const OwnerDesignBlueprintScreen({
     super.key,
     required this.designMode,
-    required this.storeProvider,
     this.blueprint,
   });
-  final BlueprintDesignMode designMode;
-  final StateNotifierProvider<EntityStateNotifier<Store>, Store> storeProvider;
-  final StampCardBlueprint? blueprint;
 
   @override
   ConsumerState<OwnerDesignBlueprintScreen> createState() =>
@@ -61,7 +58,7 @@ class _OwnerDesignStoreScreenState
       _expirationDate = blueprint.expirationDate;
       // Set _redeemRules
       // RedeemRules must be fetched in _BlueprintDialogScreenState._onPressModify
-      _redeemRules.addAll(blueprint._redeemRules!);
+      _redeemRules.addAll(blueprint.redeemRules!);
     }
   }
 
@@ -570,14 +567,19 @@ class _OwnerDesignStoreScreenState
   }
 
   Future<void> _saveBlueprint() async {
-    // final ownerStoresNotifier = ref.read(ownerStoresProvider.notifier);
-    final store = ref.read(widget.storeProvider);
-    final storeNotifier = ref.read(widget.storeProvider.notifier);
-
     if (!_validateInput()) {
       return;
     }
     _formKey.currentState!.save();
+
+    final store = ref.read(ownerStoreScreenStoreProvider);
+    if (store == null) {
+      Carol.showTextSnackBar(
+        text: 'Missing store data... Please start over.',
+        level: SnackBarLevel.error,
+      );
+      return;
+    }
 
     setState(() {
       _status = BlueprintDesignStatus.sending;
@@ -585,7 +587,7 @@ class _OwnerDesignStoreScreenState
 
     if (widget.designMode == BlueprintDesignMode.create) {
       // POST blueprint and get location
-      final blueprintToPost = StampCardBlueprint(
+      final blueprintToPost = Blueprint(
         id: -1,
         isDeleted: false,
         displayName: _displayName,
@@ -597,10 +599,11 @@ class _OwnerDesignStoreScreenState
         numMaxRedeems: _numMaxRedeems,
         numMaxIssuesPerCustomer: _numMaxIssuesPerCustomer,
         numMaxIssues: _numMaxIssues,
-        storeId: store.id,
         bgImageUrl: null,
         isPublishing: _isPublishing,
-        redeemRules: _redeemRules,
+        store: null,
+        storeId: store.id,
+        redeemRules: _redeemRules.toSet(),
       );
       final int newBlueprintId;
       try {
@@ -615,7 +618,7 @@ class _OwnerDesignStoreScreenState
       }
 
       // Get blueprint(with redeemRules)
-      final StampCardBlueprint newBlueprint;
+      final Blueprint newBlueprint;
       try {
         newBlueprint = await owner_apis.getBlueprint(id: newBlueprintId);
       } on Exception catch (e) {
@@ -625,14 +628,15 @@ class _OwnerDesignStoreScreenState
         );
         return;
       }
-      blueprintProviders.tryAddProvider(entity: newBlueprint);
-      if (store._blueprints == null) {
-        // Should not happen: Blueprints must be fetched already.
-        throw Exception('Blueprints must be fetched already for store');
+      // TODO: ownerPropagateBlueprint(newBlueprint);
+
+      if (store.blueprints == null) {
+        // Blueprints not fetched. Just create set and add new blueprint.
+        final newStore = store.copyWith(blueprints: {newBlueprint});
+        // TODO: ownerPropagateStore(newStore);
       } else {
-        storeNotifier.set(
-            entity: store
-                .copyWith(blueprints: [newBlueprint, ...store._blueprints!]));
+        store.blueprints!.add(newBlueprint);
+        // TODO: ownerPropagateStore(store);
       }
 
       Carol.showTextSnackBar(
@@ -641,15 +645,8 @@ class _OwnerDesignStoreScreenState
       );
     } else {
       // BlueprintDesignMode.modify
-
-      final blueprintNotifier = ref.read(
-        blueprintProviders
-            .tryGetProviderById(id: widget.blueprint!.id)!
-            .notifier,
-      );
-
       // PUT blueprint
-      final blueprintToPut = StampCardBlueprint(
+      final blueprintToPut = Blueprint(
         id: widget.blueprint!.id,
         isDeleted: false,
         displayName: _displayName,
@@ -661,10 +658,11 @@ class _OwnerDesignStoreScreenState
         numMaxRedeems: _numMaxRedeems,
         numMaxIssuesPerCustomer: _numMaxIssuesPerCustomer,
         numMaxIssues: _numMaxIssues,
-        storeId: store.id,
         bgImageUrl: null,
         isPublishing: _isPublishing,
-        redeemRules: _redeemRules,
+        store: null,
+        storeId: store.id,
+        redeemRules: _redeemRules.toSet(),
       );
       try {
         await owner_apis.putBlueprint(
@@ -680,7 +678,7 @@ class _OwnerDesignStoreScreenState
       }
 
       // Get blueprint
-      final StampCardBlueprint modifiedBlueprint;
+      final Blueprint modifiedBlueprint;
       try {
         modifiedBlueprint =
             await owner_apis.getBlueprint(id: widget.blueprint!.id);
@@ -691,27 +689,27 @@ class _OwnerDesignStoreScreenState
         );
         return;
       }
-      if (blueprintProviders.tryGetProviderById(id: widget.blueprint!.id) ==
-          null) {
-        // Very unlikely but what if blueprint was deleted while modifying?
-        // Blueprint exists anyway, as server fetched modifiedBlueprint.
-        Carol.showTextSnackBar(
-          text: 'Error: Blueprint once deleted.',
-          level: SnackBarLevel.warn,
-        );
-        blueprintProviders.tryAddProvider(entity: modifiedBlueprint);
+      // TODO: ownerPropagateBlueprint(modifiedBlueprint);
+
+      if (store.blueprints == null) {
+        // Blueprints not fetched. Just create set and add new blueprint.
+        final newStore = store.copyWith(blueprints: {modifiedBlueprint});
+        // TODO: ownerPropagateStore(newStore);
       } else {
-        blueprintNotifier.set(entity: modifiedBlueprint);
-        Carol.showTextSnackBar(
-          text: 'Blueprint Modified!',
-          level: SnackBarLevel.success,
+        final newStore = store.copyWith(
+          blueprints: <Blueprint>{modifiedBlueprint, ...store.blueprints!},
         );
+        // TODO: ownerPropagateStore(newStore);
       }
+
+      Carol.showTextSnackBar(
+        text: 'Blueprint Modified!',
+        level: SnackBarLevel.success,
+      );
     }
-    if (mounted) {
-      Navigator.of(context).pop();
-    }
-    return;
+
+    if (!mounted) return;
+    Navigator.of(context).pop();
   }
 
   void _onPressSelectExpDate() async {

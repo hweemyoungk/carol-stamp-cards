@@ -1,10 +1,12 @@
-import 'package:carol/providers/stamp_card_blueprint_provider.dart';
-import 'package:carol/providers/stamp_card_provider.dart';
-import 'package:carol/providers/stamp_cards_init_loaded_provider.dart';
-import 'package:carol/providers/stamp_cards_provider.dart';
+import 'package:carol/models/stamp_card.dart';
+import 'package:carol/providers/cards_notifier.dart';
 import 'package:carol/widgets/cards_explorer/cards_list_item_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+final customerCardsListCardsProvider =
+    StateNotifierProvider<CardsNotifier, List<StampCard>?>(
+        (ref) => CardsNotifier());
 
 class CardsList extends ConsumerStatefulWidget {
   const CardsList({
@@ -16,47 +18,23 @@ class CardsList extends ConsumerStatefulWidget {
 }
 
 class _CardsListState extends ConsumerState<CardsList> {
-  final ScrollController _controller = ScrollController();
-
-  @override
-  void initState() {
-    super.initState();
-    // final stampCardsInitLoaded = ref.read(stampCardsInitLoadedProvider);
-    // final stampCardsInitLoadedNotifier =
-    //     ref.read(stampCardsInitLoadedProvider.notifier);
-    // if (!stampCardsInitLoaded) {
-    //   if (stampCardProviders.providers.isNotEmpty) {
-    //     // loadFromEntityProviders();
-    //     stampCardsInitLoadedNotifier.set(true);
-    //   } else {
-    //     loadMore().then((value) {
-    //       stampCardsInitLoadedNotifier.set(true);
-    //     });
-    //   }
-    // }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final stampCards = ref.watch(stampCardsProvider);
-    final stampCardsInitLoaded = ref.watch(stampCardsInitLoadedProvider);
+    final cards = ref.watch(customerCardsListCardsProvider);
+    // final cardsLoaded = cards == null;
 
-    return !stampCardsInitLoaded
+    return cards == null
         ? const CircularProgressIndicator()
         : Expanded(
             child: NotificationListener<ScrollNotification>(
               // onNotification: _handleScrollNotification,
               child: ListView.builder(
-                controller: _controller,
-                itemCount: stampCards.length,
+                itemCount: cards.length,
                 itemBuilder: (ctx, index) {
-                  final stampCard = stampCards[index];
+                  final stampCard = cards[index];
                   return CardsListItemCard(
                     key: ValueKey(stampCard.id),
-                    stampCardProvider: stampCardProviders.tryGetProviderById(
-                        id: stampCard.id)!,
-                    blueprintProvider: blueprintProviders.tryGetProviderById(
-                        id: stampCard._blueprint)!,
+                    card: stampCard,
                   );
                 },
               ),

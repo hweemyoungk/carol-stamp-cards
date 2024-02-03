@@ -1,6 +1,6 @@
 import 'package:carol/main.dart';
 import 'package:carol/models/membership.dart';
-import 'package:carol/providers/current_user_provider.dart';
+import 'package:carol/screens/auth_screen.dart';
 import 'package:carol/utils.dart';
 import 'package:carol/widgets/main_drawer.dart';
 import 'package:flutter/material.dart';

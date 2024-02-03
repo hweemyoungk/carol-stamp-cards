@@ -7,25 +7,22 @@ import 'package:carol/models/redeem_request.dart';
 import 'package:carol/models/redeem_rule.dart';
 import 'package:carol/models/stamp_card.dart';
 import 'package:carol/params/app.dart' as app_params;
-import 'package:carol/providers/current_user_provider.dart';
-import 'package:carol/providers/entity_provider.dart';
+import 'package:carol/screens/auth_screen.dart';
 import 'package:carol/utils.dart';
+import 'package:carol/widgets/cards_explorer/cards_list.dart';
 import 'package:carol/widgets/common/circular_progress_indicator_in_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 class RedeemDialogScreen extends ConsumerStatefulWidget {
+  final StampCard card;
+  final RedeemRule redeemRule;
   const RedeemDialogScreen({
     super.key,
-    required this.stampCardProvider,
-    required this.redeemRuleProvider,
+    required this.card,
+    required this.redeemRule,
   });
-
-  final StateNotifierProvider<EntityStateNotifier<StampCard>, StampCard>
-      stampCardProvider;
-  final StateNotifierProvider<EntityStateNotifier<RedeemRule>, RedeemRule>
-      redeemRuleProvider;
 
   @override
   ConsumerState<RedeemDialogScreen> createState() => _RedeemDialogScreenState();
@@ -39,17 +36,17 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
   @override
   void initState() {
     super.initState();
-    final redeemRule = ref.read(widget.redeemRuleProvider);
-    final stampCard = ref.read(widget.stampCardProvider);
-    _redeemStatus = stampCard.numCollectedStamps < redeemRule.consumes
+    final redeemRule = widget.redeemRule;
+    final card = widget.card;
+    _redeemStatus = card.numCollectedStamps < redeemRule.consumes
         ? RedeemStatus.notRedeemable
         : RedeemStatus.redeemable;
   }
 
   @override
   Widget build(BuildContext context) {
-    final redeemRule = ref.watch(widget.redeemRuleProvider);
-    final stampCard = ref.watch(widget.stampCardProvider);
+    final redeemRule = widget.redeemRule;
+    final stampCard = widget.card;
 
     if (_redeemStatus == RedeemStatus.notRedeemable) {
       redeemButton = ElevatedButton(
@@ -111,9 +108,9 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
   }
 
   void _onPressRedeem() async {
-    final stampCard = ref.read(widget.stampCardProvider);
-    final stampCardNotifier = ref.read(widget.stampCardProvider.notifier);
-    final redeemRule = ref.read(widget.redeemRuleProvider);
+    final cardsNotifier = ref.read(customerCardsListCardsProvider.notifier);
+    final stampCard = widget.card;
+    final redeemRule = widget.redeemRule;
 
     // 0. Disable Redeem button.
     setState(() {
@@ -160,12 +157,15 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
         final refreshStampCardTask =
             customer_apis.getStampCard(id: stampCard.id).then((value) {
           // Refresh Card
-          stampCardNotifier.set(entity: value);
-        }).onError<Exception>((error, stackTrace) {
-          Carol.showExceptionSnackBar(
-            error,
-            contextMessage: 'Failed to refresh card information after redeem.',
-          );
+          cardsNotifier.replaceOrPrepend(value);
+        }).onError((error, stackTrace) {
+          if (error is Exception) {
+            Carol.showExceptionSnackBar(
+              error,
+              contextMessage:
+                  'Failed to refresh card information after redeem.',
+            );
+          }
         });
 
         await Future.wait([refreshStampCardTask, DesignUtils.delaySeconds(1)]);
@@ -323,11 +323,12 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
       id: '',
       customerId: currentUser.id,
       customerDisplayName: currentUser.displayName,
-      stampCardId: stampCardId,
-      redeemRuleId: redeemRuleId,
       blueprintDisplayName: '',
       expMilliseconds: -1,
       isRedeemed: false,
+      redeemRule: null,
+      redeemRuleId: redeemRuleId,
+      stampCardId: stampCardId,
     );
     try {
       return await customer_apis.postRedeemRequest(

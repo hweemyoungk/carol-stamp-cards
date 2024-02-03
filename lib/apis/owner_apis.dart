@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:carol/apis/utils.dart';
-import 'package:carol/data/dummy_data.dart';
+import 'package:carol/main.dart';
 import 'package:carol/models/redeem.dart';
 import 'package:carol/models/redeem_request.dart';
 import 'package:carol/models/redeem_rule.dart';
@@ -9,57 +9,84 @@ import 'package:carol/models/stamp_card.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/models/store.dart';
 import 'package:carol/params/backend.dart' as backend_params;
-import 'package:carol/providers/redeem_requests_init_loaded_provider.dart';
-import 'package:carol/providers/redeem_requests_provider.dart';
-import 'package:carol/providers/redeem_rule_provider.dart';
-import 'package:carol/providers/stamp_card_blueprint_provider.dart';
-import 'package:carol/providers/store_provider.dart';
-import 'package:carol/utils.dart';
+import 'package:carol/screens/auth_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-Future<void> reloadOwnerRedeemRequests({
-  required RedeemRequestsInitLoadedNotifier
-      ownerRedeemRequestsInitLoadedNotifier,
-  required RedeemRequestsNotifier ownerRedeemRequestsNotifier,
-  required String ownerId,
-}) async {
-  ownerRedeemRequestsInitLoadedNotifier.set(false);
+Future<void> reloadOwnerModels(WidgetRef ref) async {
+  final currentUser = ref.read(currentUserProvider)!;
 
-  // Load redeem requests
-  final redeemRequests = await listRedeemRequests(ownerId: ownerId);
-  ownerRedeemRequestsNotifier.set(redeemRequests);
+  final Set<Store> stores;
+  try {
+    stores = await listStores(ownerId: currentUser.id);
+  } on Exception catch (e) {
+    Carol.showExceptionSnackBar(
+      e,
+      contextMessage: 'Failed to load owner models.',
+    );
+    return;
+  }
+  // TODO: Clear old stores
+  // TODO: ownerPropagateStores(stores);
 
-  // Load associated redeem rules
-  final redeemRules = await listRedeemRules(
-    ids: redeemRequests.map((e) => e.redeemRuleId).toSet(),
-  );
-  redeemRuleProviders.tryAddProviders(entities: redeemRules);
+  final blueprints = stores.fold(<Blueprint>{}, (set, store) {
+    set.addAll(store.blueprints!);
+    return set;
+  });
+  // TODO: Clear old blueprints
+  // TODO: ownerPropagateBlueprints(blueprints);
 
-  // Load associated blueprints
-  final blueprints = await listBlueprints(
-    blueprintIds: redeemRules.map((e) => e.blueprintId).toSet(),
-  );
-  blueprintProviders.tryAddProviders(entities: blueprints);
-
-  // Load associated stores
-  final stores = await listStores(
-    storeIds: blueprints.map((e) => e.storeId).toSet(),
-  );
-  ownerStoreProviders.tryAddProviders(entities: stores);
-
-  ownerRedeemRequestsInitLoadedNotifier.set(true);
+  final redeemRules = blueprints.fold(<RedeemRule>{}, (set, blueprint) {
+    set.addAll(blueprint.redeemRules!);
+    return set;
+  });
+  // TODO: Clear old redeemRules
+  // TODO: ownerPropagateRedeemRules(redeemRules);
 }
 
-Future<List<RedeemRule>> listDummyRedeemRules({
-  required StampCardBlueprint blueprint,
-}) async {
-  await DesignUtils.delaySeconds(2);
-  return Future.sync(
-    () => genDummySortedRedeemRules(
-      blueprint: blueprint,
-      numRules: 3,
-    ),
-  );
-}
+// Future<void> reloadOwnerRedeemRequests({
+//   required RedeemRequestsInitLoadedNotifier
+//       ownerRedeemRequestsInitLoadedNotifier,
+//   required RedeemRequestsNotifier ownerRedeemRequestsNotifier,
+//   required String ownerId,
+// }) async {
+//   ownerRedeemRequestsInitLoadedNotifier.set(false);
+
+//   // Load redeem requests
+//   final redeemRequests = await listRedeemRequests(ownerId: ownerId);
+//   ownerRedeemRequestsNotifier.set(redeemRequests);
+
+//   // Load associated redeem rules
+//   final redeemRules = await listRedeemRules(
+//     ids: redeemRequests.map((e) => e.redeemRuleId).toSet(),
+//   );
+//   redeemRuleProviders.tryAddProviders(entities: redeemRules);
+
+//   // Load associated blueprints
+//   final blueprints = await listBlueprints(
+//     blueprintIds: redeemRules.map((e) => e.blueprintId).toSet(),
+//   );
+//   blueprintProviders.tryAddProviders(entities: blueprints);
+
+//   // Load associated stores
+//   final stores = await listStores(
+//     storeIds: blueprints.map((e) => e.storeId).toSet(),
+//   );
+//   ownerStoreProviders.tryAddProviders(entities: stores);
+
+//   ownerRedeemRequestsInitLoadedNotifier.set(true);
+// }
+
+// Future<List<RedeemRule>> listDummyRedeemRules({
+//   required Blueprint blueprint,
+// }) async {
+//   await DesignUtils.delaySeconds(2);
+//   return Future.sync(
+//     () => genDummySortedRedeemRules(
+//       blueprint: blueprint,
+//       numRules: 3,
+//     ),
+//   );
+// }
 
 Future<Set<RedeemRule>> listRedeemRules({
   int? blueprintId,
@@ -118,7 +145,7 @@ Future<void> approveRedeemRequest({
 }
 
 /// Unlike customer_apis, this fetches unpublished blueprints as well.
-Future<Set<StampCardBlueprint>> listBlueprints({
+Future<Set<Blueprint>> listBlueprints({
   int? storeId,
   Set<int>? blueprintIds,
 }) async {
@@ -138,16 +165,16 @@ Future<Set<StampCardBlueprint>> listBlueprints({
   final res = await httpGet(url); // Can throw e
 
   List<dynamic> resBody = json.decode(res.body);
-  Set<StampCardBlueprint> blueprints = {};
+  Set<Blueprint> blueprints = {};
   for (final map in resBody) {
-    final blueprint = StampCardBlueprint.fromJson(map);
+    final blueprint = Blueprint.fromJson(map);
     blueprints.add(blueprint);
   }
   return blueprints;
 }
 
 Future<int> postBlueprint({
-  required StampCardBlueprint blueprint,
+  required Blueprint blueprint,
 }) async {
   final url = Uri.http(
     backend_params.apigateway,
@@ -173,7 +200,7 @@ Future<int> postBlueprint({
   return int.parse(newId);
 }
 
-Future<StampCardBlueprint> getBlueprint({
+Future<Blueprint> getBlueprint({
   required int id,
 }) async {
   final url = Uri.http(
@@ -182,12 +209,12 @@ Future<StampCardBlueprint> getBlueprint({
   );
   final res = await httpGet(url);
   Map<String, dynamic> resBody = json.decode(res.body);
-  return StampCardBlueprint.fromJson(resBody);
+  return Blueprint.fromJson(resBody);
 }
 
 Future<void> putBlueprint({
   required int id,
-  required StampCardBlueprint blueprint,
+  required Blueprint blueprint,
 }) async {
   final url = Uri.http(
     backend_params.apigateway,
@@ -210,6 +237,9 @@ Future<void> putBlueprint({
   return;
 }
 
+/// Fetches stores for owner.<br>
+/// <ol>Every store has non-null blueprints<b>(A)</b>.</ol>
+/// <ol>Every blueprint<b>(A)</b> has non-null redeemRules.</ol>
 Future<Set<Store>> listStores({
   String? ownerId,
   Set<int>? storeIds,

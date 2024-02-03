@@ -8,7 +8,7 @@ class RedeemRule extends BaseModel {
   final String description;
   final int consumes;
   final String? imageId;
-  final StampCardBlueprint? blueprint;
+  final Blueprint? blueprint;
   final int blueprintId;
   final Set<Redeem>? redeems;
 
@@ -32,7 +32,7 @@ class RedeemRule extends BaseModel {
     int? consumes,
     String? imageId,
     int? blueprintId,
-    StampCardBlueprint? blueprint,
+    Blueprint? blueprint,
     Set<Redeem>? redeems,
   }) {
     return RedeemRule(
@@ -56,7 +56,7 @@ class RedeemRule extends BaseModel {
         blueprintId = json['blueprintId'] as int,
         blueprint = json['blueprint'] == null
             ? null
-            : StampCardBlueprint.fromJson(json['blueprint']),
+            : Blueprint.fromJson(json['blueprint']),
         redeems = json['redeems'] == null
             ? null
             : {

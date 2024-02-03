@@ -1,25 +1,24 @@
-import 'package:carol/apis/customer_apis.dart' as customer_apis;
-import 'package:carol/apis/owner_apis.dart' as owner_apis;
-import 'package:carol/main.dart';
-import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/models/store.dart';
-import 'package:carol/providers/active_drawer_item_provider.dart';
-import 'package:carol/providers/entity_provider.dart';
-import 'package:carol/providers/stamp_card_blueprint_provider.dart';
+import 'package:carol/providers/store_notifier.dart';
 import 'package:carol/screens/blueprint_dialog_screen.dart';
+import 'package:carol/screens/card_screen.dart';
 import 'package:carol/screens/owner_design_blueprint_screen.dart';
 import 'package:carol/screens/owner_design_store_screen.dart';
 import 'package:carol/utils.dart';
+import 'package:carol/widgets/common/loading.dart';
 import 'package:carol/widgets/main_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:transparent_image/transparent_image.dart';
 
+// Watch customerCardScreenCardProvider instead
+// final customerStoreScreenStoreProvider = StateNotifierProvider<StoreNotifier, Store?>((ref) => StoreNotifier(null));
+final ownerStoreScreenStoreProvider =
+    StateNotifierProvider<StoreNotifier, Store?>((ref) => StoreNotifier(null));
+
 class StoreScreen extends ConsumerStatefulWidget {
-  final StateNotifierProvider<EntityStateNotifier<Store>, Store> storeProvider;
   const StoreScreen({
     super.key,
-    required this.storeProvider,
   });
 
   @override
@@ -27,10 +26,6 @@ class StoreScreen extends ConsumerStatefulWidget {
 }
 
 class _StoreScreenState extends ConsumerState<StoreScreen> {
-  final List<StampCardBlueprint> _blueprints = [];
-  bool _blueprintsInitLoaded = false;
-  // final List<StoreNotice> _storeNotices = [];
-  // bool _storeNoticesInitLoaded = false;
   late StoreScreenMode _mode;
 
   @override
@@ -45,55 +40,37 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       throw Exception(
           'StoreScreen can only be reached from customer or owner drawer item');
     }
+  }
 
-    final store = ref.read(widget.storeProvider);
-    if (store._blueprints != null) {
-      // Already fetched. No need to load blueprints
-      setState(() {
-        _blueprints.addAll(store._blueprints!);
-        _blueprintsInitLoaded = true;
-      });
-      return;
+  Store? _watchStore() {
+    if (_mode == StoreScreenMode.customer) {
+      final card = ref.watch(customerCardScreenCardProvider);
+      return card?.blueprint?.store;
     }
-
-    final storeNotifier = ref.read(widget.storeProvider.notifier);
-
-    _loadBlueprints(
-      storeId: store.id,
-    ).then((value) {
-      setState(() {
-        // Bind blueprints to store
-        storeNotifier.set(entity: store.copyWith(blueprints: value));
-        _blueprints.addAll(value);
-        _blueprintsInitLoaded = true;
-      });
-    }).onError<Exception>((error, stackTrace) {
-      Carol.showExceptionSnackBar(
-        error,
-        contextMessage: 'Failed to get blueprints information.',
-      );
-    });
+    return ref.watch(ownerStoreScreenStoreProvider);
   }
 
   @override
   Widget build(BuildContext context) {
-    final store = ref.watch(widget.storeProvider);
-    // final watchedBlueprints = _blueprints.map((blueprint) {
-    //   return ref.watch(blueprintProviders.tryGetProvider(entity: blueprint)!);
-    // }).toList();
-    final watchedBlueprints = store._blueprints == null
-        ? <StampCardBlueprint>[]
-        : store._blueprints!
-            .map((blueprint) => ref
-                .watch(blueprintProviders.tryGetProvider(entity: blueprint)!))
-            .toList();
+    final store = _watchStore();
+    if (store == null) {
+      return const Loading(message: 'Loading Store...');
+    }
+
+    final blueprints = store.blueprints?.toList();
+    if (blueprints == null) {
+      return const Loading(message: 'Loading Blueprints...');
+    }
+
+    // Filter blueprints
     final blueprintsToDisplay = _mode == StoreScreenMode.owner
-        ? watchedBlueprints
-        : watchedBlueprints
+        ? blueprints
+        : blueprints
             .where(
               (blueprint) => blueprint.isPublishing,
             )
             .toList();
+
     final bgImage = store.bgImageUrl == null
         ? Image.memory(
             kTransparentImage,
@@ -108,10 +85,12 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
             height: 300,
             width: double.infinity,
           );
+
     final Widget googleMap = Padding(
       padding: DesignUtils.basicWidgetEdgeInsets(),
       child: const Text('Here comes google map. (Click to open external app)'),
     );
+
     final phone = Row(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
@@ -128,6 +107,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         ),
       ],
     );
+
     final address = Row(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
@@ -144,10 +124,12 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         ),
       ],
     );
+
     final Widget description = Padding(
       padding: DesignUtils.basicWidgetEdgeInsets(),
       child: Text(store.description),
     );
+
     final storeName = Padding(
       padding: DesignUtils.basicWidgetEdgeInsets(),
       child: Text(
@@ -158,11 +140,12 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
             .copyWith(color: Theme.of(context).colorScheme.onSecondary),
       ),
     );
-    final bpsListTitle = Row(
+
+    final blueprintsListTitle = Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
-          'Stamp Cards being Published',
+          'Cards being Published',
           style: Theme.of(context).textTheme.titleLarge!.copyWith(
                 color: Theme.of(context).colorScheme.onSecondary,
               ),
@@ -175,58 +158,51 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
           ),
       ],
     );
-    final bpsExplorer = Column(
+
+    final blueprintsExplorer = Column(
       children: [
         Padding(
           padding: DesignUtils.basicWidgetEdgeInsets(),
-          child: bpsListTitle,
+          child: blueprintsListTitle,
         ),
-        !_blueprintsInitLoaded
+        blueprintsToDisplay.isEmpty
             ? Padding(
-                padding: DesignUtils.basicWidgetEdgeInsets(5),
-                child: const CircularProgressIndicator(),
+                padding: DesignUtils.basicWidgetEdgeInsets(),
+                child: const Text('No publishing cards!'),
               )
-            : blueprintsToDisplay.isEmpty
-                ? Padding(
-                    padding: DesignUtils.basicWidgetEdgeInsets(),
-                    child: const Text('No publishing cards!'),
-                  )
-                : ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: blueprintsToDisplay.length,
-                    itemBuilder: (ctx, index) {
-                      final blueprint = blueprintsToDisplay[index];
-                      return ListTile(
-                        title: Text(
-                          blueprint.displayName,
-                          style: Theme.of(context).textTheme.bodyLarge,
-                        ),
-                        trailing: blueprint.isPublishing
-                            ? null
-                            : Icon(
-                                Icons.visibility_off,
-                                color:
-                                    Theme.of(context).colorScheme.onSecondary,
-                              ),
-                        onTap: () async {
-                          await showDialog(
-                            context: context,
-                            builder: (ctx) {
-                              return BlueprintDialogScreen(
-                                blueprintProvider:
-                                    blueprintProviders.providers[blueprint.id]!,
-                                blueprintDialogMode:
-                                    _mode == StoreScreenMode.customer
-                                        ? BlueprintDialogMode.customer
-                                        : BlueprintDialogMode.owner,
-                              );
-                            },
+            : ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: blueprintsToDisplay.length,
+                itemBuilder: (ctx, index) {
+                  final blueprint = blueprintsToDisplay[index];
+                  return ListTile(
+                    title: Text(
+                      blueprint.displayName,
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                    trailing: blueprint.isPublishing
+                        ? null
+                        : Icon(
+                            Icons.visibility_off,
+                            color: Theme.of(context).colorScheme.onSecondary,
+                          ),
+                    onTap: () async {
+                      await showDialog(
+                        context: context,
+                        builder: (ctx) {
+                          return BlueprintDialogScreen(
+                            blueprintDialogMode:
+                                _mode == StoreScreenMode.customer
+                                    ? BlueprintDialogMode.customer
+                                    : BlueprintDialogMode.owner,
                           );
                         },
                       );
                     },
-                  ),
+                  );
+                },
+              ),
       ],
     );
 
@@ -286,7 +262,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         address,
         phone,
         googleMap,
-        bpsExplorer,
+        blueprintsExplorer,
         description,
         // noticesExplorer,
       ],
@@ -347,37 +323,12 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     );
   }
 
-  Future<List<StampCardBlueprint>> _loadBlueprints({
-    required int storeId,
-  }) async {
-    final Set<StampCardBlueprint> blueprints;
-    if (_mode == StoreScreenMode.customer) {
-      blueprints = await customer_apis.listBlueprints(storeId: storeId);
-    } else {
-      blueprints = await owner_apis.listBlueprints(storeId: storeId);
-    }
-    blueprintProviders.tryAddProviders(entities: blueprints);
-    return blueprints.toList();
-  }
-
-  // Skips in phase 1
-  // Future<List<StoreNotice>> loadNotices({
-  //   required int numNotices,
-  //   required String storeId,
-  // }) async {
-  //   await Future.delayed(const Duration(seconds: 1));
-  //   return genDummyNotices(
-  //     numNotices: 5,
-  //     storeId: storeId,
-  //   );
-  // }
-
   void _onPressModifyStore() {
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) {
         return OwnerDesignStoreScreen(
           designMode: StoreDesignMode.modify,
-          store: ref.read(widget.storeProvider),
+          store: ref.read(ownerStoreScreenStoreProvider),
         );
       },
     ));
@@ -386,16 +337,12 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   void _onPressNewBlueprint() {
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) {
-        return OwnerDesignBlueprintScreen(
+        return const OwnerDesignBlueprintScreen(
           designMode: BlueprintDesignMode.create,
-          storeProvider: widget.storeProvider,
         );
       },
     ));
   }
-
-  // Skips in phase 1
-  // void _onPressNewNotice() {}
 }
 
 enum StoreScreenMode {

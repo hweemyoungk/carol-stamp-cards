@@ -1,11 +1,12 @@
-import 'package:carol/providers/redeem_requests_init_loaded_provider.dart';
+import 'package:carol/providers/boolean_notifier.dart';
 import 'package:carol/providers/redeem_requests_provider.dart';
-import 'package:carol/providers/redeem_rule_provider.dart';
-import 'package:carol/providers/stamp_card_blueprint_provider.dart';
-import 'package:carol/providers/store_provider.dart';
 import 'package:carol/widgets/redeem_requests_explorer/redeem_requests_list_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+final ownerRedeemRequestsInitLoadedProvider =
+    StateNotifierProvider<BooleanNotifier, bool>(
+        (ref) => BooleanNotifier(false));
 
 class RedeemRequestsList extends ConsumerStatefulWidget {
   const RedeemRequestsList({super.key});

@@ -1,27 +1,24 @@
 import 'package:carol/models/stamp_card.dart';
-import 'package:carol/providers/entity_provider.dart';
 import 'package:carol/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class CardInfo extends ConsumerWidget {
-  final StateNotifierProvider<EntityStateNotifier<StampCard>, StampCard>
-      stampCardProvider;
+  final StampCard card;
   const CardInfo({
     super.key,
-    required this.stampCardProvider,
+    required this.card,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final stampCard = ref.watch(stampCardProvider);
     return Column(
       // mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
           textAlign: TextAlign.center,
-          stampCard.displayName,
+          card.displayName,
           style: Theme.of(context)
               .textTheme
               .displayMedium!
@@ -41,7 +38,7 @@ class CardInfo extends ConsumerWidget {
                         color: Theme.of(context).colorScheme.onSecondary),
                   ),
                   Text(
-                    stampCard.lastModifiedDateLabel,
+                    card.lastModifiedDateLabel,
                     style: Theme.of(context).textTheme.headlineMedium!.copyWith(
                         color: Theme.of(context).colorScheme.onSecondary),
                   ),
@@ -59,7 +56,7 @@ class CardInfo extends ConsumerWidget {
                         color: Theme.of(context).colorScheme.onSecondary),
                   ),
                   Text(
-                    stampCard.expirationDateLabel,
+                    card.expirationDateLabel,
                     style: Theme.of(context).textTheme.headlineMedium!.copyWith(
                         color: Theme.of(context).colorScheme.onSecondary),
                   ),

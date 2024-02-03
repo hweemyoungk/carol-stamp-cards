@@ -14,7 +14,7 @@ class StampCard extends BaseModel {
   final bool isDiscarded;
   final bool isUsedOut;
   final bool isInactive;
-  final StampCardBlueprint? blueprint;
+  final Blueprint? blueprint;
   final int blueprintId;
 
   StampCard({
@@ -53,7 +53,7 @@ class StampCard extends BaseModel {
         isInactive = json['isInactive'] as bool,
         blueprint = json['blueprint'] == null
             ? null
-            : StampCardBlueprint.fromJson(json['blueprint']),
+            : Blueprint.fromJson(json['blueprint']),
         blueprintId = json['blueprintId'] as int,
         super(
           id: json['id'] as int,
@@ -82,7 +82,7 @@ class StampCard extends BaseModel {
   StampCard.fromBlueprint({
     required int id,
     required this.customerId,
-    required StampCardBlueprint this.blueprint,
+    required Blueprint this.blueprint,
   })  : displayName = blueprint.displayName,
         numCollectedStamps = 0,
         numGoalStamps = blueprint.numMaxStamps,
@@ -115,7 +115,7 @@ class StampCard extends BaseModel {
     bool? isDiscarded,
     bool? isUsedOut,
     bool? isInactive,
-    StampCardBlueprint? blueprint,
+    Blueprint? blueprint,
     int? blueprintId,
   }) {
     return StampCard(

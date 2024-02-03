@@ -1,9 +1,7 @@
 import 'package:carol/apis/owner_apis.dart' as owner_apis;
 import 'package:carol/main.dart';
 import 'package:carol/models/store.dart';
-import 'package:carol/providers/current_user_provider.dart';
-import 'package:carol/providers/store_provider.dart';
-import 'package:carol/providers/stores_provider.dart';
+import 'package:carol/screens/auth_screen.dart';
 import 'package:carol/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -274,7 +272,6 @@ class _OwnerDesignStoreScreenState
 
   void _saveStore() async {
     final currentUser = ref.read(currentUserProvider)!;
-    final ownerStoresNotifier = ref.read(ownerStoresProvider.notifier);
 
     if (!_formKey.currentState!.validate()) {
       return;
@@ -300,6 +297,7 @@ class _OwnerDesignStoreScreenState
         zipcode: _zipcode,
         bgImageUrl: null,
         profileImageUrl: null,
+        blueprints: null,
       );
       final int newId;
       try {
@@ -329,25 +327,13 @@ class _OwnerDesignStoreScreenState
         return;
       }
 
-      ownerStoreProviders.tryAddProvider(entity: newStore);
-      ownerStoresNotifier.prepend(newStore);
+      // TODO: ownerPropagateStore(newStore);
       Carol.showTextSnackBar(
         text: 'New store created!',
         level: SnackBarLevel.success,
       );
     } else {
       // StoreDesignMode.modify
-
-      final storeProvider =
-          ownerStoreProviders.tryGetProviderById(id: widget.store!.id);
-      if (storeProvider == null) {
-        Carol.showTextSnackBar(
-          text: 'Error: Invalid Store',
-          level: SnackBarLevel.error,
-          seconds: 10,
-        );
-      }
-      final storeNotifier = ref.read(storeProvider!.notifier);
 
       // PUT Store
       final storeToPut = widget.store!.copyWith(
@@ -388,7 +374,7 @@ class _OwnerDesignStoreScreenState
         );
         return;
       }
-      storeNotifier.set(entity: modifiedStore);
+      // TODO: ownerPropagateStore(modifiedStore);
 
       Carol.showTextSnackBar(
         text: 'Store modified!',

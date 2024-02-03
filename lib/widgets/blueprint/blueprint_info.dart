@@ -10,7 +10,7 @@ class BlueprintInfo extends StatelessWidget {
     required this.textColor,
   });
 
-  final StampCardBlueprint blueprint;
+  final Blueprint blueprint;
   final Color textColor;
 
   @override

@@ -1,71 +1,39 @@
 import 'dart:convert';
 
 import 'package:carol/apis/utils.dart';
+import 'package:carol/main.dart';
 import 'package:carol/models/redeem_request.dart';
 import 'package:carol/models/redeem_rule.dart';
 import 'package:carol/models/stamp_card.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/models/store.dart';
-import 'package:carol/models/user.dart';
 import 'package:carol/params/backend.dart' as backend_params;
-import 'package:carol/providers/redeem_rule_provider.dart';
-import 'package:carol/providers/stamp_card_blueprint_provider.dart';
-import 'package:carol/providers/stamp_card_provider.dart';
-import 'package:carol/providers/stamp_cards_init_loaded_provider.dart';
-import 'package:carol/providers/stamp_cards_provider.dart';
-import 'package:carol/providers/store_provider.dart';
-import 'package:carol/providers/stores_init_loaded_provider.dart';
-import 'package:carol/providers/stores_provider.dart';
+import 'package:carol/screens/auth_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Handles both fetching and registering providers.
-Future<void> reloadCustomerEntities({
-  required User currentUser,
-  required StampCardsInitLoadedNotifier stampCardsInitLoadedNotifier,
-  required StampCardsNotifier stampCardsNotifier,
-  required StoresInitLoadedNotifier customerStoresInitLoadedNotifier,
-  required StoresNotifier customerStoresNotifier,
-}) async {
-  // Cards
-  final stampCards = await listStampCards(
-    customerId: currentUser.id,
-  );
+Future<void> reloadCustomerModels(WidgetRef ref) async {
+  final currentUser = ref.read(currentUserProvider)!;
 
-  // Blueprints
-  // final blueprints = await listBlueprints(
-  //   blueprintIds: stampCards.map((e) => e.blueprint).toSet(),
-  // );
-  final blueprints =
-      stampCards.map((stampCard) => stampCard.blueprint!).toSet();
-
-  // Stores
-  // final stores = await listStores(
-  //   storeIds: blueprints.map((e) => e.storeId).toSet(),
-  // );
-  final stores = blueprints.map((blueprint) => blueprint.store!).toSet();
-
-  // Bind blueprints to stores
-  // Already join fetched blueprints
-  // final storeMap = stores.fold(<int, Store>{}, (previousValue, store) {
-  //   store.blueprints = [];
-  //   previousValue[store.id] = store;
-  //   return previousValue;
-  // });
-  // for (final blueprint in blueprints) {
-  //   storeMap[blueprint.storeId]!.blueprints!.add(blueprint);
-  // }
-
-  // Register to providers
-  customerStoreProviders.tryAddProviders(entities: stores);
-  blueprintProviders.tryAddProviders(entities: blueprints);
-  for (final blueprint in blueprints) {
-    redeemRuleProviders.tryAddProviders(entities: blueprint._redeemRules ?? []);
+  final Set<StampCard> cards;
+  try {
+    cards = await listStampCards(customerId: currentUser.id);
+  } on Exception catch (e) {
+    Carol.showExceptionSnackBar(
+      e,
+      contextMessage: 'Failed to load customer models.',
+    );
+    return;
   }
-  stampCardProviders.tryAddProviders(entities: stampCards);
+  // TODO: Clear old cards
+  // TODO: customerPropagateCards(cards);
 
-  stampCardsNotifier.set(stampCards.toList());
-  stampCardsInitLoadedNotifier.set(true);
-  customerStoresNotifier.set(stores.toList());
-  customerStoresInitLoadedNotifier.set(true);
+  final blueprints = cards.map((stampCard) => stampCard.blueprint!).toSet();
+  // TODO: Clear old blueprints
+  // TODO: customerPropagateBlueprints(blueprints);
+
+  final stores = blueprints.map((blueprint) => blueprint.store!).toSet();
+  // TODO: Clear old stores
+  // TODO: customerPropagateStores(stores);
 }
 
 /// Fetches cards for customer.<br>
@@ -102,7 +70,7 @@ Future<Set<StampCard>> listStampCards({
 }
 
 /// Unlike owner_apis, this doesn't fetch unpublished blueprints.
-Future<Set<StampCardBlueprint>> listBlueprints({
+Future<Set<Blueprint>> listBlueprints({
   int? storeId,
   Set<int>? blueprintIds,
 }) async {
@@ -122,15 +90,17 @@ Future<Set<StampCardBlueprint>> listBlueprints({
   final res = await httpGet(url);
 
   List<dynamic> resBody = json.decode(res.body);
-  Set<StampCardBlueprint> blueprints = {};
+  Set<Blueprint> blueprints = {};
   for (final map in resBody) {
-    final blueprint = StampCardBlueprint.fromJson(map);
+    final blueprint = Blueprint.fromJson(map);
     blueprints.add(blueprint);
   }
   return blueprints;
 }
 
-Future<StampCardBlueprint> getBlueprint({
+/// Fetches a blueprint for customer.<br>
+/// Blueprint has non-null redeemRules.</ol>
+Future<Blueprint> getBlueprint({
   required int id,
 }) async {
   final url = Uri.http(
@@ -139,7 +109,7 @@ Future<StampCardBlueprint> getBlueprint({
   );
   final res = await httpGet(url);
   Map<String, dynamic> resBody = json.decode(res.body);
-  return StampCardBlueprint.fromJson(resBody);
+  return Blueprint.fromJson(resBody);
 }
 
 Future<Set<Store>> listStores({

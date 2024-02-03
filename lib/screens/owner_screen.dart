@@ -1,16 +1,21 @@
 import 'package:carol/apis/owner_apis.dart';
 import 'package:carol/main.dart';
 import 'package:carol/models/stamp_card.dart';
-import 'package:carol/providers/current_user_provider.dart';
-import 'package:carol/providers/redeem_requests_init_loaded_provider.dart';
+import 'package:carol/providers/boolean_notifier.dart';
+import 'package:carol/providers/current_user_notifier.dart';
 import 'package:carol/providers/redeem_requests_provider.dart';
 import 'package:carol/screens/owner_design_store_screen.dart';
 import 'package:carol/screens/owner_scan_qr_screen.dart';
 import 'package:carol/widgets/main_drawer.dart';
 import 'package:carol/widgets/redeem_requests_explorer/redeem_requests_explorer.dart';
 import 'package:carol/widgets/stores_explorer/stores_explorer.dart';
+import 'package:carol/widgets/stores_explorer/stores_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+bool isOwnerModelsInitLoaded(WidgetRef ref) {
+  return ref.read(ownerStoresListStoresProvider) != null;
+}
 
 class OwnerScreen extends ConsumerStatefulWidget {
   OwnerScreen({super.key});

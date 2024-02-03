@@ -11,18 +11,22 @@ import 'package:carol/models/user.dart';
 import 'package:carol/params/auth.dart' as auth_params;
 import 'package:carol/params/shared_preferences.dart'
     as shared_preferences_params;
-import 'package:carol/providers/auth_status_provider.dart';
-import 'package:carol/providers/auto_sign_in_enabled_provider.dart';
-import 'package:carol/providers/current_user_provider.dart';
-import 'package:carol/providers/stamp_cards_init_loaded_provider.dart';
-import 'package:carol/providers/stamp_cards_provider.dart';
-import 'package:carol/providers/stores_init_loaded_provider.dart';
-import 'package:carol/providers/stores_provider.dart';
+import 'package:carol/providers/auth_status_notifier.dart';
+import 'package:carol/providers/boolean_notifier.dart';
+import 'package:carol/providers/current_user_notifier.dart';
 import 'package:carol/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pkce/pkce.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+final currentUserProvider = StateNotifierProvider<CurrentUserNotifier, User?>(
+    (ref) => CurrentUserNotifier());
+final authStatusProvider =
+    StateNotifierProvider<AuthStatusNotifier, AuthStatus>(
+        (ref) => AuthStatusNotifier());
+final autoSignInEnabledProvider = StateNotifierProvider<BooleanNotifier, bool>(
+    (ref) => BooleanNotifier(false));
 
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
@@ -54,12 +58,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       return;
     }
     final authStatusNotifier = ref.read(authStatusProvider.notifier);
-    final stampCardsInitLoadedNotifier =
-        ref.read(stampCardsInitLoadedProvider.notifier);
-    final stampCardsNotifier = ref.read(stampCardsProvider.notifier);
-    final customerStoresInitLoadedNotifier =
-        ref.read(customerStoresInitLoadedProvider.notifier);
-    final customerStoresNotifier = ref.read(customerStoresProvider.notifier);
     final currentUserNotifier = ref.read(currentUserProvider.notifier);
 
     // 1. Get stored credential
@@ -146,23 +144,17 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     });
 
     // Set User
-    developer.log('[+]access token: ${newOidc['access_token']}');
-
     final currentUser = User(
       oidc: newOidc,
       profileImageUrl: 'assets/images/schnitzel-3279045_1280.jpg',
     );
     currentUserNotifier.set(currentUser);
+    developer.log('[+]access token: ${newOidc['access_token']}');
 
     // Load Init Entities: Landing page is CustomerScreen, so load Customer Cards and Stores
+    if (!mounted) return;
     try {
-      await customer_apis.reloadCustomerEntities(
-        currentUser: currentUser,
-        customerStoresInitLoadedNotifier: customerStoresInitLoadedNotifier,
-        customerStoresNotifier: customerStoresNotifier,
-        stampCardsInitLoadedNotifier: stampCardsInitLoadedNotifier,
-        stampCardsNotifier: stampCardsNotifier,
-      );
+      await customer_apis.reloadCustomerModels(ref);
     } on Exception catch (e) {
       Carol.showExceptionSnackBar(
         e,
@@ -172,11 +164,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     }
 
     // Next Screen
-    if (mounted) {
-      Navigator.of(context).pushReplacementNamed(
-        '/dashboard',
-      );
-    }
+    if (!mounted) return;
+    Navigator.of(context).pushReplacementNamed(
+      '/dashboard',
+    );
   }
 
   @override
@@ -378,14 +369,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     final isAutoSignInEnabled = ref.read(autoSignInEnabledProvider);
     final currentUserNotifier = ref.read(currentUserProvider.notifier);
 
-    // For customer_apis
-    final stampCardsInitLoadedNotifier =
-        ref.read(stampCardsInitLoadedProvider.notifier);
-    final stampCardsNotifier = ref.read(stampCardsProvider.notifier);
-    final customerStoresInitLoadedNotifier =
-        ref.read(customerStoresInitLoadedProvider.notifier);
-    final customerStoresNotifier = ref.read(customerStoresProvider.notifier);
-
     if (_pkcePair == null) {
       Carol.showTextSnackBar(
         text: 'Lost PKCE data',
@@ -409,8 +392,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       Navigator.of(context).popUntil(ModalRoute.withName('/auth'));
       return;
     }
-
-    // final sessionState = uri.queryParameters['session_state'];
 
     // Exchange code
     final code = uri.queryParameters['code'];
@@ -478,27 +459,22 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     currentUserNotifier.set(currentUser);
 
     // Load Init Entities: Landing page is CustomerScreen, so load Customer Cards and Stores
+    if (!mounted) return;
     try {
-      await customer_apis.reloadCustomerEntities(
-        currentUser: currentUser,
-        customerStoresInitLoadedNotifier: customerStoresInitLoadedNotifier,
-        customerStoresNotifier: customerStoresNotifier,
-        stampCardsInitLoadedNotifier: stampCardsInitLoadedNotifier,
-        stampCardsNotifier: stampCardsNotifier,
-      );
+      await customer_apis.reloadCustomerModels(ref);
     } on Exception catch (e) {
       Carol.showExceptionSnackBar(
         e,
         contextMessage: 'Failed to load customer entities.',
       );
+      // Proceed to next screen
     }
 
     // Next Screen
-    if (mounted) {
-      Navigator.of(context).pushReplacementNamed(
-        '/dashboard',
-      );
-    }
+    if (!mounted) return;
+    Navigator.of(context).pushReplacementNamed(
+      '/dashboard',
+    );
   }
 
   void _onPressCancelAuth() {

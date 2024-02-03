@@ -10,8 +10,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class RedeemRequestsListItem extends ConsumerStatefulWidget {
   final RedeemRequest redeemRequest;
   final StateNotifierProvider<EntityStateNotifier<Store>, Store> storeProvider;
-  final StateNotifierProvider<EntityStateNotifier<StampCardBlueprint>,
-      StampCardBlueprint> blueprintProvider;
+  final StateNotifierProvider<EntityStateNotifier<Blueprint>, Blueprint>
+      blueprintProvider;
   final StateNotifierProvider<EntityStateNotifier<RedeemRule>, RedeemRule>
       redeemRuleProvider;
   const RedeemRequestsListItem({
