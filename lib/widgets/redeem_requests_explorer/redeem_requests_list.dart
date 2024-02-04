@@ -1,11 +1,12 @@
-import 'package:carol/providers/redeem_requests_init_loaded_provider.dart';
-import 'package:carol/providers/redeem_requests_provider.dart';
-import 'package:carol/providers/redeem_rule_provider.dart';
-import 'package:carol/providers/stamp_card_blueprint_provider.dart';
-import 'package:carol/providers/store_provider.dart';
+import 'package:carol/models/redeem_request.dart';
+import 'package:carol/providers/redeem_requests_notifier.dart';
 import 'package:carol/widgets/redeem_requests_explorer/redeem_requests_list_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+final ownerRedeemRequestsListRedeemRequestsProvider =
+    StateNotifierProvider<RedeemRequestsNotifier, List<RedeemRequest>?>(
+        (ref) => RedeemRequestsNotifier(null));
 
 class RedeemRequestsList extends ConsumerStatefulWidget {
   const RedeemRequestsList({super.key});
@@ -17,11 +18,10 @@ class RedeemRequestsList extends ConsumerStatefulWidget {
 class _RedeemRequestsListState extends ConsumerState<RedeemRequestsList> {
   @override
   Widget build(BuildContext context) {
-    final redeemRequests = ref.watch(ownerRedeemRequestsProvider);
-    final redeemRequestsInitLoaded =
-        ref.watch(ownerRedeemRequestsInitLoadedProvider);
+    final redeemRequests =
+        ref.watch(ownerRedeemRequestsListRedeemRequestsProvider);
 
-    return !redeemRequestsInitLoaded
+    return redeemRequests == null
         ? const CircularProgressIndicator()
         : redeemRequests.isEmpty
             ? Center(
@@ -40,23 +40,9 @@ class _RedeemRequestsListState extends ConsumerState<RedeemRequestsList> {
                     if (redeemRequest.ttlMilliseconds < 0) {
                       return null;
                     }
-                    final redeemRuleProvider =
-                        redeemRuleProviders.tryGetProviderById(
-                      id: redeemRequest.redeemRuleId,
-                    )!;
-                    final blueprintProvider =
-                        blueprintProviders.tryGetProviderById(
-                            id: ref.read(redeemRuleProvider).blueprintId)!;
-                    final storeProvider =
-                        ownerStoreProviders.tryGetProviderById(
-                      id: ref.read(blueprintProvider).storeId,
-                    )!;
                     return RedeemRequestsListItem(
                       key: ValueKey(redeemRequest.id),
                       redeemRequest: redeemRequest,
-                      storeProvider: storeProvider,
-                      blueprintProvider: blueprintProvider,
-                      redeemRuleProvider: redeemRuleProvider,
                     );
                   },
                 ),

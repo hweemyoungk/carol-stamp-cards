@@ -8,10 +8,6 @@ class AuthStatusNotifier extends StateNotifier<AuthStatus> {
   }
 }
 
-final authStatusProvider =
-    StateNotifierProvider<AuthStatusNotifier, AuthStatus>(
-        (ref) => AuthStatusNotifier());
-
 enum AuthStatus {
   unauthenticated,
   authenticating,

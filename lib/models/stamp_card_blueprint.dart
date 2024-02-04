@@ -1,8 +1,11 @@
+import 'package:carol/apis/customer_apis.dart' as customer_apis;
+import 'package:carol/apis/owner_apis.dart' as owner_apis;
 import 'package:carol/models/base_model.dart';
 import 'package:carol/models/redeem_rule.dart';
+import 'package:carol/models/store.dart';
 import 'package:flutter/material.dart';
 
-class StampCardBlueprint extends BaseModel {
+class Blueprint extends BaseModel {
   final String displayName;
   final String description;
   final String stampGrantCondDescription;
@@ -12,12 +15,13 @@ class StampCardBlueprint extends BaseModel {
   final int numMaxIssues;
   final DateTime lastModifiedDate;
   final DateTime expirationDate;
-  final int storeId;
   final String? bgImageUrl;
   final bool isPublishing;
-  List<RedeemRule>? redeemRules;
+  final Store? store;
+  final int storeId;
+  final Set<RedeemRule>? redeemRules;
 
-  StampCardBlueprint({
+  Blueprint({
     required super.id,
     required super.isDeleted,
     required this.displayName,
@@ -29,13 +33,14 @@ class StampCardBlueprint extends BaseModel {
     required this.numMaxRedeems,
     required this.numMaxIssuesPerCustomer,
     required this.numMaxIssues,
-    required this.storeId,
     required this.bgImageUrl,
     required this.isPublishing,
+    required this.store,
+    required this.storeId,
     required this.redeemRules,
   });
 
-  StampCardBlueprint.fromJson(Map<String, dynamic> json)
+  Blueprint.fromJson(Map<String, dynamic> json)
       : displayName = json['displayName'] as String,
         description = json['description'] as String,
         stampGrantCondDescription = json['stampGrantCondDescription'] as String,
@@ -47,24 +52,21 @@ class StampCardBlueprint extends BaseModel {
             DateTime.fromMillisecondsSinceEpoch(json['lastModifiedDate']),
         expirationDate =
             DateTime.fromMillisecondsSinceEpoch(json['expirationDate']),
-        storeId = json['storeId'] as int,
         bgImageUrl = json['bgImageUrl'] as String?,
         isPublishing = json['isPublishing'] as bool,
+        store = json['store'] == null ? null : Store.fromJson(json['store']),
+        storeId = json['storeId'] as int,
         redeemRules = json['redeemRules'] == null
             ? null
-            : [
+            : {
                 for (final map in json['redeemRules']) RedeemRule.fromJson(map),
-              ],
+              },
         super(
           id: json['id'] as int,
           isDeleted: json['isDeleted'] as bool,
         );
 
-  bool get wasExpired {
-    return DateTime.now().isAfter(expirationDate);
-  }
-
-  StampCardBlueprint copyWith({
+  Blueprint copyWith({
     int? id,
     bool? isDeleted,
     String? displayName,
@@ -76,13 +78,14 @@ class StampCardBlueprint extends BaseModel {
     int? numMaxIssues,
     DateTime? lastModifiedDate,
     DateTime? expirationDate,
-    int? storeId,
     IconData? icon,
     String? bgImageUrl,
     bool? isPublishing,
-    List<RedeemRule>? redeemRules,
+    Store? store,
+    int? storeId,
+    Set<RedeemRule>? redeemRules,
   }) {
-    return StampCardBlueprint(
+    return Blueprint(
       id: id ?? this.id,
       isDeleted: isDeleted ?? this.isDeleted,
       displayName: displayName ?? this.displayName,
@@ -96,9 +99,10 @@ class StampCardBlueprint extends BaseModel {
       numMaxIssues: numMaxIssues ?? this.numMaxIssues,
       lastModifiedDate: lastModifiedDate ?? this.lastModifiedDate,
       expirationDate: expirationDate ?? this.expirationDate,
-      storeId: storeId ?? this.storeId,
       bgImageUrl: bgImageUrl ?? this.bgImageUrl,
       isPublishing: isPublishing ?? this.isPublishing,
+      store: store ?? this.store,
+      storeId: storeId ?? this.storeId,
       redeemRules: redeemRules ?? this.redeemRules,
     );
   }
@@ -115,13 +119,38 @@ class StampCardBlueprint extends BaseModel {
         'numMaxIssuesPerCustomer': numMaxIssuesPerCustomer,
         'lastModifiedDate': lastModifiedDate,
         'expirationDate': expirationDate,
-        'storeId': storeId,
         'bgImageUrl': bgImageUrl,
         'isPublishing': isPublishing,
+        'store': store?.toJson(),
+        'storeId': storeId,
         'redeemRules': redeemRules == null
             ? null
             : [
                 for (final redeemRule in redeemRules!) redeemRule.toJson(),
               ],
       };
+
+  bool get isExpired {
+    return DateTime.now().isAfter(expirationDate);
+  }
+
+  Future<Blueprint> fetchCustomerRedeemRules({bool force = false}) async {
+    if (this.redeemRules != null && !force) {
+      return this;
+    }
+
+    final Set<RedeemRule> redeemRules;
+    redeemRules = await customer_apis.listRedeemRules(blueprintId: id);
+    return copyWith(redeemRules: redeemRules);
+  }
+
+  Future<Blueprint> fetchOwnerRedeemRules({bool force = false}) async {
+    if (this.redeemRules != null && !force) {
+      return this;
+    }
+
+    final Set<RedeemRule> redeemRules;
+    redeemRules = await owner_apis.listRedeemRules(blueprintId: id);
+    return copyWith(redeemRules: redeemRules);
+  }
 }

@@ -12,7 +12,7 @@ class OwnerDesignRedeemRuleScreen extends ConsumerStatefulWidget {
     this.redeemRule,
   });
   final RedeemRuleDesignMode designMode;
-  final StampCardBlueprint? blueprint;
+  final Blueprint? blueprint;
   final RedeemRule? redeemRule;
 
   @override
@@ -196,7 +196,9 @@ class _OwnerDesignRedeemRuleScreenState
         description: _description,
         consumes: _consumes,
         imageId: null,
+        blueprint: null,
         blueprintId: widget.blueprint?.id ?? -1,
+        redeems: null,
       );
       Navigator.of(context).pop(newRedeemRule);
     } else {

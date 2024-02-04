@@ -2,28 +2,20 @@ import 'package:carol/apis/owner_apis.dart';
 import 'package:carol/apis/utils.dart';
 import 'package:carol/main.dart';
 import 'package:carol/models/redeem_request.dart';
-import 'package:carol/models/redeem_rule.dart';
-import 'package:carol/models/stamp_card_blueprint.dart';
-import 'package:carol/models/store.dart';
-import 'package:carol/providers/entity_provider.dart';
+import 'package:carol/providers/redeem_request_notifier.dart';
 import 'package:carol/utils.dart';
+import 'package:carol/widgets/common/loading.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:transparent_image/transparent_image.dart';
 
+final ownerRedeemRequestDialogRedeemRequestProvider =
+    StateNotifierProvider<RedeemRequestNotifier, RedeemRequest?>(
+        (ref) => RedeemRequestNotifier(null));
+
 class RedeemRequestDialogScreen extends ConsumerStatefulWidget {
-  final RedeemRequest redeemRequest;
-  final StateNotifierProvider<EntityStateNotifier<Store>, Store> storeProvider;
-  final StateNotifierProvider<EntityStateNotifier<StampCardBlueprint>,
-      StampCardBlueprint> blueprintProvider;
-  final StateNotifierProvider<EntityStateNotifier<RedeemRule>, RedeemRule>
-      redeemRuleProvider;
   const RedeemRequestDialogScreen({
     super.key,
-    required this.storeProvider,
-    required this.blueprintProvider,
-    required this.redeemRequest,
-    required this.redeemRuleProvider,
   });
 
   @override
@@ -36,42 +28,45 @@ class _RedeemRequestDialogScreenState
   ApprovalStatus _status = ApprovalStatus.notApprovable;
   String? _notApprovableReason;
 
-  @override
-  void initState() {
-    super.initState();
+  void _checkApprovable(RedeemRequest redeemRequest) {
+    // redeem request expired?
+    if (redeemRequest.expired) {
+      _notApprovableReason = 'Request already expired';
+      return;
+    }
 
-    _checkApprovable();
-  }
+    // redeem request already redeemed?
+    if (redeemRequest.isRedeemed) {
+      _notApprovableReason = 'Already redeemed';
+      return;
+    }
 
-  void _checkApprovable() {
-    setState(() {
-      // redeem request expired?
-      if (widget.redeemRequest.expired) {
-        _notApprovableReason = 'Request already expired';
-        return;
-      }
+    // blueprint expired?
+    if (redeemRequest.redeemRule!.blueprint!.isExpired) {
+      _notApprovableReason = 'Blueprint already expired';
+      return;
+    }
 
-      // redeem request already redeemed?
-      if (widget.redeemRequest.isRedeemed) {
-        _notApprovableReason = 'Already redeemed';
-        return;
-      }
-
-      // blueprint expired?
-      if (ref.read(widget.blueprintProvider).wasExpired) {
-        _notApprovableReason = 'Blueprint already expired';
-        return;
-      }
-
-      _status = ApprovalStatus.approvable;
-    });
+    _status = ApprovalStatus.approvable;
   }
 
   @override
   Widget build(BuildContext context) {
-    final store = ref.watch(widget.storeProvider);
-    final blueprint = ref.watch(widget.blueprintProvider);
-    final redeemRule = ref.watch(widget.redeemRuleProvider);
+    var redeemRequest =
+        ref.watch(ownerRedeemRequestDialogRedeemRequestProvider);
+
+    if (redeemRequest?.redeemRule?.blueprint?.store == null) {
+      return const Loading(
+        message: 'Loading redeem request...',
+      );
+    }
+
+    redeemRequest = redeemRequest!;
+    _checkApprovable(redeemRequest);
+
+    final redeemRule = redeemRequest.redeemRule!;
+    final blueprint = redeemRule.blueprint!;
+    final store = blueprint.store!;
     Widget image = redeemRule.imageUrl == null
         ? Image.memory(
             kTransparentImage,
@@ -83,8 +78,7 @@ class _RedeemRequestDialogScreenState
           );
 
     return AlertDialog(
-      title:
-          Text('${widget.redeemRequest.customerDisplayName}\'s Redeem Request'),
+      title: Text('${redeemRequest.customerDisplayName}\'s Redeem Request'),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -173,8 +167,14 @@ class _RedeemRequestDialogScreenState
   }
 
   Future<void> _onPressApprove() async {
+    final redeemRequest =
+        ref.read(ownerRedeemRequestDialogRedeemRequestProvider);
+    if (redeemRequest == null) {
+      return;
+    }
+
     try {
-      await approveRedeemRequest(redeemRequestId: widget.redeemRequest.id);
+      await approveRedeemRequest(redeemRequestId: redeemRequest.id);
     } on Exception catch (e) {
       if (mounted) {
         setState(() {
@@ -200,10 +200,8 @@ class _RedeemRequestDialogScreenState
       level: SnackBarLevel.success,
     );
 
-    if (mounted) {
-      Navigator.of(context).pop();
-    }
-    return;
+    if (!mounted) return;
+    Navigator.of(context).pop();
   }
 }
 

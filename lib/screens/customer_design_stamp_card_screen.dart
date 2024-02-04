@@ -2,21 +2,23 @@ import 'package:carol/apis/customer_apis.dart' as customer_apis;
 import 'package:carol/main.dart';
 import 'package:carol/models/stamp_card.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
-import 'package:carol/providers/entity_provider.dart';
-import 'package:carol/providers/stamp_card_provider.dart';
+import 'package:carol/providers/blueprint_notifier.dart';
+import 'package:carol/screens/card_screen.dart';
 import 'package:carol/utils.dart';
+import 'package:carol/widgets/cards_explorer/cards_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+final customerDesignCardScreenBlueprintProvider =
+    StateNotifierProvider<BlueprintNotifier, Blueprint?>(
+        (ref) => BlueprintNotifier(null));
 
 class CustomerDesignStampCardScreen extends ConsumerStatefulWidget {
   const CustomerDesignStampCardScreen({
     super.key,
-    required this.stampCard,
-    required this.blueprintProvider,
+    this.card,
   });
-  final StateNotifierProvider<EntityStateNotifier<StampCardBlueprint>,
-      StampCardBlueprint> blueprintProvider;
-  final StampCard stampCard;
+  final StampCard? card;
 
   @override
   ConsumerState<CustomerDesignStampCardScreen> createState() =>
@@ -27,14 +29,14 @@ class _CustomerDesignStampCardScreenState
     extends ConsumerState<CustomerDesignStampCardScreen> {
   var _status = StampCardDesignStatus.userInput;
   final _formKey = GlobalKey<FormState>();
-  late String _displayName;
-  late int _numGoalStamps;
+  String? _displayName;
+  int? _numGoalStamps;
 
   @override
   void initState() {
     super.initState();
-    _displayName = widget.stampCard.displayName;
-    _numGoalStamps = widget.stampCard.numGoalStamps;
+    _displayName = widget.card?.displayName;
+    _numGoalStamps = widget.card?.numGoalStamps;
   }
 
   @override
@@ -68,7 +70,7 @@ class _CustomerDesignStampCardScreenState
                     Padding(
                       padding: DesignUtils.basicWidgetEdgeInsets(),
                       child: TextFormField(
-                        initialValue: widget.stampCard.displayName,
+                        initialValue: widget.card?.displayName,
                         style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                             color: Theme.of(context).colorScheme.onBackground),
                         maxLength: 50,
@@ -96,8 +98,7 @@ class _CustomerDesignStampCardScreenState
                         child: SizedBox(
                           width: 100,
                           child: TextFormField(
-                            initialValue:
-                                widget.stampCard.numGoalStamps.toString(),
+                            initialValue: widget.card?.numGoalStamps.toString(),
                             style: Theme.of(context)
                                 .textTheme
                                 .bodyLarge!
@@ -114,8 +115,11 @@ class _CustomerDesignStampCardScreenState
                                       .onBackground),
                             ),
                             validator: (value) {
-                              final blueprint =
-                                  ref.read(widget.blueprintProvider);
+                              final blueprint = ref.read(
+                                  customerDesignCardScreenBlueprintProvider);
+                              if (blueprint == null) {
+                                return 'Lost blueprint data... Go back and start over.';
+                              }
                               if (value == null ||
                                   int.tryParse(value) == null ||
                                   int.parse(value) < 1 ||
@@ -144,30 +148,34 @@ class _CustomerDesignStampCardScreenState
     if (!_formKey.currentState!.validate()) {
       return;
     }
+
+    final cardsNotifier = ref.read(customerCardsListCardsProvider.notifier);
+    final cardNotifier = ref.read(customerCardScreenCardProvider.notifier);
+
     _formKey.currentState!.save();
 
     setState(() {
       _status = StampCardDesignStatus.sending;
     });
 
-    final stampCardProvider =
-        stampCardProviders.tryGetProviderById(id: widget.stampCard.id)!;
-    final stampCardNotifier = ref.read(stampCardProvider.notifier);
-
     // PUT StampCard
-    // await DesignUtils.delaySeconds(1);
-    // final modifiedStampCard = widget.stampCard.copyWith(
-    //   displayName: _displayName,
-    //   numGoalStamps: _numGoalStamps,
-    // );
-    final stampCardToPut = widget.stampCard.copyWith(
+    final card = widget.card;
+    if (card == null) {
+      Carol.showTextSnackBar(
+        text: 'Lost card data... Go back and start over.',
+        level: SnackBarLevel.error,
+      );
+      return;
+    }
+
+    final cardToPut = card.copyWith(
       displayName: _displayName,
       numGoalStamps: _numGoalStamps,
     );
     try {
       await customer_apis.putStampCard(
-        id: stampCardToPut.id,
-        stampCard: stampCardToPut,
+        id: cardToPut.id,
+        stampCard: cardToPut,
       );
     } on Exception catch (e) {
       Carol.showExceptionSnackBar(
@@ -178,18 +186,26 @@ class _CustomerDesignStampCardScreenState
     }
 
     // Get StampCard
-    final StampCard modifiedStampCard;
-    try {
-      modifiedStampCard =
-          await customer_apis.getStampCard(id: stampCardToPut.id);
-    } on Exception catch (e) {
-      Carol.showExceptionSnackBar(
-        e,
-        contextMessage: 'Failed to get modified card information.',
-      );
-      return;
-    }
-    stampCardNotifier.set(entity: modifiedStampCard);
+    // Do not getStampCard: cardNotifier needs card.blueprint.redeemRules
+    // final StampCard modifiedCard;
+    // try {
+    //   modifiedCard = await customer_apis.getStampCard(id: cardToPut.id);
+    // } on Exception catch (e) {
+    //   Carol.showExceptionSnackBar(
+    //     e,
+    //     contextMessage: 'Failed to get modified card information.',
+    //   );
+    //   return;
+    // }
+    final modifiedCard = cardToPut;
+
+    // Propagate
+    // customerCardsListCardsProvider
+    cardsNotifier.replaceOrPrepend(modifiedCard);
+    // customerStoresListStoresProvider: Not relavant
+    // customerCardScreenCardProvider
+    cardNotifier.set(modifiedCard);
+    // customerDesignCardScreenBlueprintProvider: Not relavent
 
     Carol.showTextSnackBar(
       text: 'Card modified!',

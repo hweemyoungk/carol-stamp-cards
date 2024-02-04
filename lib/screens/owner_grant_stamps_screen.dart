@@ -10,7 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class OwnerGrantStampsScreen extends ConsumerStatefulWidget {
   final StampCard stampCard;
-  final StampCardBlueprint blueprint;
+  final Blueprint blueprint;
 
   const OwnerGrantStampsScreen({
     super.key,

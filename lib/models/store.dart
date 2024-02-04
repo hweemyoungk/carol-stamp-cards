@@ -15,8 +15,7 @@ class Store extends BaseModel {
   final String? bgImageUrl;
   final String? profileImageUrl;
   final String ownerId;
-  // Assumes Lazy fetch.
-  List<StampCardBlueprint>? blueprints;
+  final Set<Blueprint>? blueprints;
 
   Store({
     required super.id,
@@ -31,8 +30,9 @@ class Store extends BaseModel {
     required this.bgImageUrl,
     required this.profileImageUrl,
     required this.ownerId,
-    this.blueprints,
+    required this.blueprints,
   });
+
   Store.fromJson(Map<String, dynamic> json)
       : displayName = json['displayName'] as String,
         description = json['description'] as String,
@@ -46,47 +46,13 @@ class Store extends BaseModel {
         ownerId = json['ownerId'] as String,
         blueprints = json['blueprints'] == null
             ? null
-            : [
-                for (final map in json['blueprints'])
-                  StampCardBlueprint.fromJson(map),
-              ],
+            : {
+                for (final map in json['blueprints']) Blueprint.fromJson(map),
+              },
         super(
           id: json['id'] as int,
           isDeleted: json['isDeleted'] as bool,
         );
-
-  Store copyWith({
-    int? id,
-    bool? isDeleted,
-    String? displayName,
-    String? description,
-    String? zipcode,
-    String? address,
-    String? phone,
-    double? lat,
-    double? lng,
-    IconData? icon,
-    String? bgImageUrl,
-    String? profileImageUrl,
-    String? ownerId,
-    List<StampCardBlueprint>? blueprints,
-  }) {
-    return Store(
-      id: id ?? this.id,
-      isDeleted: isDeleted ?? this.isDeleted,
-      displayName: displayName ?? this.displayName,
-      description: description ?? this.description,
-      zipcode: zipcode ?? this.zipcode,
-      address: address ?? this.address,
-      phone: phone ?? this.phone,
-      lat: lat ?? this.lat,
-      lng: lng ?? this.lng,
-      bgImageUrl: bgImageUrl ?? this.bgImageUrl,
-      profileImageUrl: profileImageUrl ?? this.profileImageUrl,
-      ownerId: ownerId ?? this.ownerId,
-      blueprints: blueprints ?? this.blueprints,
-    );
-  }
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -108,14 +74,47 @@ class Store extends BaseModel {
               ],
       };
 
-  double getDistance(double deviceLat, double deviceLng) {
+  Store copyWith({
+    int? id,
+    bool? isDeleted,
+    String? displayName,
+    String? description,
+    String? zipcode,
+    String? address,
+    String? phone,
+    double? lat,
+    double? lng,
+    IconData? icon,
+    String? bgImageUrl,
+    String? profileImageUrl,
+    String? ownerId,
+    Set<Blueprint>? blueprints,
+  }) {
+    return Store(
+      id: id ?? this.id,
+      isDeleted: isDeleted ?? this.isDeleted,
+      displayName: displayName ?? this.displayName,
+      description: description ?? this.description,
+      zipcode: zipcode ?? this.zipcode,
+      address: address ?? this.address,
+      phone: phone ?? this.phone,
+      lat: lat ?? this.lat,
+      lng: lng ?? this.lng,
+      bgImageUrl: bgImageUrl ?? this.bgImageUrl,
+      profileImageUrl: profileImageUrl ?? this.profileImageUrl,
+      ownerId: ownerId ?? this.ownerId,
+      blueprints: blueprints ?? this.blueprints,
+    );
+  }
+
+  double getDistanceMeters(double deviceLat, double deviceLng) {
     // return random.nextDouble() * (random.nextInt(1000) + 1);
     final meters = distance(LatLng(lat, lng), LatLng(deviceLat, deviceLng));
     return meters;
   }
 
   String getDistanceString(double deviceLat, double deviceLng) {
-    final meters = getDistance(deviceLat, deviceLng);
+    final meters = getDistanceMeters(deviceLat, deviceLng);
     if (meters < 0) {
       return 'Something\'s really wrong...';
     } else if (meters < 100) {

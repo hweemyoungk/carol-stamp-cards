@@ -174,11 +174,11 @@ class _OwnerScanQrScreenState extends ConsumerState<OwnerScanQrScreen> {
         final stampCardTask = owner_apis.getStampCard(id: qr.stampCardId);
         final blueprintTask = owner_apis.getBlueprint(id: qr.blueprintId);
         final StampCard stampCard;
-        final StampCardBlueprint blueprint;
+        final Blueprint blueprint;
         try {
           [
             stampCard as StampCard,
-            blueprint as StampCardBlueprint,
+            blueprint as Blueprint,
           ] = await Future.wait(
             [
               stampCardTask,

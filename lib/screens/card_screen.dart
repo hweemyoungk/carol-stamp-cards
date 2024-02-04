@@ -4,27 +4,27 @@ import 'package:carol/apis/customer_apis.dart' as customer_apis;
 import 'package:carol/main.dart';
 import 'package:carol/models/stamp_card.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
-import 'package:carol/providers/entity_provider.dart';
-import 'package:carol/providers/store_provider.dart';
+import 'package:carol/providers/card_notifier.dart';
 import 'package:carol/screens/customer_design_stamp_card_screen.dart';
 import 'package:carol/screens/store_screen.dart';
 import 'package:carol/utils.dart';
 import 'package:carol/widgets/card/card_info.dart';
 import 'package:carol/widgets/card/redeem_rules_list.dart';
+import 'package:carol/widgets/cards_explorer/cards_list.dart';
 import 'package:carol/widgets/common/circular_progress_indicator_in_button.dart';
+import 'package:carol/widgets/common/loading.dart';
+import 'package:carol/widgets/stores_explorer/stores_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
+final customerCardScreenCardProvider =
+    StateNotifierProvider<CardNotifier, StampCard?>(
+        (ref) => CardNotifier(null));
+
 class CardScreen extends ConsumerStatefulWidget {
-  final StateNotifierProvider<EntityStateNotifier<StampCard>, StampCard>
-      stampCardProvider;
-  final StateNotifierProvider<EntityStateNotifier<StampCardBlueprint>,
-      StampCardBlueprint> blueprintProvider;
   const CardScreen({
     super.key,
-    required this.stampCardProvider,
-    required this.blueprintProvider,
   });
 
   @override
@@ -36,17 +36,22 @@ class _CardScreenState extends ConsumerState<CardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final stampCard = ref.watch(widget.stampCardProvider);
-    final blueprint = ref.watch(widget.blueprintProvider);
+    final watchedCard = ref.watch(customerCardScreenCardProvider);
+    if (watchedCard?.blueprint?.redeemRules == null) {
+      return const Loading(message: 'Loading Card...');
+    }
 
-    final hasNotices = stampCard.isDiscarded || stampCard.isUsedOut;
+    final card = watchedCard!;
+    final blueprint = card.blueprint!;
+
+    final hasNotices = card.isDiscarded || card.isUsedOut;
     final notices = Container(
       color: Theme.of(context).colorScheme.tertiaryContainer,
       child: Padding(
         padding: DesignUtils.basicWidgetEdgeInsets(),
         child: Column(
           children: [
-            if (stampCard.isUsedOut)
+            if (card.isUsedOut)
               Row(
                 children: [
                   Icon(Icons.warning,
@@ -61,7 +66,7 @@ class _CardScreenState extends ConsumerState<CardScreen> {
                   ),
                 ],
               ),
-            if (stampCard.isDiscarded)
+            if (card.isDiscarded)
               Row(
                 children: [
                   Icon(Icons.warning,
@@ -81,7 +86,7 @@ class _CardScreenState extends ConsumerState<CardScreen> {
       ),
     );
     final storeInfoButton = ElevatedButton.icon(
-      onPressed: _onPressLoadStoreInfo,
+      onPressed: _onPressStoreInfo,
       icon: const Icon(Icons.store),
       label: const Text('Store Info'),
     );
@@ -105,7 +110,7 @@ class _CardScreenState extends ConsumerState<CardScreen> {
               ),
             ),
     );
-    final cardInfo = CardInfo(stampCardProvider: widget.stampCardProvider);
+    final cardInfo = CardInfo(card: card);
     return Scaffold(
       appBar: AppBar(
         actions: [
@@ -118,7 +123,7 @@ class _CardScreenState extends ConsumerState<CardScreen> {
       backgroundColor: Theme.of(context).colorScheme.secondary,
       body: LayoutBuilder(
         builder: (ctx, constraints) {
-          final qr = SimpleStampCardQr.fromStampCard(stampCard);
+          final qr = SimpleStampCardQr.fromStampCard(card);
           final qrImageView = QrImageView(
             data: json.encode(qr.toJson()),
             version: QrVersions.auto,
@@ -131,7 +136,7 @@ class _CardScreenState extends ConsumerState<CardScreen> {
                 Padding(
                   padding: DesignUtils.basicWidgetEdgeInsets(.5),
                   child: Text(
-                    stampCard.stampsRatio,
+                    card.stampsRatio,
                     style: Theme.of(context).textTheme.headlineLarge!.copyWith(
                         color: Theme.of(context).colorScheme.onSecondary),
                     textAlign: TextAlign.center,
@@ -176,12 +181,11 @@ class _CardScreenState extends ConsumerState<CardScreen> {
                       Padding(
                         padding: DesignUtils.basicWidgetEdgeInsets(1.5),
                         child: RedeemRulesList(
-                          stampCardProvider: widget.stampCardProvider,
-                          blueprintProvider: widget.blueprintProvider,
+                          card: card,
                         ),
                       ),
                       storeInfoButton,
-                      if (!stampCard.isDiscarded) deleteButton,
+                      if (!card.isDiscarded) deleteButton,
                     ],
                   ),
                 ),
@@ -193,13 +197,60 @@ class _CardScreenState extends ConsumerState<CardScreen> {
     );
   }
 
-  void _onPressLoadStoreInfo() {
-    final stampCard = ref.read(widget.stampCardProvider);
-    final storeProvider =
-        customerStoreProviders.tryGetProviderById(id: stampCard.storeId)!;
+  void _onPressStoreInfo() async {
+    _notifyStoreScreen();
     Navigator.of(context).push(MaterialPageRoute(
-      builder: (context) => StoreScreen(storeProvider: storeProvider),
+      builder: (context) => const StoreScreen(),
     ));
+  }
+
+  /// Notifies <code>customerStoreScreenStoreProvider</code>.
+  Future<void> _notifyStoreScreen() async {
+    final storeNotifier = ref.read(customerStoreScreenStoreProvider.notifier);
+    final storesNotifier = ref.read(customerStoresListStoresProvider.notifier);
+    storeNotifier.set(null);
+
+    final card = ref.read(customerCardScreenCardProvider);
+    if (card == null) {
+      return;
+    }
+
+    if (card.blueprint?.store == null) {
+      // Ignore store == null scenario: many-to-one
+      // Ignore blueprint == null scenario: many-to-one
+      Carol.showTextSnackBar(
+        text: 'Lost data... Refresh and try again.',
+        level: SnackBarLevel.warn,
+      );
+      return;
+    }
+
+    // Store needs blueprints
+    final store = card.blueprint!.store!;
+    if (store.blueprints != null) {
+      storeNotifier.set(store);
+      return;
+    }
+
+    final Set<Blueprint> blueprints;
+    try {
+      blueprints = await customer_apis.listBlueprints(storeId: store.id);
+    } on Exception catch (e) {
+      Carol.showExceptionSnackBar(
+        e,
+        contextMessage: 'Failed to get blueprints information.',
+      );
+      return;
+    }
+    final newStore = store.copyWith(blueprints: blueprints);
+
+    // Propagate
+    // customerCardsListCardsProvider: Not relevant
+    // customerStoresListStoresProvider
+    storesNotifier.replaceOrPrepend(newStore);
+    // customerCardScreenCardProvider: Not relevant
+
+    storeNotifier.set(newStore);
   }
 
   void _onPressDeleteCard() {
@@ -267,44 +318,75 @@ class _CardScreenState extends ConsumerState<CardScreen> {
   }
 
   void _onPressModifyCard() {
-    final stampCard = ref.read(widget.stampCardProvider);
+    final card = ref.read(customerCardScreenCardProvider);
+
+    _notifyCustomerDesignStampCardScreen();
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => CustomerDesignStampCardScreen(
-        stampCard: stampCard,
-        blueprintProvider: widget.blueprintProvider,
+        card: card,
       ),
     ));
   }
 
-  Future<void> _deleteCard() async {
-    if (mounted) {
-      Navigator.of(context).pop();
+  /// Notifies <code>customerDesignCardScreenBlueprintProvider</code>.
+  Future<void> _notifyCustomerDesignStampCardScreen() async {
+    final blueprintNotifier =
+        ref.read(customerDesignCardScreenBlueprintProvider.notifier);
+    blueprintNotifier.set(null);
+
+    final card = ref.read(customerCardScreenCardProvider);
+    if (card == null) {
+      return;
     }
+
+    if (card.blueprint == null) {
+      // Ignore blueprint == null scenario: many-to-one
+      Carol.showTextSnackBar(
+        text: 'Lost data... Refresh and try again.',
+        level: SnackBarLevel.warn,
+      );
+      return;
+    }
+
+    blueprintNotifier.set(card.blueprint);
+    return;
+  }
+
+  Future<void> _deleteCard() async {
+    final cardsNotifier = ref.read(customerCardsListCardsProvider.notifier);
+    final cardNotifier = ref.read(customerCardScreenCardProvider.notifier);
+
+    Navigator.of(context).pop();
+
     setState(() {
       _isDeleting = true;
     });
 
-    final stampCard = ref.read(widget.stampCardProvider);
-    final stampCardNotifier = ref.read(widget.stampCardProvider.notifier);
+    final card = ref.read(customerCardScreenCardProvider);
+    if (card == null) return;
 
     // Soft delete StampCard
-    // await DesignUtils.delaySeconds(2);
-    // stampCardNotifier.set(
-    //   entity: stampCard.copyWith(
-    //     wasDiscarded: true,
-    //     isInactive: true,
-    //   ),
-    // );
     try {
-      await customer_apis.softDeleteStampCard(id: stampCard.id);
+      await customer_apis.softDeleteStampCard(id: card.id);
     } on Exception catch (e) {
       Carol.showExceptionSnackBar(
         e,
         contextMessage: 'Failed to delete card.',
       );
+      return;
     }
 
-    stampCardNotifier.dispose();
+    final deletedCard = card.copyWith(
+      isDiscarded: true,
+      isInactive: true,
+    );
+
+    // Propagate
+    // customerCardsListCardsProvider
+    cardsNotifier.replaceIfIdMatch(deletedCard);
+    // customerStoresListStoresProvider: Not relavent
+    // customerCardScreenCardProvider
+    cardNotifier.set(deletedCard);
 
     Carol.showTextSnackBar(
       text: 'Deleted card!',

@@ -1,24 +1,24 @@
+import 'package:carol/apis/customer_apis.dart' as customer_apis;
+import 'package:carol/apis/owner_apis.dart' as owner_apis;
 import 'package:carol/models/base_model.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
-import 'package:flutter/material.dart';
+import 'package:carol/widgets/main_drawer.dart';
 
 class StampCard extends BaseModel {
   final String displayName;
   final int numCollectedStamps;
   final int numGoalStamps;
-  // final int numMaxStamps;
   final DateTime lastModifiedDate;
   final DateTime expirationDate;
   final bool isFavorite;
-  // final int numMaxRedeems; // Blueprint can be modified
   final int numRedeemed;
   final String customerId;
-  final int storeId;
-  final int blueprintId;
   final String? bgImageId;
   final bool isDiscarded;
   final bool isUsedOut;
   final bool isInactive;
+  final Blueprint? blueprint;
+  final int blueprintId;
 
   StampCard({
     required super.id,
@@ -26,40 +26,38 @@ class StampCard extends BaseModel {
     required this.displayName,
     required this.numCollectedStamps,
     required this.numGoalStamps,
-    // required this.numMaxStamps,
     required this.lastModifiedDate,
     required this.expirationDate,
     required this.isFavorite,
-    // required this.numMaxRedeems,
     required this.numRedeemed,
     this.bgImageId,
     required this.isDiscarded,
     required this.isUsedOut,
     required this.isInactive,
     required this.customerId,
-    required this.storeId,
     required this.blueprintId,
+    required this.blueprint,
   });
 
   StampCard.fromJson(Map<String, dynamic> json)
       : displayName = json['displayName'] as String,
         numCollectedStamps = json['numCollectedStamps'] as int,
         numGoalStamps = json['numGoalStamps'] as int,
-        // numMaxStamps = json['numMaxStamps'] as int,
         lastModifiedDate =
             DateTime.fromMillisecondsSinceEpoch(json['lastModifiedDate']),
         expirationDate =
             DateTime.fromMillisecondsSinceEpoch(json['expirationDate']),
         isFavorite = json['isFavorite'] as bool,
-        // numMaxRedeems = json['numMaxRedeems'] as int,
         numRedeemed = json['numRedeemed'] as int,
         customerId = json['customerId'] as String,
-        storeId = json['storeId'] as int,
-        blueprintId = json['blueprintId'] as int,
         bgImageId = json['bgImageId'] as String?,
         isDiscarded = json['isDiscarded'] as bool,
         isUsedOut = json['isUsedOut'] as bool,
         isInactive = json['isInactive'] as bool,
+        blueprint = json['blueprint'] == null
+            ? null
+            : Blueprint.fromJson(json['blueprint']),
+        blueprintId = json['blueprintId'] as int,
         super(
           id: json['id'] as int,
           isDeleted: json['isDeleted'] as bool,
@@ -71,40 +69,35 @@ class StampCard extends BaseModel {
         'displayName': displayName,
         'numCollectedStamps': numCollectedStamps,
         'numGoalStamps': numGoalStamps,
-        // 'numMaxStamps': numMaxStamps,
         'lastModifiedDate': lastModifiedDate,
         'expirationDate': expirationDate,
         'isFavorite': isFavorite,
-        // 'numMaxRedeems': numMaxRedeems,
         'numRedeemed': numRedeemed,
         'customerId': customerId,
-        'storeId': storeId,
-        'blueprintId': blueprintId,
         'bgImageId': bgImageId,
         'isDiscarded': isDiscarded,
         'isUsedOut': isUsedOut,
         'isInactive': isInactive,
+        'blueprint': blueprint?.toJson(),
+        'blueprintId': blueprintId,
       };
 
   StampCard.fromBlueprint({
     required int id,
     required this.customerId,
-    required StampCardBlueprint blueprint,
+    required Blueprint this.blueprint,
   })  : displayName = blueprint.displayName,
         numCollectedStamps = 0,
         numGoalStamps = blueprint.numMaxStamps,
-        // numMaxStamps = blueprint.numMaxStamps,
         lastModifiedDate = DateTime.now(),
         expirationDate = blueprint.expirationDate,
         isFavorite = false,
-        // numMaxRedeems = blueprint.numMaxRedeems,
         numRedeemed = 0,
-        storeId = blueprint.storeId,
-        blueprintId = blueprint.id,
         bgImageId = blueprint.bgImageUrl,
         isDiscarded = false,
         isUsedOut = false,
         isInactive = false,
+        blueprintId = blueprint.id,
         super(
           id: id,
           isDeleted: false,
@@ -116,20 +109,17 @@ class StampCard extends BaseModel {
     String? displayName,
     int? numCollectedStamps,
     int? numGoalStamps,
-    // int? numMaxStamps,
     DateTime? lastModifiedDate,
     DateTime? expirationDate,
     bool? isFavorite,
-    // int? numMaxRedeems,
     int? numRedeemed,
     String? customerId,
-    int? storeId,
-    int? blueprintId,
-    IconData? icon,
     String? bgImageId,
     bool? isDiscarded,
     bool? isUsedOut,
     bool? isInactive,
+    Blueprint? blueprint,
+    int? blueprintId,
   }) {
     return StampCard(
       id: id ?? this.id,
@@ -137,19 +127,17 @@ class StampCard extends BaseModel {
       displayName: displayName ?? this.displayName,
       numCollectedStamps: numCollectedStamps ?? this.numCollectedStamps,
       numGoalStamps: numGoalStamps ?? this.numGoalStamps,
-      // numMaxStamps: numMaxStamps ?? this.numMaxStamps,
       lastModifiedDate: lastModifiedDate ?? this.lastModifiedDate,
       expirationDate: expirationDate ?? this.expirationDate,
       isFavorite: isFavorite ?? this.isFavorite,
-      // numMaxRedeems: numMaxRedeems ?? this.numMaxRedeems,
       numRedeemed: numRedeemed ?? this.numRedeemed,
       customerId: customerId ?? this.customerId,
-      storeId: storeId ?? this.storeId,
-      blueprintId: blueprintId ?? this.blueprintId,
       bgImageId: bgImageId ?? this.bgImageId,
       isDiscarded: isDiscarded ?? this.isDiscarded,
       isUsedOut: isUsedOut ?? this.isUsedOut,
       isInactive: isInactive ?? this.isInactive,
+      blueprintId: blueprintId ?? this.blueprintId,
+      blueprint: blueprint ?? this.blueprint,
     );
   }
 
@@ -191,6 +179,24 @@ class StampCard extends BaseModel {
     //   imageStorageHost,
     //   '$imageStoragePath/$imageId'
     // ).toString();
+  }
+
+  Future<StampCard> fetchBlueprint(
+    DrawerItemEnum active, {
+    bool force = false,
+  }) async {
+    if (this.blueprint != null && !force) {
+      return this;
+    }
+
+    final Blueprint blueprint;
+    if (active == DrawerItemEnum.customer) {
+      blueprint = await customer_apis.getBlueprint(id: blueprintId);
+    } else {
+      blueprint = await owner_apis.getBlueprint(id: blueprintId);
+    }
+
+    return copyWith(blueprint: blueprint);
   }
 }
 

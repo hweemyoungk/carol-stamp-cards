@@ -8,7 +8,3 @@ class ActiveDrawerItemNotifier extends StateNotifier<DrawerItemEnum> {
     state = drawerItemEnum;
   }
 }
-
-final activeDrawerItemProvider =
-    StateNotifierProvider<ActiveDrawerItemNotifier, DrawerItemEnum>(
-        (ref) => ActiveDrawerItemNotifier());

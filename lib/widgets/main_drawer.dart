@@ -1,21 +1,20 @@
 import 'package:carol/apis/customer_apis.dart' as customer_apis;
-import 'package:carol/apis/owner_apis.dart';
+import 'package:carol/apis/owner_apis.dart' as owner_apis;
 import 'package:carol/apis/utils.dart';
 import 'package:carol/main.dart';
-import 'package:carol/models/store.dart';
 import 'package:carol/params/auth.dart';
-import 'package:carol/providers/active_drawer_item_provider.dart';
-import 'package:carol/providers/current_user_provider.dart';
-import 'package:carol/providers/stamp_card_blueprint_provider.dart';
-import 'package:carol/providers/stamp_cards_init_loaded_provider.dart';
-import 'package:carol/providers/stamp_cards_provider.dart';
-import 'package:carol/providers/store_provider.dart';
-import 'package:carol/providers/stores_init_loaded_provider.dart';
-import 'package:carol/providers/stores_provider.dart';
+import 'package:carol/providers/active_drawer_item_notifier.dart';
+import 'package:carol/screens/auth_screen.dart';
+import 'package:carol/screens/customer_screen.dart';
+import 'package:carol/screens/owner_screen.dart';
 import 'package:carol/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:transparent_image/transparent_image.dart';
+
+final activeDrawerItemProvider =
+    StateNotifierProvider<ActiveDrawerItemNotifier, DrawerItemEnum>(
+        (ref) => ActiveDrawerItemNotifier());
 
 class MainDrawer extends ConsumerWidget {
   const MainDrawer({
@@ -159,70 +158,34 @@ class _DrawerItemState extends ConsumerState<DrawerItem> {
   }
 
   void _initLoadEntities() {
-    if (widget.drawerItemEnum == DrawerItemEnum.customer &&
-        !(ref.read(stampCardsInitLoadedProvider) &&
-            ref.read(customerStoresInitLoadedProvider))) {
-      final currentUser = ref.read(currentUserProvider)!;
-      final stampCardsInitLoadedNotifier =
-          ref.read(stampCardsInitLoadedProvider.notifier);
-      final stampCardsNotifier = ref.read(stampCardsProvider.notifier);
-      final customerStoresInitLoadedNotifier =
-          ref.read(customerStoresInitLoadedProvider.notifier);
-      final customerStoresNotifier = ref.read(customerStoresProvider.notifier);
-      customer_apis
-          .reloadCustomerEntities(
-        currentUser: currentUser,
-        stampCardsInitLoadedNotifier: stampCardsInitLoadedNotifier,
-        stampCardsNotifier: stampCardsNotifier,
-        customerStoresInitLoadedNotifier: customerStoresInitLoadedNotifier,
-        customerStoresNotifier: customerStoresNotifier,
-      )
-          .onError(
+    if (widget.drawerItemEnum == DrawerItemEnum.customer) {
+      if (isCustomerModelsInitLoaded(ref)) return;
+
+      customer_apis.reloadCustomerModels(ref).onError(
         (error, stackTrace) {
           if (error is Exception) {
             Carol.showExceptionSnackBar(
               error,
-              contextMessage: 'Failed to load customer entities.',
+              contextMessage: 'Failed to load customer models.',
             );
           }
         },
       );
-    } else if (widget.drawerItemEnum == DrawerItemEnum.owner &&
-        ref.read(ownerStoresInitLoadedProvider) == false) {
-      _loadOwnerEntities();
+    } else if (widget.drawerItemEnum == DrawerItemEnum.owner) {
+      if (isOwnerModelsInitLoaded(ref)) return;
+
+      owner_apis.reloadOwnerModels(ref).onError(
+        (error, stackTrace) {
+          if (error is Exception) {
+            Carol.showExceptionSnackBar(
+              error,
+              contextMessage: 'Failed to load owner models.',
+            );
+          }
+        },
+      );
     } else if (widget.drawerItemEnum == DrawerItemEnum.membership) {
       // NOOP: contents are loaded from access token
-    }
-  }
-
-  Future<void> _loadOwnerEntities() async {
-    final currentUser = ref.read(currentUserProvider)!;
-    final storesInitLoadedNotifier =
-        ref.read(ownerStoresInitLoadedProvider.notifier);
-    final storesNotifier = ref.read(ownerStoresProvider.notifier);
-    // Initial load
-    if (ownerStoreProviders.providers.isNotEmpty) {
-      final loadedStores =
-          ownerStoreProviders.providers.entries.map((e) => ref.read(e.value));
-      storesNotifier.appendAll(loadedStores);
-      storesInitLoadedNotifier.set(true);
-    } else {
-      final Set<Store> stores;
-      try {
-        stores = await listStores(ownerId: currentUser.id);
-      } on Exception catch (e) {
-        Carol.showExceptionSnackBar(
-          e,
-          contextMessage: 'Failed to get stores information.',
-        );
-        return;
-      }
-      ownerStoreProviders.tryAddProviders(entities: stores);
-      for (final store in stores) {
-        blueprintProviders.tryAddProviders(entities: store.blueprints ?? []);
-      }
-      storesNotifier.appendAll(stores);
-      storesInitLoadedNotifier.set(true);
     }
   }
 }

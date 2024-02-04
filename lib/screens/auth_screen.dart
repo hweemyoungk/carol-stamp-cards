@@ -11,18 +11,19 @@ import 'package:carol/models/user.dart';
 import 'package:carol/params/auth.dart' as auth_params;
 import 'package:carol/params/shared_preferences.dart'
     as shared_preferences_params;
-import 'package:carol/providers/auth_status_provider.dart';
-import 'package:carol/providers/auto_sign_in_enabled_provider.dart';
-import 'package:carol/providers/current_user_provider.dart';
-import 'package:carol/providers/stamp_cards_init_loaded_provider.dart';
-import 'package:carol/providers/stamp_cards_provider.dart';
-import 'package:carol/providers/stores_init_loaded_provider.dart';
-import 'package:carol/providers/stores_provider.dart';
+import 'package:carol/providers/auth_status_notifier.dart';
+import 'package:carol/providers/current_user_notifier.dart';
 import 'package:carol/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pkce/pkce.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+final currentUserProvider = StateNotifierProvider<CurrentUserNotifier, User?>(
+    (ref) => CurrentUserNotifier());
+final authStatusProvider =
+    StateNotifierProvider<AuthStatusNotifier, AuthStatus>(
+        (ref) => AuthStatusNotifier());
 
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
@@ -32,8 +33,9 @@ class AuthScreen extends ConsumerStatefulWidget {
 }
 
 class _AuthScreenState extends ConsumerState<AuthScreen> {
-  late AppLinks _appLinks;
   bool _isAutoSigningIn = true;
+  bool _isAutoSignInEnabled = false;
+  late AppLinks _appLinks;
   String? _stateToken;
   PkcePair? _pkcePair;
 
@@ -41,7 +43,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   void initState() {
     super.initState();
     _bindAuthCallback();
-    _tryAutoSignIn(ignore: true);
+    _tryAutoSignIn(ignore: false);
   }
 
   Future<void> _tryAutoSignIn({bool ignore = false}) async {
@@ -54,12 +56,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       return;
     }
     final authStatusNotifier = ref.read(authStatusProvider.notifier);
-    final stampCardsInitLoadedNotifier =
-        ref.read(stampCardsInitLoadedProvider.notifier);
-    final stampCardsNotifier = ref.read(stampCardsProvider.notifier);
-    final customerStoresInitLoadedNotifier =
-        ref.read(customerStoresInitLoadedProvider.notifier);
-    final customerStoresNotifier = ref.read(customerStoresProvider.notifier);
     final currentUserNotifier = ref.read(currentUserProvider.notifier);
 
     // 1. Get stored credential
@@ -146,43 +142,28 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     });
 
     // Set User
-    developer.log('[+]access token: ${newOidc['access_token']}');
-
     final currentUser = User(
       oidc: newOidc,
       profileImageUrl: 'assets/images/schnitzel-3279045_1280.jpg',
     );
     currentUserNotifier.set(currentUser);
+    developer.log('[+]access token: ${newOidc['access_token']}');
 
     // Load Init Entities: Landing page is CustomerScreen, so load Customer Cards and Stores
-    try {
-      await customer_apis.reloadCustomerEntities(
-        currentUser: currentUser,
-        customerStoresInitLoadedNotifier: customerStoresInitLoadedNotifier,
-        customerStoresNotifier: customerStoresNotifier,
-        stampCardsInitLoadedNotifier: stampCardsInitLoadedNotifier,
-        stampCardsNotifier: stampCardsNotifier,
-      );
-    } on Exception catch (e) {
-      Carol.showExceptionSnackBar(
-        e,
-        contextMessage: 'Failed to load customer entities.',
-      );
-      // Proceed to next screen
-    }
+    if (!mounted) return;
+    _loadInitialModels();
 
     // Next Screen
-    if (mounted) {
-      Navigator.of(context).pushReplacementNamed(
-        '/dashboard',
-      );
-    }
+    if (!mounted) return;
+    Navigator.of(context).pushReplacementNamed(
+      '/dashboard',
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final authStatus = ref.watch(authStatusProvider);
-    final isAutoSignInEnabled = ref.watch(autoSignInEnabledProvider);
+    // final isAutoSignInEnabled = ref.watch(autoSignInEnabledProvider);
     final currentUser = ref.watch(currentUserProvider);
     final autoSignInSection = Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -198,12 +179,12 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         ),
         // const SizedBox(width: 10),
         Switch(
-          value: isAutoSignInEnabled,
+          value: _isAutoSignInEnabled,
           onChanged: _isAutoSigningIn || authStatus == AuthStatus.authenticating
               ? null
               : (value) {
                   setState(() {
-                    ref.read(autoSignInEnabledProvider.notifier).set(value);
+                    _isAutoSignInEnabled = value;
                   });
                 },
         ),
@@ -375,16 +356,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
   Future<void> _handleAuthCallback(Uri uri) async {
     final authStatusNotifier = ref.read(authStatusProvider.notifier);
-    final isAutoSignInEnabled = ref.read(autoSignInEnabledProvider);
+    // final isAutoSignInEnabled = ref.read(autoSignInEnabledProvider);
     final currentUserNotifier = ref.read(currentUserProvider.notifier);
-
-    // For customer_apis
-    final stampCardsInitLoadedNotifier =
-        ref.read(stampCardsInitLoadedProvider.notifier);
-    final stampCardsNotifier = ref.read(stampCardsProvider.notifier);
-    final customerStoresInitLoadedNotifier =
-        ref.read(customerStoresInitLoadedProvider.notifier);
-    final customerStoresNotifier = ref.read(customerStoresProvider.notifier);
 
     if (_pkcePair == null) {
       Carol.showTextSnackBar(
@@ -409,8 +382,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       Navigator.of(context).popUntil(ModalRoute.withName('/auth'));
       return;
     }
-
-    // final sessionState = uri.queryParameters['session_state'];
 
     // Exchange code
     final code = uri.queryParameters['code'];
@@ -449,7 +420,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
       // Store credential if auto sign in is enabled
       final prefs = await SharedPreferences.getInstance();
-      if (isAutoSignInEnabled) {
+      if (_isAutoSignInEnabled) {
         prefs.setString(shared_preferences_params.oidcKey, res.body);
       } else {
         // Try removing credential if auto sign in is disabled
@@ -478,31 +449,30 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     currentUserNotifier.set(currentUser);
 
     // Load Init Entities: Landing page is CustomerScreen, so load Customer Cards and Stores
+    if (!mounted) return;
+    _loadInitialModels();
+
+    // Next Screen
+    if (!mounted) return;
+    Navigator.of(context).pushReplacementNamed(
+      '/dashboard',
+    );
+  }
+
+  void _onPressCancelAuth() {
+    ref.read(authStatusProvider.notifier).set(AuthStatus.unauthenticated);
+    ref.read(currentUserProvider.notifier).set(null);
+  }
+
+  Future<void> _loadInitialModels() async {
+    // Load Init Entities: Landing page is CustomerScreen, so load Customer Cards and Stores
     try {
-      await customer_apis.reloadCustomerEntities(
-        currentUser: currentUser,
-        customerStoresInitLoadedNotifier: customerStoresInitLoadedNotifier,
-        customerStoresNotifier: customerStoresNotifier,
-        stampCardsInitLoadedNotifier: stampCardsInitLoadedNotifier,
-        stampCardsNotifier: stampCardsNotifier,
-      );
+      await customer_apis.reloadCustomerModels(ref);
     } on Exception catch (e) {
       Carol.showExceptionSnackBar(
         e,
         contextMessage: 'Failed to load customer entities.',
       );
     }
-
-    // Next Screen
-    if (mounted) {
-      Navigator.of(context).pushReplacementNamed(
-        '/dashboard',
-      );
-    }
-  }
-
-  void _onPressCancelAuth() {
-    ref.read(authStatusProvider.notifier).set(AuthStatus.unauthenticated);
-    ref.read(currentUserProvider.notifier).set(null);
   }
 }
