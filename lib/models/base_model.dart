@@ -11,7 +11,7 @@ abstract class BaseModel {
   bool operator ==(Object other) =>
       other is BaseModel &&
       other.runtimeType == runtimeType &&
-      1 < other.id && // Negative or zero is dummy id and should not be compared
+      0 < other.id && // Negative or zero is dummy id and should not be compared
       other.id == id;
 
   @override

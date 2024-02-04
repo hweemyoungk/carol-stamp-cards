@@ -50,6 +50,3 @@ class Redeem extends BaseModel {
         'cardId': cardId,
       };
 }
-
-final Map<int, Redeem> customerRedeemPool = {};
-final Map<int, Redeem> ownerRedeemPool = {};

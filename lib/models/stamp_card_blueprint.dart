@@ -1,3 +1,5 @@
+import 'package:carol/apis/customer_apis.dart' as customer_apis;
+import 'package:carol/apis/owner_apis.dart' as owner_apis;
 import 'package:carol/models/base_model.dart';
 import 'package:carol/models/redeem_rule.dart';
 import 'package:carol/models/store.dart';
@@ -130,5 +132,25 @@ class Blueprint extends BaseModel {
 
   bool get isExpired {
     return DateTime.now().isAfter(expirationDate);
+  }
+
+  Future<Blueprint> fetchCustomerRedeemRules({bool force = false}) async {
+    if (this.redeemRules != null && !force) {
+      return this;
+    }
+
+    final Set<RedeemRule> redeemRules;
+    redeemRules = await customer_apis.listRedeemRules(blueprintId: id);
+    return copyWith(redeemRules: redeemRules);
+  }
+
+  Future<Blueprint> fetchOwnerRedeemRules({bool force = false}) async {
+    if (this.redeemRules != null && !force) {
+      return this;
+    }
+
+    final Set<RedeemRule> redeemRules;
+    redeemRules = await owner_apis.listRedeemRules(blueprintId: id);
+    return copyWith(redeemRules: redeemRules);
   }
 }

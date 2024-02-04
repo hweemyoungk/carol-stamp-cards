@@ -1,13 +1,13 @@
 import 'package:carol/apis/owner_apis.dart';
 import 'package:carol/main.dart';
-import 'package:carol/models/stamp_card.dart';
-import 'package:carol/providers/boolean_notifier.dart';
-import 'package:carol/providers/current_user_notifier.dart';
-import 'package:carol/providers/redeem_requests_provider.dart';
+import 'package:carol/models/redeem_request.dart';
+import 'package:carol/screens/auth_screen.dart';
 import 'package:carol/screens/owner_design_store_screen.dart';
 import 'package:carol/screens/owner_scan_qr_screen.dart';
+import 'package:carol/widgets/common/icon_button_in_progress.dart';
 import 'package:carol/widgets/main_drawer.dart';
 import 'package:carol/widgets/redeem_requests_explorer/redeem_requests_explorer.dart';
+import 'package:carol/widgets/redeem_requests_explorer/redeem_requests_list.dart';
 import 'package:carol/widgets/stores_explorer/stores_explorer.dart';
 import 'package:carol/widgets/stores_explorer/stores_list.dart';
 import 'package:flutter/material.dart';
@@ -31,6 +31,7 @@ class OwnerScreen extends ConsumerStatefulWidget {
 
 class _OwnerScreenState extends ConsumerState<OwnerScreen> {
   int _activeBottomItemIndex = 0;
+  // bool _isReloadingStores = false;
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +83,7 @@ class _OwnerScreenState extends ConsumerState<OwnerScreen> {
   }
 
   void _onPressScanQr() {
-    Navigator.of(context).push<SimpleStampCardQr>(MaterialPageRoute(
+    Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => const OwnerScanQrScreen(),
     ));
     // final qr =
@@ -96,70 +97,71 @@ class _OwnerScreenState extends ConsumerState<OwnerScreen> {
   }
 
   void _onTapBottomItem(int value) {
+    setState(() {
+      _activeBottomItemIndex = value;
+    });
+
     if (value == 1) {
       // RedeemRequestExplorer
       final ownerRedeemRequestsInitLoaded =
-          ref.read(ownerRedeemRequestsInitLoadedProvider);
-      final ownerRedeemRequestsInitLoadedNotifier =
-          ref.read(ownerRedeemRequestsInitLoadedProvider.notifier);
-      final ownerRedeemRequestsNotifier =
-          ref.read(ownerRedeemRequestsProvider.notifier);
-      final currentUser = ref.read(currentUserProvider)!;
-
+          ref.read(ownerRedeemRequestsListRedeemRequestsProvider) != null;
       if (!ownerRedeemRequestsInitLoaded) {
-        reloadOwnerRedeemRequests(
-          ownerRedeemRequestsInitLoadedNotifier:
-              ownerRedeemRequestsInitLoadedNotifier,
-          ownerRedeemRequestsNotifier: ownerRedeemRequestsNotifier,
-          ownerId: currentUser.id,
-        ).onError<Exception>((error, stackTrace) {
-          Carol.showExceptionSnackBar(
-            error,
-            contextMessage: 'Failed to load redeem requests.',
-          );
-        });
+        _reloadOwnerRedeemRequests();
       }
-    }
-
-    if (mounted) {
-      setState(() {
-        _activeBottomItemIndex = value;
-      });
     }
   }
 
   List<Widget>? _getAppBarActions() {
     if (_activeBottomItemIndex == 0) {
+      final stores = ref.watch(ownerStoresListStoresProvider);
+      final isLoadingStores = stores == null;
       return [
         IconButton(
           onPressed: _onPressNewStore,
           icon: const Icon(Icons.add),
         ),
+        isLoadingStores
+            ? const IconButtonInProgress()
+            : IconButton(
+                onPressed: _onPressRefreshStores,
+                icon: const Icon(Icons.refresh),
+              ),
       ];
     } else {
-      final ownerRedeemRequestsInitLoadedNotifier =
-          ref.read(ownerRedeemRequestsInitLoadedProvider.notifier);
-      final ownerRedeemRequestsNotifier =
-          ref.read(ownerRedeemRequestsProvider.notifier);
-      final ownerId = ref.read(currentUserProvider)!.id;
       return [
         IconButton(
           onPressed: () {
-            reloadOwnerRedeemRequests(
-              ownerRedeemRequestsInitLoadedNotifier:
-                  ownerRedeemRequestsInitLoadedNotifier,
-              ownerRedeemRequestsNotifier: ownerRedeemRequestsNotifier,
-              ownerId: ownerId,
-            ).onError<Exception>((error, stackTrace) {
-              Carol.showExceptionSnackBar(
-                error,
-                contextMessage: 'Failed to load redeem requests.',
-              );
-            });
+            _reloadOwnerRedeemRequests()
+                .onError<Exception>((error, stackTrace) {});
           },
           icon: const Icon(Icons.refresh),
         ),
       ];
     }
+  }
+
+  Future<void> _reloadOwnerRedeemRequests() async {
+    final currentUser = ref.read(currentUserProvider)!;
+    final redeemRequestsNotifier =
+        ref.read(ownerRedeemRequestsListRedeemRequestsProvider.notifier);
+    redeemRequestsNotifier.set(null);
+
+    final Set<RedeemRequest> redeemRequests;
+    try {
+      redeemRequests = await listRedeemRequests(ownerId: currentUser.id);
+    } on Exception catch (e) {
+      Carol.showExceptionSnackBar(
+        e,
+        contextMessage: 'Failed to reload redeem requests.',
+      );
+      return;
+    }
+    // Propagate
+    // ownerRedeemRequestsListRedeemRequestsProvider
+    redeemRequestsNotifier.set(redeemRequests.toList());
+  }
+
+  void _onPressRefreshStores() {
+    reloadOwnerModels(ref);
   }
 }

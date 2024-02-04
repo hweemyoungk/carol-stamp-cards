@@ -9,10 +9,10 @@ const locationHostname = 'http://localhost:8080';
 // Customer service
 const customerStampCardPath = '/customer/api/v1/card';
 const customerStampCardListPath = '/customer/api/v1/card/list';
-const customerNumIssuedCardsPath = '/customer/api/v1/card/numIssues';
+const customerNumCustomerIssuedCardsPath = '/customer/api/v1/card/numIssues';
 const customerBlueprintPath = '/customer/api/v1/blueprint';
 const customerBlueprintListPath = '/customer/api/v1/blueprint/list';
-// TODO: Implement backend
+const customerNumTotalIssuedCardsPath = '/customer/api/v1/blueprint/numIssues';
 const customerStorePath = '/customer/api/v1/store';
 const customerStoreListPath = '/customer/api/v1/store/list';
 const customerRedeemRequestPath = '/customer/api/v1/redeemRequest';
@@ -39,8 +39,11 @@ const ownerRedeemRuleListPath = '/owner/api/v1/redeemRule/list';
 const ownerRedeemRequestListPath = '/owner/api/v1/redeemRequest/list';
 const _ownerRedeemRequestApprovePath =
     '/owner/api/v1/redeemRequest/{id}/approve';
-String ownerRedeemRequestApprovePath(String redeemRequestId) {
-  return _ownerRedeemRequestApprovePath.replaceFirst('{id}', redeemRequestId);
+String ownerRedeemRequestApprovePath(int redeemRequestId) {
+  return _ownerRedeemRequestApprovePath.replaceFirst(
+    '{id}',
+    redeemRequestId.toString(),
+  );
 }
 
 final ownerBlueprintLocationPattern =

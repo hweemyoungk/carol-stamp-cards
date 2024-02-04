@@ -10,10 +10,15 @@ import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/models/store.dart';
 import 'package:carol/params/backend.dart' as backend_params;
 import 'package:carol/screens/auth_screen.dart';
+import 'package:carol/widgets/stores_explorer/stores_list.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 Future<void> reloadOwnerModels(WidgetRef ref) async {
   final currentUser = ref.read(currentUserProvider)!;
+  final storesNotifier = ref.read(ownerStoresListStoresProvider.notifier);
+
+  // Set loading
+  storesNotifier.set(null);
 
   final Set<Store> stores;
   try {
@@ -23,24 +28,12 @@ Future<void> reloadOwnerModels(WidgetRef ref) async {
       e,
       contextMessage: 'Failed to load owner models.',
     );
+    storesNotifier.set([]);
     return;
   }
-  // TODO: Clear old stores
-  // TODO: ownerPropagateStores(stores);
 
-  final blueprints = stores.fold(<Blueprint>{}, (set, store) {
-    set.addAll(store.blueprints!);
-    return set;
-  });
-  // TODO: Clear old blueprints
-  // TODO: ownerPropagateBlueprints(blueprints);
-
-  final redeemRules = blueprints.fold(<RedeemRule>{}, (set, blueprint) {
-    set.addAll(blueprint.redeemRules!);
-    return set;
-  });
-  // TODO: Clear old redeemRules
-  // TODO: ownerPropagateRedeemRules(redeemRules);
+  // Propagate: ownerStoresListStoresProvider
+  storesNotifier.set(stores.toList());
 }
 
 // Future<void> reloadOwnerRedeemRequests({
@@ -114,7 +107,7 @@ Future<Set<RedeemRule>> listRedeemRules({
   return redeemRules;
 }
 
-Future<List<RedeemRequest>> listRedeemRequests({
+Future<Set<RedeemRequest>> listRedeemRequests({
   required String ownerId,
 }) async {
   final url = Uri.http(
@@ -131,11 +124,11 @@ Future<List<RedeemRequest>> listRedeemRequests({
     final redeemRule = RedeemRequest.fromJson(map);
     redeemRequests.add(redeemRule);
   }
-  return redeemRequests.toList();
+  return redeemRequests;
 }
 
 Future<void> approveRedeemRequest({
-  required String redeemRequestId,
+  required int redeemRequestId,
 }) async {
   final url = Uri.http(
     backend_params.apigateway,
@@ -200,6 +193,7 @@ Future<int> postBlueprint({
   return int.parse(newId);
 }
 
+/// Blueprint has non-null redeemRules.</ol>
 Future<Blueprint> getBlueprint({
   required int id,
 }) async {

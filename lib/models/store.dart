@@ -124,6 +124,3 @@ class Store extends BaseModel {
     }
   }
 }
-
-final Map<int, Store> customerStorePool = {};
-final Map<int, Store> ownerStorePool = {};

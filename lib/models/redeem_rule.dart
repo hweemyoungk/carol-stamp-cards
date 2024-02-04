@@ -110,6 +110,3 @@ class RedeemRule extends BaseModel {
     // ).toString();
   }
 }
-
-final Map<int, RedeemRule> customerRedeemRulePool = {};
-final Map<int, RedeemRule> ownerRedeemRulePool = {};

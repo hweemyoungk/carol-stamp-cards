@@ -309,18 +309,9 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
       });
     }
 
-    // customerService.initRedeemRequest
-    // 1. Check card exists: card = resource.getCard(cardId)
-    // 2. Check redeemRule exists: redeemRule = resource.getRedeemRule(redeemRuleId)
-    // 3. Check same BP: card.getBP() == redeemRule.getBP()
-    // 3.5 Check BP has this redeemRule: redeemRule in resource.getCard(cardId).getBP().getRedeemRules()
-    // 4. Create new RedeemRequest: resource.postRedeemRequest()
-    // 5. return redeemRequestId
-    // 1~3.5 will be done in server-side.
-    // await Future.delayed(Duration(seconds: 1));
-    // return uuid.v4();
     final redeemRequest = RedeemRequest(
-      id: '',
+      id: -1,
+      isDeleted: false,
       customerId: currentUser.id,
       customerDisplayName: currentUser.displayName,
       blueprintDisplayName: '',

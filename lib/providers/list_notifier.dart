@@ -44,7 +44,7 @@ abstract class ListNotifier<T extends BaseModel>
   }
 
   void set(
-    List<T> models, {
+    List<T>? models, {
     bool sort = true,
   }) {
     state = models;

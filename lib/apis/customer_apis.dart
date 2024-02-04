@@ -9,10 +9,14 @@ import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/models/store.dart';
 import 'package:carol/params/backend.dart' as backend_params;
 import 'package:carol/screens/auth_screen.dart';
+import 'package:carol/widgets/cards_explorer/cards_list.dart';
+import 'package:carol/widgets/stores_explorer/stores_list.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 Future<void> reloadCustomerModels(WidgetRef ref) async {
   final currentUser = ref.read(currentUserProvider)!;
+  final cardsNotifier = ref.read(customerCardsListCardsProvider.notifier);
+  final storesNotifier = ref.read(customerStoresListStoresProvider.notifier);
 
   final Set<StampCard> cards;
   try {
@@ -24,16 +28,12 @@ Future<void> reloadCustomerModels(WidgetRef ref) async {
     );
     return;
   }
-  // TODO: Clear old cards
-  // TODO: customerPropagateCards(cards);
 
+  // Propagate: customerCardsListCardsProvider,customerStoresListStoresProvider
+  cardsNotifier.set(cards.toList());
   final blueprints = cards.map((stampCard) => stampCard.blueprint!).toSet();
-  // TODO: Clear old blueprints
-  // TODO: customerPropagateBlueprints(blueprints);
-
   final stores = blueprints.map((blueprint) => blueprint.store!).toSet();
-  // TODO: Clear old stores
-  // TODO: customerPropagateStores(stores);
+  storesNotifier.set(stores.toList());
 }
 
 /// Fetches cards for customer.<br>
@@ -99,7 +99,7 @@ Future<Set<Blueprint>> listBlueprints({
 }
 
 /// Fetches a blueprint for customer.<br>
-/// Blueprint has non-null redeemRules.</ol>
+/// Blueprint has non-null redeemRules.
 Future<Blueprint> getBlueprint({
   required int id,
 }) async {
@@ -150,7 +150,7 @@ Future<Store> getStore({
   return Store.fromJson(resBody);
 }
 
-Future<List<RedeemRule>> listRedeemRules({
+Future<Set<RedeemRule>> listRedeemRules({
   required int blueprintId,
 }) async {
   final url = Uri.http(
@@ -167,18 +167,32 @@ Future<List<RedeemRule>> listRedeemRules({
     final redeemRule = RedeemRule.fromJson(map);
     redeemRules.add(redeemRule);
   }
-  return redeemRules.toList();
+  return redeemRules;
 }
 
-Future<int> getNumIssuedCards({
+Future<int> getNumCustomerIssuedCards({
   required String customerId,
   required int blueprintId,
 }) async {
   final url = Uri.http(
     backend_params.apigateway,
-    backend_params.customerNumIssuedCardsPath,
+    backend_params.customerNumCustomerIssuedCardsPath,
     {
       'customerId': customerId,
+      'blueprintId': blueprintId.toString(),
+    },
+  );
+  final res = await httpGet(url);
+  return int.parse(res.body);
+}
+
+Future<int> getNumTotalIssuedCards({
+  required int blueprintId,
+}) async {
+  final url = Uri.http(
+    backend_params.apigateway,
+    backend_params.customerNumTotalIssuedCardsPath,
+    {
       'blueprintId': blueprintId.toString(),
     },
   );

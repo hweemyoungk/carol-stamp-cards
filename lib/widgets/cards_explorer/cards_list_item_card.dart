@@ -3,6 +3,7 @@ import 'package:carol/main.dart';
 import 'package:carol/models/stamp_card.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/screens/card_screen.dart';
+import 'package:carol/widgets/cards_explorer/cards_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:transparent_image/transparent_image.dart';
@@ -140,8 +141,7 @@ class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
   }
 
   void _onTapCardItem() {
-    _loadRedeemRules();
-
+    _notifyCardScreen();
     Navigator.of(context).push(MaterialPageRoute(
       builder: (ctx) {
         return const CardScreen();
@@ -149,28 +149,58 @@ class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
     ));
   }
 
-  Future<void> _loadRedeemRules() async {
-    final stampCard = widget.card;
-    final Blueprint blueprint;
-    if (stampCard.blueprint?.redeemRules == null) {
-      // Get Blueprint with non-null redeemRules
+  /// Notifies <code>customerCardScreenCardProvider</code>.
+  Future<void> _notifyCardScreen() async {
+    final cardNotifier = ref.read(customerCardScreenCardProvider.notifier);
+    final cardsNotifier = ref.read(customerCardsListCardsProvider.notifier);
+
+    cardNotifier.set(null);
+
+    final card = widget.card;
+
+    if (card.blueprint == null) {
+      // Ignore blueprint == null scenario: many-to-one
+      Carol.showTextSnackBar(
+        text: 'Lost data... Refresh and try again.',
+        level: SnackBarLevel.warn,
+      );
+      return;
+    }
+
+    if (card.blueprint!.redeemRules == null) {
+      final Blueprint blueprintWithRedeemRules;
       try {
-        blueprint = await customer_apis.getBlueprint(id: stampCard.blueprintId);
+        blueprintWithRedeemRules =
+            await card.blueprint!.fetchCustomerRedeemRules();
       } on Exception catch (e) {
         Carol.showExceptionSnackBar(
           e,
-          contextMessage: 'Failed to get blueprint information.',
+          contextMessage: 'Failed to get redeem rules information.',
         );
         return;
       }
-      // TODO: customer propagate Blueprint with non-null redeemRules
-    } else {
-      blueprint = stampCard.blueprint!;
+
+      final cardToRefresh = card.copyWith(blueprint: blueprintWithRedeemRules);
+
+      // customerCardsListCardsProvider
+      cardsNotifier.replaceIfIdMatch(cardToRefresh);
+      // customerStoresListStoresProvider: Not relevant
+
+      cardNotifier.set(cardToRefresh);
+      return;
     }
+
+    cardNotifier.set(card);
+    return;
   }
 
   Future<void> _onPressFavoriteIcon() async {
-    // TODO: React first
+    final originalCard = widget.card.copyWith();
+    final cardsNotifier = ref.read(customerCardsListCardsProvider.notifier);
+    // React first
+    cardsNotifier.replaceIfIdMatch(originalCard.copyWith(
+      isFavorite: !originalCard.isFavorite,
+    ));
 
     final bool updatedFavorite;
     try {
@@ -180,11 +210,15 @@ class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
         e,
         contextMessage: 'Failed to toggle favorite.',
       );
-      // TODO: Restore
-
+      // Restore
+      cardsNotifier.replaceIfIdMatch(originalCard);
       return;
     }
-    // TODO: Apply backend response
+
+    // Apply backend response
+    cardsNotifier.replaceIfIdMatch(originalCard.copyWith(
+      isFavorite: updatedFavorite,
+    ));
   }
 
   Future<bool> _toggleFavorite({

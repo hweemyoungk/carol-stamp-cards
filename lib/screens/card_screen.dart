@@ -3,14 +3,17 @@ import 'dart:convert';
 import 'package:carol/apis/customer_apis.dart' as customer_apis;
 import 'package:carol/main.dart';
 import 'package:carol/models/stamp_card.dart';
+import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/providers/card_notifier.dart';
 import 'package:carol/screens/customer_design_stamp_card_screen.dart';
 import 'package:carol/screens/store_screen.dart';
 import 'package:carol/utils.dart';
 import 'package:carol/widgets/card/card_info.dart';
 import 'package:carol/widgets/card/redeem_rules_list.dart';
+import 'package:carol/widgets/cards_explorer/cards_list.dart';
 import 'package:carol/widgets/common/circular_progress_indicator_in_button.dart';
 import 'package:carol/widgets/common/loading.dart';
+import 'package:carol/widgets/stores_explorer/stores_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -33,14 +36,13 @@ class _CardScreenState extends ConsumerState<CardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final card = ref.watch(customerCardScreenCardProvider);
-    if (card == null) {
+    final watchedCard = ref.watch(customerCardScreenCardProvider);
+    if (watchedCard?.blueprint?.redeemRules == null) {
       return const Loading(message: 'Loading Card...');
     }
-    final blueprint = card.blueprint;
-    if (blueprint == null) {
-      return const Loading(message: 'Loading Blueprint...');
-    }
+
+    final card = watchedCard!;
+    final blueprint = card.blueprint!;
 
     final hasNotices = card.isDiscarded || card.isUsedOut;
     final notices = Container(
@@ -84,7 +86,7 @@ class _CardScreenState extends ConsumerState<CardScreen> {
       ),
     );
     final storeInfoButton = ElevatedButton.icon(
-      onPressed: _onPressLoadStoreInfo,
+      onPressed: _onPressStoreInfo,
       icon: const Icon(Icons.store),
       label: const Text('Store Info'),
     );
@@ -195,10 +197,60 @@ class _CardScreenState extends ConsumerState<CardScreen> {
     );
   }
 
-  void _onPressLoadStoreInfo() async {
+  void _onPressStoreInfo() async {
+    _notifyStoreScreen();
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => const StoreScreen(),
     ));
+  }
+
+  /// Notifies <code>customerStoreScreenStoreProvider</code>.
+  Future<void> _notifyStoreScreen() async {
+    final storeNotifier = ref.read(customerStoreScreenStoreProvider.notifier);
+    final storesNotifier = ref.read(customerStoresListStoresProvider.notifier);
+    storeNotifier.set(null);
+
+    final card = ref.read(customerCardScreenCardProvider);
+    if (card == null) {
+      return;
+    }
+
+    if (card.blueprint?.store == null) {
+      // Ignore store == null scenario: many-to-one
+      // Ignore blueprint == null scenario: many-to-one
+      Carol.showTextSnackBar(
+        text: 'Lost data... Refresh and try again.',
+        level: SnackBarLevel.warn,
+      );
+      return;
+    }
+
+    // Store needs blueprints
+    final store = card.blueprint!.store!;
+    if (store.blueprints != null) {
+      storeNotifier.set(store);
+      return;
+    }
+
+    final Set<Blueprint> blueprints;
+    try {
+      blueprints = await customer_apis.listBlueprints(storeId: store.id);
+    } on Exception catch (e) {
+      Carol.showExceptionSnackBar(
+        e,
+        contextMessage: 'Failed to get blueprints information.',
+      );
+      return;
+    }
+    final newStore = store.copyWith(blueprints: blueprints);
+
+    // Propagate
+    // customerCardsListCardsProvider: Not relevant
+    // customerStoresListStoresProvider
+    storesNotifier.replaceOrPrepend(newStore);
+    // customerCardScreenCardProvider: Not relevant
+
+    storeNotifier.set(newStore);
   }
 
   void _onPressDeleteCard() {
@@ -266,15 +318,44 @@ class _CardScreenState extends ConsumerState<CardScreen> {
   }
 
   void _onPressModifyCard() {
-    final stampCard = ref.read(customerCardScreenCardProvider);
+    final card = ref.read(customerCardScreenCardProvider);
+
+    _notifyCustomerDesignStampCardScreen();
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => CustomerDesignStampCardScreen(
-        card: stampCard,
+        card: card,
       ),
     ));
   }
 
+  /// Notifies <code>customerDesignCardScreenBlueprintProvider</code>.
+  Future<void> _notifyCustomerDesignStampCardScreen() async {
+    final blueprintNotifier =
+        ref.read(customerDesignCardScreenBlueprintProvider.notifier);
+    blueprintNotifier.set(null);
+
+    final card = ref.read(customerCardScreenCardProvider);
+    if (card == null) {
+      return;
+    }
+
+    if (card.blueprint == null) {
+      // Ignore blueprint == null scenario: many-to-one
+      Carol.showTextSnackBar(
+        text: 'Lost data... Refresh and try again.',
+        level: SnackBarLevel.warn,
+      );
+      return;
+    }
+
+    blueprintNotifier.set(card.blueprint);
+    return;
+  }
+
   Future<void> _deleteCard() async {
+    final cardsNotifier = ref.read(customerCardsListCardsProvider.notifier);
+    final cardNotifier = ref.read(customerCardScreenCardProvider.notifier);
+
     Navigator.of(context).pop();
 
     setState(() {
@@ -295,11 +376,17 @@ class _CardScreenState extends ConsumerState<CardScreen> {
       return;
     }
 
-    final newCard = card.copyWith(
+    final deletedCard = card.copyWith(
       isDiscarded: true,
       isInactive: true,
     );
-    Carol.customerPropagateCard(newCard);
+
+    // Propagate
+    // customerCardsListCardsProvider
+    cardsNotifier.replaceIfIdMatch(deletedCard);
+    // customerStoresListStoresProvider: Not relavent
+    // customerCardScreenCardProvider
+    cardNotifier.set(deletedCard);
 
     Carol.showTextSnackBar(
       text: 'Deleted card!',

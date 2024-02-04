@@ -2,7 +2,9 @@ import 'package:carol/apis/owner_apis.dart' as owner_apis;
 import 'package:carol/main.dart';
 import 'package:carol/models/store.dart';
 import 'package:carol/screens/auth_screen.dart';
+import 'package:carol/screens/store_screen.dart';
 import 'package:carol/utils.dart';
+import 'package:carol/widgets/stores_explorer/stores_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -31,10 +33,6 @@ class _OwnerDesignStoreScreenState
   late String _phone;
   late double _lat;
   late double _lng;
-  // late IconData? _icon;
-  // late String? _bgImageUrl;
-  // late String? _profileImageUrl;
-  // late String _ownerId;
 
   @override
   Widget build(BuildContext context) {
@@ -271,11 +269,13 @@ class _OwnerDesignStoreScreenState
   }
 
   void _saveStore() async {
-    final currentUser = ref.read(currentUserProvider)!;
-
     if (!_formKey.currentState!.validate()) {
       return;
     }
+
+    final currentUser = ref.read(currentUserProvider)!;
+    final storesNotifier = ref.read(ownerStoresListStoresProvider.notifier);
+    final storeNotifier = ref.read(ownerStoreScreenStoreProvider.notifier);
 
     setState(() {
       _status = StoreDesignStatus.sending;
@@ -327,7 +327,10 @@ class _OwnerDesignStoreScreenState
         return;
       }
 
-      // TODO: ownerPropagateStore(newStore);
+      // Propagate
+      // ownerStoresListStoresProvider
+      storesNotifier.replaceOrPrepend(newStore);
+
       Carol.showTextSnackBar(
         text: 'New store created!',
         level: SnackBarLevel.success,
@@ -348,7 +351,9 @@ class _OwnerDesignStoreScreenState
       try {
         await owner_apis.putStore(
           id: storeToPut.id,
-          store: storeToPut,
+          store: storeToPut.copyWith(
+            blueprints: null, // Don't send blueprints
+          ),
         );
       } on Exception catch (e) {
         Carol.showExceptionSnackBar(
@@ -364,17 +369,23 @@ class _OwnerDesignStoreScreenState
       }
 
       // Get Store
-      final Store modifiedStore;
-      try {
-        modifiedStore = await owner_apis.getStore(id: storeToPut.id);
-      } on Exception catch (e) {
-        Carol.showExceptionSnackBar(
-          e,
-          contextMessage: 'Failed to get modified store information.',
-        );
-        return;
-      }
-      // TODO: ownerPropagateStore(modifiedStore);
+      // final Store modifiedStore;
+      // try {
+      //   modifiedStore = await owner_apis.getStore(id: storeToPut.id);
+      // } on Exception catch (e) {
+      //   Carol.showExceptionSnackBar(
+      //     e,
+      //     contextMessage: 'Failed to get modified store information.',
+      //   );
+      //   return;
+      // }
+      final modifiedStore = storeToPut;
+
+      // Propagate
+      // ownerStoresListStoresProvider
+      storesNotifier.replaceOrPrepend(modifiedStore);
+      // ownerStoreScreenStoreProvider
+      storeNotifier.set(modifiedStore);
 
       Carol.showTextSnackBar(
         text: 'Store modified!',
@@ -382,9 +393,8 @@ class _OwnerDesignStoreScreenState
       );
     }
 
-    if (mounted) {
-      Navigator.of(context).pop();
-    }
+    if (!mounted) return;
+    Navigator.of(context).pop();
   }
 }
 

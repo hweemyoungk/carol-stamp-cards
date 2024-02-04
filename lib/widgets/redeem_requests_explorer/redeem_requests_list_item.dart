@@ -1,25 +1,14 @@
 import 'package:carol/models/redeem_request.dart';
-import 'package:carol/models/redeem_rule.dart';
-import 'package:carol/models/stamp_card_blueprint.dart';
-import 'package:carol/models/store.dart';
-import 'package:carol/providers/entity_provider.dart';
 import 'package:carol/screens/redeem_request_dialog_screen.dart';
+import 'package:carol/widgets/common/loading.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class RedeemRequestsListItem extends ConsumerStatefulWidget {
   final RedeemRequest redeemRequest;
-  final StateNotifierProvider<EntityStateNotifier<Store>, Store> storeProvider;
-  final StateNotifierProvider<EntityStateNotifier<Blueprint>, Blueprint>
-      blueprintProvider;
-  final StateNotifierProvider<EntityStateNotifier<RedeemRule>, RedeemRule>
-      redeemRuleProvider;
   const RedeemRequestsListItem({
     super.key,
     required this.redeemRequest,
-    required this.storeProvider,
-    required this.blueprintProvider,
-    required this.redeemRuleProvider,
   });
 
   @override
@@ -31,24 +20,31 @@ class _RedeemRequestsListItemState
     extends ConsumerState<RedeemRequestsListItem> {
   @override
   Widget build(BuildContext context) {
-    final redeemRule = ref.watch(widget.redeemRuleProvider);
+    final redeemRequest = widget.redeemRequest;
+    if (redeemRequest.redeemRule?.blueprint?.store == null) {
+      return const Loading(message: 'Loading redeem request...');
+    }
     return ListTile(
       onTap: () {
         showDialog(
           context: context,
           builder: (ctx) {
-            return RedeemRequestDialogScreen(
-              redeemRequest: widget.redeemRequest,
-              storeProvider: widget.storeProvider,
-              blueprintProvider: widget.blueprintProvider,
-              redeemRuleProvider: widget.redeemRuleProvider,
-            );
+            _notifyRedeemRequestDialogScreen();
+            return const RedeemRequestDialogScreen();
           },
         );
       },
-      leading: Text(widget.redeemRequest.customerDisplayName),
-      title: Text(redeemRule.displayName),
-      trailing: widget.redeemRequest.remainingSecondsWidget,
+      leading: Text(redeemRequest.customerDisplayName),
+      title: Text(redeemRequest.redeemRule!.displayName),
+      trailing: redeemRequest.remainingSecondsWidget,
     );
+  }
+
+  /// Notifies <code>ownerRedeemRequestDialogRedeemRequestProvider</code>.
+  void _notifyRedeemRequestDialogScreen() {
+    final redeemRequestNotifier =
+        ref.read(ownerRedeemRequestDialogRedeemRequestProvider.notifier);
+    redeemRequestNotifier.set(null);
+    redeemRequestNotifier.set(widget.redeemRequest);
   }
 }

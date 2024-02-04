@@ -9,8 +9,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 bool isCustomerModelsInitLoaded(WidgetRef ref) {
-  final cardsLoaded = ref.read(customerCardsListCardsProvider) == null;
-  final storesLoaded = ref.read(customerStoresListStoresProvider) == null;
+  final cardsLoaded = ref.read(customerCardsListCardsProvider) != null;
+  final storesLoaded = ref.read(customerStoresListStoresProvider) != null;
+  return cardsLoaded && storesLoaded;
+}
+
+bool watchCustomerModelsInitLoaded(WidgetRef ref) {
+  final cardsLoaded = ref.watch(customerCardsListCardsProvider) != null;
+  final storesLoaded = ref.watch(customerStoresListStoresProvider) != null;
   return cardsLoaded && storesLoaded;
 }
 
@@ -31,9 +37,7 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final cardsLoaded = ref.watch(customerCardsListCardsProvider) == null;
-    final storesLoaded = ref.watch(customerStoresListStoresProvider) == null;
-    final isLoaded = cardsLoaded && storesLoaded;
+    final isLoaded = watchCustomerModelsInitLoaded(ref);
     return Scaffold(
       body: widget.customerScreenBodies[_activeBottomItemIndex],
       appBar: AppBar(

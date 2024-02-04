@@ -2,10 +2,12 @@ import 'package:carol/apis/owner_apis.dart' as owner_apis;
 import 'package:carol/main.dart';
 import 'package:carol/models/redeem_rule.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
+import 'package:carol/screens/blueprint_dialog_screen.dart';
 import 'package:carol/screens/owner_design_redeem_rule_screen.dart';
 import 'package:carol/screens/store_screen.dart';
 import 'package:carol/utils.dart';
 import 'package:carol/widgets/common/icon_button_in_progress.dart';
+import 'package:carol/widgets/stores_explorer/stores_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -570,16 +572,24 @@ class _OwnerDesignStoreScreenState
     if (!_validateInput()) {
       return;
     }
+
+    final storesNotifier = ref.read(ownerStoresListStoresProvider.notifier);
+    final storeNotifier = ref.read(ownerStoreScreenStoreProvider.notifier);
+    final blueprintNotifier =
+        ref.read(ownerBlueprintDialogScreenBlueprintProvider.notifier);
+
     _formKey.currentState!.save();
 
-    final store = ref.read(ownerStoreScreenStoreProvider);
-    if (store == null) {
+    final watchedStore = ref.read(ownerStoreScreenStoreProvider);
+    if (watchedStore?.blueprints == null) {
       Carol.showTextSnackBar(
-        text: 'Missing store data... Please start over.',
+        text: 'Missing store data... Please refresh and start over.',
         level: SnackBarLevel.error,
       );
       return;
     }
+
+    final store = watchedStore!;
 
     setState(() {
       _status = BlueprintDesignStatus.sending;
@@ -628,16 +638,16 @@ class _OwnerDesignStoreScreenState
         );
         return;
       }
-      // TODO: ownerPropagateBlueprint(newBlueprint);
 
-      if (store.blueprints == null) {
-        // Blueprints not fetched. Just create set and add new blueprint.
-        final newStore = store.copyWith(blueprints: {newBlueprint});
-        // TODO: ownerPropagateStore(newStore);
-      } else {
-        store.blueprints!.add(newBlueprint);
-        // TODO: ownerPropagateStore(store);
-      }
+      // Propagate
+      final storeToRefresh = store.copyWith(blueprints: <Blueprint>{
+        newBlueprint,
+        ...store.blueprints!,
+      });
+      // ownerStoresListStoresProvider
+      storesNotifier.replaceIfIdMatch(storeToRefresh);
+      // ownerStoreScreenStoreProvider
+      storeNotifier.set(storeToRefresh);
 
       Carol.showTextSnackBar(
         text: 'Blueprint created!',
@@ -689,18 +699,18 @@ class _OwnerDesignStoreScreenState
         );
         return;
       }
-      // TODO: ownerPropagateBlueprint(modifiedBlueprint);
 
-      if (store.blueprints == null) {
-        // Blueprints not fetched. Just create set and add new blueprint.
-        final newStore = store.copyWith(blueprints: {modifiedBlueprint});
-        // TODO: ownerPropagateStore(newStore);
-      } else {
-        final newStore = store.copyWith(
-          blueprints: <Blueprint>{modifiedBlueprint, ...store.blueprints!},
-        );
-        // TODO: ownerPropagateStore(newStore);
-      }
+      // Propagate
+      final storeToRefresh = store.copyWith(blueprints: <Blueprint>{
+        modifiedBlueprint,
+        ...store.blueprints!,
+      });
+      // ownerStoresListStoresProvider
+      storesNotifier.replaceIfIdMatch(storeToRefresh);
+      // ownerStoreScreenStoreProvider
+      storeNotifier.set(storeToRefresh);
+      // ownerBlueprintDialogScreenBlueprintProvider
+      blueprintNotifier.set(modifiedBlueprint);
 
       Carol.showTextSnackBar(
         text: 'Blueprint Modified!',

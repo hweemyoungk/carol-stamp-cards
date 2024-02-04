@@ -1,12 +1,14 @@
 import 'package:carol/apis/customer_apis.dart' as customer_apis;
 import 'package:carol/apis/owner_apis.dart' as owner_apis;
 import 'package:carol/main.dart';
+import 'package:carol/models/redeem_rule.dart';
 import 'package:carol/models/stamp_card.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/models/user.dart';
 import 'package:carol/providers/blueprint_notifier.dart';
 import 'package:carol/screens/auth_screen.dart';
 import 'package:carol/screens/owner_design_blueprint_screen.dart';
+import 'package:carol/screens/store_screen.dart';
 import 'package:carol/utils.dart';
 import 'package:carol/widgets/blueprint/blueprint_info.dart';
 import 'package:carol/widgets/cards_explorer/cards_list.dart';
@@ -244,11 +246,11 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
     }
 
     // Check max issues per customer
-    Future<bool> numMaxIssuesTask;
+    Future<bool> numMaxIssuesPerCustomerTask;
     if (blueprint.numMaxIssuesPerCustomer == 0) {
-      numMaxIssuesTask = Future.value(false);
+      numMaxIssuesPerCustomerTask = Future.value(false);
     } else {
-      numMaxIssuesTask = _violatedNumMaxIssues(
+      numMaxIssuesPerCustomerTask = _violatedNumMaxIssuesPerCustomer(
         user: user,
         blueprint: blueprint,
       ).then((violated) {
@@ -257,22 +259,27 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
             setState(() {
               _issueStatus = _IssueStatus.notIssuable;
               _alertRows.add(
-                const AlertRow(text: 'Exceeded max number of issues.'),
+                const AlertRow(
+                    text: 'Exceeded max number of issues per customer.'),
               );
             });
           }
         }
         return violated;
-      }).onError<Exception>((error, stackTrace) {
-        Carol.showExceptionSnackBar(
-          error,
-          contextMessage: 'Failed to get number of issued cards.',
-        );
+      }).onError((error, stackTrace) {
+        if (error is Exception) {
+          Carol.showExceptionSnackBar(
+            error,
+            contextMessage:
+                'Failed to get number of issued cards per customer.',
+          );
+        }
         if (mounted) {
           setState(() {
             _issueStatus = _IssueStatus.notIssuable;
             _alertRows.add(
-              const AlertRow(text: 'Failed to get number of issued cards.'),
+              const AlertRow(
+                  text: 'Failed to get number of issued cards per customer.'),
             );
           });
         }
@@ -280,8 +287,42 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
       });
     }
 
+    // Check max total issues
+    Future<bool> numMaxTotalIssuesTask = _violatedNumMaxTotalIssues(
+      blueprint: blueprint,
+    ).then((violated) {
+      if (violated) {
+        if (mounted) {
+          setState(() {
+            _issueStatus = _IssueStatus.notIssuable;
+            _alertRows.add(
+              const AlertRow(text: 'Exceeded max total number of issues.'),
+            );
+          });
+        }
+      }
+      return violated;
+    }).onError((error, stackTrace) {
+      if (error is Exception) {
+        Carol.showExceptionSnackBar(
+          error,
+          contextMessage: 'Failed to get total number of issued cards.',
+        );
+      }
+      if (mounted) {
+        setState(() {
+          _issueStatus = _IssueStatus.notIssuable;
+          _alertRows.add(
+            const AlertRow(text: 'Failed to get total number of issued cards.'),
+          );
+        });
+      }
+      return true;
+    });
+
     final tasks = [
-      numMaxIssuesTask,
+      numMaxIssuesPerCustomerTask,
+      numMaxTotalIssuesTask,
     ];
     final violations = await Future.wait(tasks);
     if (violations.every((violated) => !violated)) {
@@ -293,15 +334,27 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
     }
   }
 
-  Future<bool> _violatedNumMaxIssues({
+  Future<bool> _violatedNumMaxIssuesPerCustomer({
     required User user,
     required Blueprint blueprint,
   }) async {
-    final numIssuedCards = await customer_apis.getNumIssuedCards(
+    final numCustomerIssuedCards =
+        await customer_apis.getNumCustomerIssuedCards(
       customerId: user.id,
       blueprintId: blueprint.id,
     );
-    return blueprint.numMaxIssues <= numIssuedCards;
+    return blueprint.numMaxIssuesPerCustomer <= numCustomerIssuedCards;
+  }
+
+  Future<bool> _violatedNumMaxTotalIssues({
+    required Blueprint blueprint,
+  }) async {
+    final numTotalIssuedCards = await customer_apis.getNumTotalIssuedCards(
+      blueprintId: blueprint.id,
+    );
+    // 0: Infinite
+    return blueprint.numMaxIssues != 0 &&
+        blueprint.numMaxIssues <= numTotalIssuedCards;
   }
 
   void _onPressIssue() async {
@@ -387,36 +440,57 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
     }
   }
 
-  void _onPressModify() {
-    final ownerStoresNotifier =
-        ref.read(ownerStoresListStoresProvider.notifier);
-    final blueprint = ref.read(customerBlueprintDialogScreenBlueprintProvider);
+  Future<void> _onPressModify() async {
+    final storesNotifier = ref.read(ownerStoresListStoresProvider.notifier);
+    final storeNotifier = ref.read(ownerStoreScreenStoreProvider.notifier);
+    final blueprintNotifier =
+        ref.read(ownerBlueprintDialogScreenBlueprintProvider.notifier);
+    final blueprint = ref.read(ownerBlueprintDialogScreenBlueprintProvider);
     if (blueprint == null) return;
 
-    // Set _redeemRules
-    if (blueprint.redeemRules == null) {
-      owner_apis.listRedeemRules(blueprintId: blueprint.id).then((value) {
-        final refreshedBlueprint = blueprint.copyWith(redeemRules: value);
-        final oldStore = blueprint.store!;
-        final oldBlueprints = oldStore.blueprints!;
-        final newBlueprints = oldBlueprints.map((oldBlueprint) {
-          if (oldBlueprint.id == refreshedBlueprint.id) {
-            return refreshedBlueprint;
-          }
-          return oldBlueprint;
-        }).toSet();
-        final newStore = oldStore.copyWith(blueprints: newBlueprints);
-        ownerStoresNotifier.replaceOrPrepend(newStore);
-      }).onError(
-        (error, stackTrace) {
-          if (error is Exception) {
-            Carol.showExceptionSnackBar(
-              error,
-              contextMessage: 'Failed to get redeem rules information',
-            );
-          }
+    if (blueprint.redeemRules != null) {
+      Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) {
+          return OwnerDesignBlueprintScreen(
+            key: ValueKey(blueprint.id),
+            designMode: BlueprintDesignMode.modify,
+            blueprint: blueprint,
+          );
         },
+      ));
+      return;
+    }
+
+    // await fetch redeemRules
+    final Set<RedeemRule> redeemRules;
+    try {
+      redeemRules = await owner_apis.listRedeemRules(blueprintId: blueprint.id);
+    } on Exception catch (e) {
+      Carol.showExceptionSnackBar(
+        e,
+        contextMessage: 'Failed to get redeem rules information.',
       );
+      return;
+    }
+    final blueprintToRefresh = blueprint.copyWith(redeemRules: redeemRules);
+    // Propagate
+    // ownerBlueprintDialogScreenBlueprintProvider
+    blueprintNotifier.set(blueprintToRefresh);
+
+    // ownerStoreScreenStoreProvider
+    // ownerStoresListStoresProvider
+    if (blueprint.store?.blueprints != null) {
+      final oldStore = blueprint.store!;
+      final oldBlueprints = oldStore.blueprints!;
+      final newBlueprints = oldBlueprints.map((oldBlueprint) {
+        if (oldBlueprint.id == blueprintToRefresh.id) {
+          return blueprintToRefresh;
+        }
+        return oldBlueprint;
+      }).toSet();
+      final storeToRefresh = oldStore.copyWith(blueprints: newBlueprints);
+      storeNotifier.set(storeToRefresh);
+      storesNotifier.replaceOrPrepend(storeToRefresh);
     }
 
     if (!mounted) return;
@@ -425,7 +499,7 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
         return OwnerDesignBlueprintScreen(
           key: ValueKey(blueprint.id),
           designMode: BlueprintDesignMode.modify,
-          blueprint: blueprint,
+          blueprint: blueprintToRefresh,
         );
       },
     ));

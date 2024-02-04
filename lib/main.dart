@@ -5,7 +5,6 @@ import 'package:carol/apis/exceptions/bad_request.dart';
 import 'package:carol/apis/exceptions/server_error.dart';
 import 'package:carol/apis/exceptions/unauthenticated.dart';
 import 'package:carol/apis/exceptions/unauthorized.dart';
-import 'package:carol/models/stamp_card.dart';
 import 'package:carol/screens/auth_screen.dart';
 import 'package:carol/screens/blueprint_dialog_screen.dart';
 import 'package:carol/screens/card_screen.dart';
@@ -16,6 +15,7 @@ import 'package:carol/screens/owner_design_blueprint_screen.dart';
 import 'package:carol/screens/owner_design_store_screen.dart';
 import 'package:carol/screens/owner_scan_qr_screen.dart';
 import 'package:carol/screens/owner_screen.dart';
+import 'package:carol/screens/redeem_request_dialog_screen.dart';
 import 'package:carol/screens/store_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -67,46 +67,99 @@ class Carol extends StatelessWidget {
       navigatorKey: materialKey,
       initialRoute: '/auth',
       routes: {
-        '/auth': (context) => const AuthScreen(),
-        '/dashboard': (context) => const DashboardScreen(),
-        '/customer': (context) => CustomerScreen(),
-        '/customer#cards-explorer#cards-list#cards-list-item/card': (context) =>
-            const CardScreen(),
-        '/dashboard/customer/card/modify': (context) =>
-            const CustomerDesignStampCardScreen(),
-        '/customer/card/store': (context) => const StoreScreen(),
-        '/customer#stores-explorer#stores-list#stores-list-item/store':
-            (context) => const StoreScreen(),
-        '/customer/store/blueprint-dialog': (context) =>
+        // currentUserProvider
+        // authStatusProvider
+        '/auth': (context) => const AuthScreen(), // Done with default
+        // No providers
+        '/dashboard': (context) => const DashboardScreen(), // No notification
+        // customerCardsListCardsProvider
+        // customerStoresListStoresProvider
+        '/dashboard#customer': (context) =>
+            CustomerScreen(), // Done by AuthScreen._loadInitialModels()
+        // customerCardsListCardsProvider
+        // customerStoresListStoresProvider
+        // customerCardScreenCardProvider
+        '/dashboard#customer#cards-list/card': (context) =>
+            const CardScreen(), // Done by _notifyCardScreen()
+        // customerCardsListCardsProvider
+        // customerStoresListStoresProvider
+        // customerCardScreenCardProvider
+        // customerDesignCardScreenBlueprintProvider
+        '/dashboard#customer#cards-list/card/modify': (context) =>
+            const CustomerDesignStampCardScreen(), // Done by _notifyCustomerDesignStampCardScreen()
+        // customerCardsListCardsProvider
+        // customerStoresListStoresProvider
+        // customerCardScreenCardProvider
+        // customerStoreScreenStoreProvider
+        '/dashboard#customer#cards-list/card/store': (context) =>
+            const StoreScreen(), // Done by _notifyStoreScreen()
+        // customerCardsListCardsProvider
+        // customerStoresListStoresProvider
+        // customerStoreScreenStoreProvider
+        '/dashboard#customer#stores-list/store': (context) =>
+            const StoreScreen(), // Done by StoresListItem._notifyStoreScreen()
+        // customerCardsListCardsProvider
+        // customerStoresListStoresProvider
+        // customerStoreScreenStoreProvider
+        // customerBlueprintDialogScreenBlueprintProvider
+        '/dashboard#customer#stores-list/store/blueprint-dialog': (context) =>
             const BlueprintDialogScreen(
               blueprintDialogMode: BlueprintDialogMode.customer,
-            ),
-        '/owner': (context) => OwnerScreen(),
-        '/owner#stores-explorer#stores-list/new-store': (context) =>
+            ), // Done by StoreScreen._notifyBlueprintDialogScreen(Blueprint)
+        // ownerStoresListStoresProvider
+        // Ignore: ownerRedeemRequestsListRedeemRequestsProvider
+        '/dashboard/owner': (context) =>
+            OwnerScreen(), // Done by DrawerItem._initLoadEntities()
+        // ownerStoresListStoresProvider
+        // Ignore: ownerRedeemRequestsListRedeemRequestsProvider
+        '/dashboard/owner/scan-qr': (context) =>
+            const OwnerScanQrScreen(), // No notification
+        // ownerStoresListStoresProvider
+        // Ignore: ownerRedeemRequestsListRedeemRequestsProvider
+        // ownerRedeemRequestDialogRedeemRequestProvider
+        '/dashboard/owner#rr-list/redeem-request-dialog': (context) =>
+            const RedeemRequestDialogScreen(), // Done by RedeemRequestsListItem._notifyRedeemRequestDialogScreen()
+        // ownerStoresListStoresProvider
+        // Ignore: ownerRedeemRequestsListRedeemRequestsProvider
+        '/dashboard/owner#stores-list/new-store': (context) =>
             const OwnerDesignStoreScreen(
-              designMode: StoreDesignMode.create,
-            ),
-        '/owner/scan-qr': (context) => const OwnerScanQrScreen(),
-        // TODO
-        // '/owner#rr-explorer#rr-list#rr-list-item/redeem-request-dialog': (context) => const RedeemRequestDialogScreen(),
-        '/owner#stores-explorer#stores-list#stores-item/store': (context) =>
-            const StoreScreen(),
-        '/owner/store/modify': (context) => const OwnerDesignStoreScreen(
+                designMode: StoreDesignMode.create), // No notification
+        // ownerStoresListStoresProvider
+        // Ignore: ownerRedeemRequestsListRedeemRequestsProvider
+        // ownerStoreScreenStoreProvider
+        '/dashboard/owner#stores-list/store': (context) =>
+            const StoreScreen(), // Done by StoresListItem._notifyStoreScreen()
+        // ownerStoresListStoresProvider
+        // Ignore: ownerRedeemRequestsListRedeemRequestsProvider
+        // ownerStoreScreenStoreProvider
+        '/dashboard/owner#stores-list/store/modify': (context) =>
+            const OwnerDesignStoreScreen(
               designMode: StoreDesignMode.modify,
-            ),
-        '/owner/store/new-blueprint': (context) =>
+            ), // No notification
+        // ownerStoresListStoresProvider
+        // Ignore: ownerRedeemRequestsListRedeemRequestsProvider
+        // ownerStoreScreenStoreProvider
+        '/dashboard/owner#stores-list/store/new-blueprint': (context) =>
             const OwnerDesignBlueprintScreen(
               designMode: BlueprintDesignMode.create,
-            ),
-        '/owner/store/blueprint-dialog': (context) =>
+            ), // No notification
+        // ownerStoresListStoresProvider
+        // Ignore: ownerRedeemRequestsListRedeemRequestsProvider
+        // ownerStoreScreenStoreProvider
+        // ownerBlueprintDialogScreenBlueprintProvider
+        '/dashboard/owner#stores-list/store/blueprint-dialog': (context) =>
             const BlueprintDialogScreen(
               blueprintDialogMode: BlueprintDialogMode.owner,
-            ),
-        '/owner/store/blueprint-dialog/modify': (context) =>
-            const OwnerDesignBlueprintScreen(
-              designMode: BlueprintDesignMode.modify,
-              // originalBlueprint: blueprint,
-            ),
+            ), // Done by StoreScreen._notifyBlueprintDialogScreen(Blueprint)
+        // ownerStoresListStoresProvider
+        // Ignore: ownerRedeemRequestsListRedeemRequestsProvider
+        // ownerStoreScreenStoreProvider
+        // ownerBlueprintDialogScreenBlueprintProvider
+        '/dashboard/owner#stores-list/store/blueprint-dialog/modify':
+            (context) => const OwnerDesignBlueprintScreen(
+                  designMode: BlueprintDesignMode.modify,
+                  // originalBlueprint: blueprint,
+                ), // No notification
       },
     );
   }
@@ -187,10 +240,6 @@ class Carol extends StatelessWidget {
       level: SnackBarLevel.error,
       seconds: 10,
     );
-  }
-
-  static void customerPropagateCard(StampCard newCard) {
-    // TODO: Implement
   }
 }
 

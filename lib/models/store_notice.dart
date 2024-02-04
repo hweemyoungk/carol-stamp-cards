@@ -16,6 +16,3 @@ class StoreNotice extends BaseModel {
     required this.icon,
   });
 }
-
-final Map<int, StoreNotice> customerStoreNoticePool = {};
-final Map<int, StoreNotice> ownerStoreNoticePool = {};

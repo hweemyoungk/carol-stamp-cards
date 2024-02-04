@@ -3,7 +3,9 @@ import 'package:carol/main.dart';
 import 'package:carol/models/stamp_card.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/providers/blueprint_notifier.dart';
+import 'package:carol/screens/card_screen.dart';
 import 'package:carol/utils.dart';
+import 'package:carol/widgets/cards_explorer/cards_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -146,6 +148,10 @@ class _CustomerDesignStampCardScreenState
     if (!_formKey.currentState!.validate()) {
       return;
     }
+
+    final cardsNotifier = ref.read(customerCardsListCardsProvider.notifier);
+    final cardNotifier = ref.read(customerCardScreenCardProvider.notifier);
+
     _formKey.currentState!.save();
 
     setState(() {
@@ -162,14 +168,14 @@ class _CustomerDesignStampCardScreenState
       return;
     }
 
-    final stampCardToPut = card.copyWith(
+    final cardToPut = card.copyWith(
       displayName: _displayName,
       numGoalStamps: _numGoalStamps,
     );
     try {
       await customer_apis.putStampCard(
-        id: stampCardToPut.id,
-        stampCard: stampCardToPut,
+        id: cardToPut.id,
+        stampCard: cardToPut,
       );
     } on Exception catch (e) {
       Carol.showExceptionSnackBar(
@@ -180,18 +186,26 @@ class _CustomerDesignStampCardScreenState
     }
 
     // Get StampCard
-    final StampCard modifiedStampCard;
-    try {
-      modifiedStampCard =
-          await customer_apis.getStampCard(id: stampCardToPut.id);
-    } on Exception catch (e) {
-      Carol.showExceptionSnackBar(
-        e,
-        contextMessage: 'Failed to get modified card information.',
-      );
-      return;
-    }
-    // TODO: customerPropagateCard(modifiedStampCard);
+    // Do not getStampCard: cardNotifier needs card.blueprint.redeemRules
+    // final StampCard modifiedCard;
+    // try {
+    //   modifiedCard = await customer_apis.getStampCard(id: cardToPut.id);
+    // } on Exception catch (e) {
+    //   Carol.showExceptionSnackBar(
+    //     e,
+    //     contextMessage: 'Failed to get modified card information.',
+    //   );
+    //   return;
+    // }
+    final modifiedCard = cardToPut;
+
+    // Propagate
+    // customerCardsListCardsProvider
+    cardsNotifier.replaceOrPrepend(modifiedCard);
+    // customerStoresListStoresProvider: Not relavant
+    // customerCardScreenCardProvider
+    cardNotifier.set(modifiedCard);
+    // customerDesignCardScreenBlueprintProvider: Not relavent
 
     Carol.showTextSnackBar(
       text: 'Card modified!',

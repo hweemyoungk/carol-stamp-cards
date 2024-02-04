@@ -1,5 +1,8 @@
+import 'package:carol/apis/customer_apis.dart' as customer_apis;
+import 'package:carol/apis/owner_apis.dart' as owner_apis;
 import 'package:carol/models/base_model.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
+import 'package:carol/widgets/main_drawer.dart';
 
 class StampCard extends BaseModel {
   final String displayName;
@@ -177,6 +180,24 @@ class StampCard extends BaseModel {
     //   '$imageStoragePath/$imageId'
     // ).toString();
   }
+
+  Future<StampCard> fetchBlueprint(
+    DrawerItemEnum active, {
+    bool force = false,
+  }) async {
+    if (this.blueprint != null && !force) {
+      return this;
+    }
+
+    final Blueprint blueprint;
+    if (active == DrawerItemEnum.customer) {
+      blueprint = await customer_apis.getBlueprint(id: blueprintId);
+    } else {
+      blueprint = await owner_apis.getBlueprint(id: blueprintId);
+    }
+
+    return copyWith(blueprint: blueprint);
+  }
 }
 
 class SimpleStampCardQr {
@@ -222,6 +243,3 @@ class SimpleStampCardQr {
         'isInactive': isInactive,
       };
 }
-
-final Map<int, StampCard> customerStampCardPool = {};
-final Map<int, StampCard> ownerStampCardPool = {};

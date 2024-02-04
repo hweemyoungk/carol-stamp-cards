@@ -7,10 +7,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final ownerStoresListStoresProvider =
     StateNotifierProvider<StoresNotifier, List<Store>?>(
-        (ref) => StoresNotifier([]));
+        (ref) => StoresNotifier(null));
 final customerStoresListStoresProvider =
     StateNotifierProvider<StoresNotifier, List<Store>?>(
-        (ref) => StoresNotifier([]));
+        (ref) => StoresNotifier(null));
 
 class StoresList extends ConsumerStatefulWidget {
   const StoresList({super.key});

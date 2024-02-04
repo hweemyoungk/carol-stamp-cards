@@ -1,7 +1,9 @@
+import 'package:carol/main.dart';
+import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/models/store.dart';
+import 'package:carol/providers/blueprint_notifier.dart';
 import 'package:carol/providers/store_notifier.dart';
 import 'package:carol/screens/blueprint_dialog_screen.dart';
-import 'package:carol/screens/card_screen.dart';
 import 'package:carol/screens/owner_design_blueprint_screen.dart';
 import 'package:carol/screens/owner_design_store_screen.dart';
 import 'package:carol/utils.dart';
@@ -11,8 +13,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:transparent_image/transparent_image.dart';
 
-// Watch customerCardScreenCardProvider instead
-// final customerStoreScreenStoreProvider = StateNotifierProvider<StoreNotifier, Store?>((ref) => StoreNotifier(null));
+final customerStoreScreenStoreProvider =
+    StateNotifierProvider<StoreNotifier, Store?>((ref) => StoreNotifier(null));
 final ownerStoreScreenStoreProvider =
     StateNotifierProvider<StoreNotifier, Store?>((ref) => StoreNotifier(null));
 
@@ -27,6 +29,7 @@ class StoreScreen extends ConsumerStatefulWidget {
 
 class _StoreScreenState extends ConsumerState<StoreScreen> {
   late StoreScreenMode _mode;
+  late StateNotifierProvider<StoreNotifier, Store?> _storeProvider;
 
   @override
   void initState() {
@@ -34,25 +37,19 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     final activeDrawerItemEnum = ref.read(activeDrawerItemProvider);
     if (activeDrawerItemEnum == DrawerItemEnum.customer) {
       _mode = StoreScreenMode.customer;
+      _storeProvider = customerStoreScreenStoreProvider;
     } else if (activeDrawerItemEnum == DrawerItemEnum.owner) {
       _mode = StoreScreenMode.owner;
+      _storeProvider = ownerStoreScreenStoreProvider;
     } else {
       throw Exception(
           'StoreScreen can only be reached from customer or owner drawer item');
     }
   }
 
-  Store? _watchStore() {
-    if (_mode == StoreScreenMode.customer) {
-      final card = ref.watch(customerCardScreenCardProvider);
-      return card?.blueprint?.store;
-    }
-    return ref.watch(ownerStoreScreenStoreProvider);
-  }
-
   @override
   Widget build(BuildContext context) {
-    final store = _watchStore();
+    final store = ref.watch(_storeProvider);
     if (store == null) {
       return const Loading(message: 'Loading Store...');
     }
@@ -188,6 +185,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                             color: Theme.of(context).colorScheme.onSecondary,
                           ),
                     onTap: () async {
+                      _notifyBlueprintDialogScreen(blueprint);
                       await showDialog(
                         context: context,
                         builder: (ctx) {
@@ -321,6 +319,27 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         },
       ),
     );
+  }
+
+  /// Notifies either <code>customerBlueprintDialogScreenBlueprintProvider</code> or <code>ownerBlueprintDialogScreenBlueprintProvider</code>.
+  void _notifyBlueprintDialogScreen(Blueprint blueprint) {
+    final activeDrawerItem = ref.read(activeDrawerItemProvider);
+    final StateNotifierProvider<BlueprintNotifier, Blueprint?>
+        blueprintProvider;
+    if (activeDrawerItem == DrawerItemEnum.customer) {
+      blueprintProvider = customerBlueprintDialogScreenBlueprintProvider;
+    } else if (activeDrawerItem == DrawerItemEnum.owner) {
+      blueprintProvider = ownerBlueprintDialogScreenBlueprintProvider;
+    } else {
+      Carol.showTextSnackBar(
+        text: 'Can only be reached from customer or owner drawer item',
+        level: SnackBarLevel.error,
+      );
+      return;
+    }
+    final blueprintNotifier = ref.read(blueprintProvider.notifier);
+    blueprintNotifier.set(null);
+    blueprintNotifier.set(blueprint);
   }
 
   void _onPressModifyStore() {

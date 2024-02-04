@@ -12,7 +12,6 @@ import 'package:carol/params/auth.dart' as auth_params;
 import 'package:carol/params/shared_preferences.dart'
     as shared_preferences_params;
 import 'package:carol/providers/auth_status_notifier.dart';
-import 'package:carol/providers/boolean_notifier.dart';
 import 'package:carol/providers/current_user_notifier.dart';
 import 'package:carol/utils.dart';
 import 'package:flutter/material.dart';
@@ -25,8 +24,6 @@ final currentUserProvider = StateNotifierProvider<CurrentUserNotifier, User?>(
 final authStatusProvider =
     StateNotifierProvider<AuthStatusNotifier, AuthStatus>(
         (ref) => AuthStatusNotifier());
-final autoSignInEnabledProvider = StateNotifierProvider<BooleanNotifier, bool>(
-    (ref) => BooleanNotifier(false));
 
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
@@ -36,8 +33,9 @@ class AuthScreen extends ConsumerStatefulWidget {
 }
 
 class _AuthScreenState extends ConsumerState<AuthScreen> {
-  late AppLinks _appLinks;
   bool _isAutoSigningIn = true;
+  bool _isAutoSignInEnabled = false;
+  late AppLinks _appLinks;
   String? _stateToken;
   PkcePair? _pkcePair;
 
@@ -45,7 +43,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   void initState() {
     super.initState();
     _bindAuthCallback();
-    _tryAutoSignIn(ignore: true);
+    _tryAutoSignIn(ignore: false);
   }
 
   Future<void> _tryAutoSignIn({bool ignore = false}) async {
@@ -153,15 +151,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
     // Load Init Entities: Landing page is CustomerScreen, so load Customer Cards and Stores
     if (!mounted) return;
-    try {
-      await customer_apis.reloadCustomerModels(ref);
-    } on Exception catch (e) {
-      Carol.showExceptionSnackBar(
-        e,
-        contextMessage: 'Failed to load customer entities.',
-      );
-      // Proceed to next screen
-    }
+    _loadInitialModels();
 
     // Next Screen
     if (!mounted) return;
@@ -173,7 +163,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     final authStatus = ref.watch(authStatusProvider);
-    final isAutoSignInEnabled = ref.watch(autoSignInEnabledProvider);
+    // final isAutoSignInEnabled = ref.watch(autoSignInEnabledProvider);
     final currentUser = ref.watch(currentUserProvider);
     final autoSignInSection = Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -189,12 +179,12 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         ),
         // const SizedBox(width: 10),
         Switch(
-          value: isAutoSignInEnabled,
+          value: _isAutoSignInEnabled,
           onChanged: _isAutoSigningIn || authStatus == AuthStatus.authenticating
               ? null
               : (value) {
                   setState(() {
-                    ref.read(autoSignInEnabledProvider.notifier).set(value);
+                    _isAutoSignInEnabled = value;
                   });
                 },
         ),
@@ -366,7 +356,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
   Future<void> _handleAuthCallback(Uri uri) async {
     final authStatusNotifier = ref.read(authStatusProvider.notifier);
-    final isAutoSignInEnabled = ref.read(autoSignInEnabledProvider);
+    // final isAutoSignInEnabled = ref.read(autoSignInEnabledProvider);
     final currentUserNotifier = ref.read(currentUserProvider.notifier);
 
     if (_pkcePair == null) {
@@ -430,7 +420,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
       // Store credential if auto sign in is enabled
       final prefs = await SharedPreferences.getInstance();
-      if (isAutoSignInEnabled) {
+      if (_isAutoSignInEnabled) {
         prefs.setString(shared_preferences_params.oidcKey, res.body);
       } else {
         // Try removing credential if auto sign in is disabled
@@ -460,15 +450,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
     // Load Init Entities: Landing page is CustomerScreen, so load Customer Cards and Stores
     if (!mounted) return;
-    try {
-      await customer_apis.reloadCustomerModels(ref);
-    } on Exception catch (e) {
-      Carol.showExceptionSnackBar(
-        e,
-        contextMessage: 'Failed to load customer entities.',
-      );
-      // Proceed to next screen
-    }
+    _loadInitialModels();
 
     // Next Screen
     if (!mounted) return;
@@ -480,5 +462,17 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   void _onPressCancelAuth() {
     ref.read(authStatusProvider.notifier).set(AuthStatus.unauthenticated);
     ref.read(currentUserProvider.notifier).set(null);
+  }
+
+  Future<void> _loadInitialModels() async {
+    // Load Init Entities: Landing page is CustomerScreen, so load Customer Cards and Stores
+    try {
+      await customer_apis.reloadCustomerModels(ref);
+    } on Exception catch (e) {
+      Carol.showExceptionSnackBar(
+        e,
+        contextMessage: 'Failed to load customer entities.',
+      );
+    }
   }
 }
