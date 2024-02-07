@@ -61,7 +61,8 @@ String genAlphanumeric(int length) => String.fromCharCodes(Iterable.generate(
 
 String genState({int length = 30}) => genAlphanumeric(length);
 
-Uri getTokenEndpoint() => Uri.http(
+// Uri getTokenEndpoint() => Uri.http(
+Uri getTokenEndpoint() => Uri.https(
       auth_params.keycloakHostname,
       '/realms/${auth_params.realmName}/protocol/openid-connect/token',
     );
@@ -70,7 +71,8 @@ Uri getAuthEndpoint({
   required String state,
   required PkcePair pkcePair,
 }) =>
-    Uri.http(
+    // Uri.http(
+    Uri.https(
       auth_params.keycloakHostname,
       '/realms/${auth_params.realmName}/protocol/openid-connect/auth',
       {

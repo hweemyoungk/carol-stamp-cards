@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:carol/apis/dev_http_overrides.dart';
 import 'package:carol/apis/exceptions/bad_request.dart';
 import 'package:carol/apis/exceptions/server_error.dart';
 import 'package:carol/apis/exceptions/unauthenticated.dart';
@@ -46,6 +47,7 @@ final theme = ThemeData().copyWith(
 );
 
 void main() {
+  HttpOverrides.global = DevHttpOverrides();
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,

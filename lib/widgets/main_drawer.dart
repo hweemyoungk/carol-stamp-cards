@@ -118,7 +118,8 @@ class MainDrawer extends ConsumerWidget {
   }
 
   Future<void> _onPressAccount() async {
-    final url = Uri.http(keycloakHostname, accountPath);
+    // final url = Uri.http(keycloakHostname, accountPath);
+    final url = Uri.https(keycloakHostname, accountPath);
     await launchInBrowserView(url);
   }
 }
