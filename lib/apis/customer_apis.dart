@@ -267,6 +267,7 @@ Future<String> postRedeemRequest({
   );
   final redeemRequestJson = redeemRequest.toJson();
   redeemRequestJson['id'] = null;
+  redeemRequestJson['expMilliseconds'] = null;
   final res = await httpPost(
     url,
     body: json.encode(redeemRequestJson, toEncodable: customToEncodable),

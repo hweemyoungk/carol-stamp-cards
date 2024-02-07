@@ -1,7 +1,7 @@
-import 'package:carol/models/base_model.dart';
+import 'package:carol/models/int_model.dart';
 import 'package:flutter/material.dart';
 
-class StoreNotice extends BaseModel {
+class StoreNotice extends IntModel {
   final String displayName;
   final String description;
   final int storeId;

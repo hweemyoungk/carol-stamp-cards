@@ -1,11 +1,11 @@
 import 'package:carol/apis/customer_apis.dart' as customer_apis;
 import 'package:carol/apis/owner_apis.dart' as owner_apis;
-import 'package:carol/models/base_model.dart';
+import 'package:carol/models/int_model.dart';
 import 'package:carol/models/redeem_rule.dart';
 import 'package:carol/models/store.dart';
 import 'package:flutter/material.dart';
 
-class Blueprint extends BaseModel {
+class Blueprint extends IntModel {
   final String displayName;
   final String description;
   final String stampGrantCondDescription;

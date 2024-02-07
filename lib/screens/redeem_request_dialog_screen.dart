@@ -186,7 +186,8 @@ class _RedeemRequestDialogScreenState
         e,
         contextMessage: 'Failed to approve redeem request.',
       );
-      return;
+      if (!mounted) return;
+      Navigator.of(context).pop();
     }
 
     if (mounted) {

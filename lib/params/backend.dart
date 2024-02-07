@@ -39,7 +39,7 @@ const ownerRedeemRuleListPath = '/owner/api/v1/redeemRule/list';
 const ownerRedeemRequestListPath = '/owner/api/v1/redeemRequest/list';
 const _ownerRedeemRequestApprovePath =
     '/owner/api/v1/redeemRequest/{id}/approve';
-String ownerRedeemRequestApprovePath(int redeemRequestId) {
+String ownerRedeemRequestApprovePath(String redeemRequestId) {
   return _ownerRedeemRequestApprovePath.replaceFirst(
     '{id}',
     redeemRequestId.toString(),

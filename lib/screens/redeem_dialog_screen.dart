@@ -310,7 +310,7 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
     }
 
     final redeemRequest = RedeemRequest(
-      id: -1,
+      id: '',
       isDeleted: false,
       customerId: currentUser.id,
       customerDisplayName: currentUser.displayName,

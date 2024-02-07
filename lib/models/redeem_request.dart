@@ -1,9 +1,9 @@
 import 'package:carol/apis/utils.dart';
-import 'package:carol/models/base_model.dart';
 import 'package:carol/models/redeem_rule.dart';
+import 'package:carol/models/string_model.dart';
 import 'package:flutter/material.dart';
 
-class RedeemRequest extends BaseModel {
+class RedeemRequest extends StringModel {
   final String customerId;
   final String customerDisplayName;
   final String blueprintDisplayName;
@@ -38,7 +38,7 @@ class RedeemRequest extends BaseModel {
             : RedeemRule.fromJson(json['redeemRule']),
         redeemRuleId = json['redeemRuleId'] as int,
         super(
-          id: json['id'] as int,
+          id: json['id'] as String,
           isDeleted: json['isDeleted'] as bool,
         );
 

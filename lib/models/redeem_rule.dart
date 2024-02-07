@@ -1,9 +1,9 @@
-import 'package:carol/models/base_model.dart';
+import 'package:carol/models/int_model.dart';
 import 'package:carol/models/redeem.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:flutter/material.dart';
 
-class RedeemRule extends BaseModel {
+class RedeemRule extends IntModel {
   final String displayName;
   final String description;
   final int consumes;

@@ -1,10 +1,10 @@
-import 'package:carol/models/base_model.dart';
+import 'package:carol/models/int_model.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 
-class Store extends BaseModel {
+class Store extends IntModel {
   final String displayName;
   final String description;
   final String zipcode;

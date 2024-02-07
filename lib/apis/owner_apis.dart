@@ -128,7 +128,7 @@ Future<Set<RedeemRequest>> listRedeemRequests({
 }
 
 Future<void> approveRedeemRequest({
-  required int redeemRequestId,
+  required String redeemRequestId,
 }) async {
   final url = Uri.http(
     backend_params.apigateway,

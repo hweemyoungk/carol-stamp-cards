@@ -1,8 +1,8 @@
-import 'package:carol/models/base_model.dart';
+import 'package:carol/models/int_model.dart';
 import 'package:carol/models/redeem_rule.dart';
 import 'package:carol/models/stamp_card.dart';
 
-class Redeem extends BaseModel {
+class Redeem extends IntModel {
   final int numStampsBefore;
   final int numStampsAfter;
   final String token;
