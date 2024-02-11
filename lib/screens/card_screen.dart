@@ -123,7 +123,7 @@ class _CardScreenState extends ConsumerState<CardScreen> {
       backgroundColor: Theme.of(context).colorScheme.secondary,
       body: LayoutBuilder(
         builder: (ctx, constraints) {
-          final qr = SimpleStampCardQr.fromStampCard(card);
+          final qr = SimpleCardQr.fromStampCard(card);
           final qrImageView = QrImageView(
             data: json.encode(qr.toJson()),
             version: QrVersions.auto,
@@ -197,7 +197,7 @@ class _CardScreenState extends ConsumerState<CardScreen> {
     );
   }
 
-  void _onPressStoreInfo() async {
+  void _onPressStoreInfo() {
     _notifyStoreScreen();
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => const StoreScreen(),

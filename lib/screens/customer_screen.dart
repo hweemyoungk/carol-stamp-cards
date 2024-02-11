@@ -1,4 +1,5 @@
 import 'package:carol/apis/customer_apis.dart' as customer_apis;
+import 'package:carol/screens/scan_qr_screen.dart';
 import 'package:carol/widgets/cards_explorer/cards_explorer.dart';
 import 'package:carol/widgets/cards_explorer/cards_list.dart';
 import 'package:carol/widgets/common/icon_button_in_progress.dart';
@@ -43,6 +44,11 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
       appBar: AppBar(
         title: const Text('Customer\'s Screen'),
         actions: [
+          if (_activeBottomItemIndex == 1)
+            IconButton(
+              onPressed: _onPressScanQr,
+              icon: const Icon(Icons.qr_code_scanner),
+            ),
           !isLoaded
               ? const IconButtonInProgress()
               : IconButton(
@@ -79,5 +85,11 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
 
   void _reloadCardsAndStores() {
     customer_apis.reloadCustomerModels(ref);
+  }
+
+  void _onPressScanQr() {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) => const ScanQrScreen(),
+    ));
   }
 }

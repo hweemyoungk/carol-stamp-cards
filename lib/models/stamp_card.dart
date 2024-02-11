@@ -200,7 +200,7 @@ class StampCard extends IntModel {
   }
 }
 
-class SimpleStampCardQr {
+class SimpleCardQr {
   final String type = 'SimpleStampCardQr';
   final int stampCardId;
   final int blueprintId;
@@ -208,7 +208,7 @@ class SimpleStampCardQr {
   final bool isUsedOut;
   final bool isInactive;
 
-  SimpleStampCardQr({
+  SimpleCardQr({
     required this.stampCardId,
     required this.blueprintId,
     required this.isDiscarded,
@@ -216,7 +216,7 @@ class SimpleStampCardQr {
     required this.isInactive,
   });
 
-  SimpleStampCardQr.fromJson(Map<String, dynamic> json)
+  SimpleCardQr.fromJson(Map<String, dynamic> json)
       : stampCardId = json['cardId'] as int,
         blueprintId = json['blueprintId'] as int,
         isDiscarded = json['isDiscarded'] as bool,
@@ -227,7 +227,7 @@ class SimpleStampCardQr {
     }
   }
 
-  SimpleStampCardQr.fromStampCard(StampCard stampCard)
+  SimpleCardQr.fromStampCard(StampCard stampCard)
       : stampCardId = stampCard.id,
         blueprintId = stampCard.blueprintId,
         isDiscarded = stampCard.isDiscarded,

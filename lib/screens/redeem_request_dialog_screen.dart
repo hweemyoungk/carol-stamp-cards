@@ -7,7 +7,6 @@ import 'package:carol/utils.dart';
 import 'package:carol/widgets/common/loading.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:transparent_image/transparent_image.dart';
 
 final ownerRedeemRequestDialogRedeemRequestProvider =
     StateNotifierProvider<RedeemRequestNotifier, RedeemRequest?>(
@@ -67,11 +66,12 @@ class _RedeemRequestDialogScreenState
     final redeemRule = redeemRequest.redeemRule!;
     final blueprint = redeemRule.blueprint!;
     final store = blueprint.store!;
-    Widget image = redeemRule.imageUrl == null
-        ? Image.memory(
-            kTransparentImage,
-            fit: BoxFit.contain,
-          )
+    Widget? image = redeemRule.imageUrl == null
+        // ? Image.memory(
+        //     kTransparentImage,
+        //     fit: BoxFit.contain,
+        //   )
+        ? null
         : Image.asset(
             redeemRule.imageUrl!,
             fit: BoxFit.contain,
@@ -84,7 +84,7 @@ class _RedeemRequestDialogScreenState
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            image,
+            if (image != null) image,
             Padding(
               padding: DesignUtils.basicWidgetEdgeInsets(),
               child: Text('Consumes ${redeemRule.consumes} stamps by'),

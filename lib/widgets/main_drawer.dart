@@ -27,11 +27,26 @@ class MainDrawer extends ConsumerWidget {
     final avatar = ClipRRect(
       borderRadius: BorderRadius.circular(25.0),
       child: currentUser.profileImageUrl == null
-          ? Image.memory(
-              kTransparentImage,
-              height: 50,
-              width: 50,
-              fit: BoxFit.cover,
+          ? Stack(
+              children: [
+                Image.memory(
+                  kTransparentImage,
+                  height: 50,
+                  width: 50,
+                  fit: BoxFit.cover,
+                ),
+                const Positioned.fill(
+                  child: Align(
+                    alignment: Alignment.center,
+                    child: Text(
+                      'No Image',
+                      style: TextStyle(
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             )
           : Image.asset(
               currentUser.profileImageUrl!,

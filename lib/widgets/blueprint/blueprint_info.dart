@@ -1,7 +1,6 @@
 import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/utils.dart';
 import 'package:flutter/material.dart';
-import 'package:transparent_image/transparent_image.dart';
 
 class BlueprintInfo extends StatelessWidget {
   const BlueprintInfo({
@@ -15,11 +14,12 @@ class BlueprintInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget image = blueprint.bgImageUrl == null
-        ? Image.memory(
-            kTransparentImage,
-            fit: BoxFit.contain,
-          )
+    Widget? image = blueprint.bgImageUrl == null
+        // ? Image.memory(
+        //     kTransparentImage,
+        //     fit: BoxFit.contain,
+        //   )
+        ? null
         : Image.asset(
             blueprint.bgImageUrl!,
             fit: BoxFit.contain,
@@ -48,7 +48,7 @@ class BlueprintInfo extends StatelessWidget {
     );
     return Column(
       children: [
-        image,
+        if (image != null) image,
         blueprintDescText,
         stampGrantCondTitle,
         stampGrantCondDescText,
