@@ -45,7 +45,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   void initState() {
     super.initState();
     _bindAuthCallback();
-    _tryAutoSignIn(ignore: true);
+    _tryAutoSignIn(ignore: false);
   }
 
   Future<void> _tryAutoSignIn({bool ignore = false}) async {

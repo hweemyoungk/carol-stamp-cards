@@ -24,10 +24,18 @@ class _StoresListItemState extends ConsumerState<StoresListItem> {
   @override
   Widget build(BuildContext context) {
     final store = widget.store;
+    final inactiveColor =
+        Theme.of(context).colorScheme.onBackground.withOpacity(0.5);
     return ListTile(
       onTap: _onTapItem,
-      title: Text(store.displayName),
-      trailing: Text(store.getDistanceString(0.0, 0.0)),
+      title: Text(
+        store.displayName,
+        style: !store.isInactive ? null : TextStyle(color: inactiveColor),
+      ),
+      trailing: Text(
+        store.getDistanceString(0.0, 0.0),
+        style: !store.isInactive ? null : TextStyle(color: inactiveColor),
+      ),
     );
   }
 

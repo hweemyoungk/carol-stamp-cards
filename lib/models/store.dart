@@ -12,6 +12,8 @@ class Store extends IntModel {
   final String phone;
   final double lat;
   final double lng;
+  final bool isClosed;
+  final bool isInactive;
   final String? bgImageUrl;
   final String? profileImageUrl;
   final String ownerId;
@@ -27,6 +29,8 @@ class Store extends IntModel {
     required this.phone,
     required this.lat,
     required this.lng,
+    required this.isClosed,
+    required this.isInactive,
     required this.bgImageUrl,
     required this.profileImageUrl,
     required this.ownerId,
@@ -41,6 +45,8 @@ class Store extends IntModel {
         phone = json['phone'] as String,
         lat = json['lat'] as double,
         lng = json['lng'] as double,
+        isClosed = json['isClosed'] as bool,
+        isInactive = json['isInactive'] as bool,
         bgImageUrl = json['bgImageUrl'] as String?,
         profileImageUrl = json['profileImageUrl'] as String?,
         ownerId = json['ownerId'] as String,
@@ -64,6 +70,8 @@ class Store extends IntModel {
         'phone': phone,
         'lat': lat,
         'lng': lng,
+        'isClosed': isClosed,
+        'isInactive': isInactive,
         'bgImageUrl': bgImageUrl,
         'profileImageUrl': profileImageUrl,
         'ownerId': ownerId,
@@ -85,6 +93,8 @@ class Store extends IntModel {
     double? lat,
     double? lng,
     IconData? icon,
+    bool? isClosed,
+    bool? isInactive,
     String? bgImageUrl,
     String? profileImageUrl,
     String? ownerId,
@@ -100,6 +110,8 @@ class Store extends IntModel {
       phone: phone ?? this.phone,
       lat: lat ?? this.lat,
       lng: lng ?? this.lng,
+      isClosed: isClosed ?? this.isClosed,
+      isInactive: isInactive ?? this.isInactive,
       bgImageUrl: bgImageUrl ?? this.bgImageUrl,
       profileImageUrl: profileImageUrl ?? this.profileImageUrl,
       ownerId: ownerId ?? this.ownerId,
@@ -128,16 +140,19 @@ class Store extends IntModel {
 class SimpleStoreQr {
   final String type = 'SimpleStoreQr';
   final int storeId;
-  final bool isDeleted;
+  final bool isClosed;
+  final bool isInactive;
 
   SimpleStoreQr({
     required this.storeId,
-    required this.isDeleted,
+    required this.isClosed,
+    required this.isInactive,
   });
 
   SimpleStoreQr.fromJson(Map<String, dynamic> json)
       : storeId = json['storeId'] as int,
-        isDeleted = json['isDeleted'] as bool {
+        isClosed = json['isClosed'] as bool,
+        isInactive = json['isInactive'] as bool {
     if (json['type'] != 'SimpleStoreQr') {
       throw const FormatException('Not valid SimpleStoreQr');
     }
@@ -145,11 +160,13 @@ class SimpleStoreQr {
 
   SimpleStoreQr.fromStore(Store store)
       : storeId = store.id,
-        isDeleted = store.isDeleted;
+        isClosed = store.isClosed,
+        isInactive = store.isInactive;
 
   Map<String, dynamic> toJson() => {
         'type': type,
         'storeId': storeId,
-        'isDeleted': isDeleted,
+        'isClosed': isClosed,
+        'isInactive': isInactive,
       };
 }

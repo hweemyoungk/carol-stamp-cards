@@ -324,6 +324,17 @@ Future<void> putStore({
   return;
 }
 
+Future<void> closeStore({
+  required int id,
+}) async {
+  final url = Uri.http(
+    backend_params.apigateway,
+    '${backend_params.ownerStorePath}/$id',
+  );
+  await httpDelete(url);
+  return;
+}
+
 Future<StampCard> getStampCard({
   required int id,
 }) async {
