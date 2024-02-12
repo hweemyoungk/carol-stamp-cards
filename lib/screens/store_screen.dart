@@ -1,16 +1,22 @@
 import 'dart:convert';
 
+import 'package:carol/apis/customer_apis.dart' as customer_apis;
+import 'package:carol/apis/owner_apis.dart' as owner_apis;
 import 'package:carol/main.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/models/store.dart';
 import 'package:carol/providers/blueprint_notifier.dart';
 import 'package:carol/providers/store_notifier.dart';
 import 'package:carol/screens/blueprint_dialog_screen.dart';
+import 'package:carol/screens/card_screen.dart';
 import 'package:carol/screens/owner_design_blueprint_screen.dart';
 import 'package:carol/screens/owner_design_store_screen.dart';
 import 'package:carol/utils.dart';
+import 'package:carol/widgets/cards_explorer/cards_list.dart';
+import 'package:carol/widgets/common/circular_progress_indicator_in_button.dart';
 import 'package:carol/widgets/common/loading.dart';
 import 'package:carol/widgets/main_drawer.dart';
+import 'package:carol/widgets/stores_explorer/stores_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -33,6 +39,8 @@ class StoreScreen extends ConsumerStatefulWidget {
 class _StoreScreenState extends ConsumerState<StoreScreen> {
   late StoreScreenMode _mode;
   late StateNotifierProvider<StoreNotifier, Store?> _storeProvider;
+
+  bool _isClosingStore = false;
 
   @override
   void initState() {
@@ -63,6 +71,33 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     }
 
     final onSecondary = Theme.of(context).colorScheme.onSecondary;
+
+    final hasNotices = store.isClosed;
+    final notices = Container(
+      color: Theme.of(context).colorScheme.tertiaryContainer,
+      child: Padding(
+        padding: DesignUtils.basicWidgetEdgeInsets(),
+        child: Column(
+          children: [
+            if (store.isClosed)
+              Row(
+                children: [
+                  Icon(Icons.warning,
+                      color: Theme.of(context).colorScheme.error),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Store was already CLOSED.',
+                    textAlign: TextAlign.start,
+                    style: TextStyle(
+                        color:
+                            Theme.of(context).colorScheme.onTertiaryContainer),
+                  ),
+                ],
+              ),
+          ],
+        ),
+      ),
+    );
 
     // Filter blueprints
     final blueprintsToDisplay = _mode == StoreScreenMode.owner
@@ -274,6 +309,43 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     //           ),
     //   ],
     // );
+    final qrCodeButton = ElevatedButton.icon(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        disabledBackgroundColor: Theme.of(context).colorScheme.primary,
+      ),
+      onPressed: _onPressQrCode,
+      icon: Icon(
+        Icons.qr_code,
+        color: Theme.of(context).colorScheme.onPrimary,
+      ),
+      label: Text(
+        'Show Store QR',
+        style: TextStyle(
+          color: Theme.of(context).colorScheme.onPrimary,
+        ),
+      ),
+    );
+    final closeStoreButton = ElevatedButton.icon(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Theme.of(context).colorScheme.errorContainer,
+        disabledBackgroundColor: Theme.of(context).colorScheme.errorContainer,
+      ),
+      onPressed: _isClosingStore ? null : _onPressCloseStore,
+      icon: Icon(
+        Icons.delete,
+        color: Theme.of(context).colorScheme.onErrorContainer,
+      ),
+      label: _isClosingStore
+          ? CircularProgressIndicatorInButton(
+              color: Theme.of(context).colorScheme.onErrorContainer)
+          : Text(
+              'Close Store',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onErrorContainer,
+              ),
+            ),
+    );
     final mainContent = Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -284,12 +356,15 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         blueprintsExplorer,
         description,
         // noticesExplorer,
+        if (!store.isInactive) qrCodeButton,
+        if (_mode == StoreScreenMode.owner && !store.isClosed) closeStoreButton,
       ],
     );
     final contentOnBgImage = SingleChildScrollView(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
+          if (hasNotices) notices,
           Image.memory(
             kTransparentImage,
             height: 300,
@@ -304,25 +379,33 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         ],
       ),
     );
+
     return Scaffold(
-      appBar: _mode == StoreScreenMode.customer
-          ? null
-          : AppBar(
-              actions: [
-                IconButton(
-                    onPressed: _onPressModifyStore,
-                    icon: const Icon(Icons.construction))
-              ],
+      appBar: AppBar(
+        actions: [
+          if (_mode == StoreScreenMode.owner)
+            IconButton(
+              onPressed: _onPressModifyStore,
+              icon: const Icon(Icons.construction),
             ),
+          IconButton(
+            onPressed: _onPressRefreshStore,
+            icon: const Icon(Icons.refresh),
+          ),
+        ],
+      ),
+      // appBar: _mode == StoreScreenMode.customer
+      //     ? null
+      //     : AppBar(
+      //         actions: [
+      //           IconButton(
+      //               onPressed: _onPressModifyStore,
+      //               icon: const Icon(Icons.construction))
+      //         ],
+      //       ),
       backgroundColor: Theme.of(context).colorScheme.secondary,
       body: LayoutBuilder(
         builder: (ctx, constraints) {
-          final qrImageView = QrImageView(
-            data: json.encode(SimpleStoreQr.fromStore(store).toJson()),
-            version: QrVersions.auto,
-            size: constraints.maxWidth * 0.4,
-            // size: 150,
-          );
           return Container(
             alignment: Alignment.center,
             margin: DesignUtils.basicScreenEdgeInsets(ctx, constraints, 0),
@@ -331,16 +414,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
               width: double.infinity,
               child: Stack(
                 children: [
-                  Stack(
-                    children: [
-                      bgImage,
-                      Positioned(
-                        top: 50,
-                        left: 10,
-                        child: qrImageView,
-                      )
-                    ],
-                  ),
+                  bgImage,
                   Positioned(
                     top: 0,
                     bottom: 0,
@@ -366,6 +440,9 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       blueprintProvider = customerBlueprintDialogScreenBlueprintProvider;
     } else if (activeDrawerItem == DrawerItemEnum.owner) {
       blueprintProvider = ownerBlueprintDialogScreenBlueprintProvider;
+      // Attach store to blueprint
+      final store = ref.read(_storeProvider);
+      blueprint.copyWith(store: store);
     } else {
       Carol.showTextSnackBar(
         text: 'Can only be reached from customer or owner drawer item',
@@ -397,6 +474,245 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         );
       },
     ));
+  }
+
+  void _onPressCloseStore() {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: DesignUtils.basicWidgetEdgeInsets(),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.warning,
+                      color: Theme.of(context).colorScheme.error),
+                  const SizedBox(width: 8),
+                  Column(
+                    children: [
+                      Text(
+                        'Close this store?',
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineSmall!
+                            .copyWith(
+                              color: Theme.of(context).colorScheme.onBackground,
+                            ),
+                      ),
+                      Text(
+                        '(cannot undo)',
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium!
+                            .copyWith(
+                              color: Theme.of(context).colorScheme.onBackground,
+                            ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: DesignUtils.basicWidgetEdgeInsets(),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            Theme.of(context).colorScheme.background),
+                    onPressed: () {
+                      Navigator.of(ctx).pop();
+                    },
+                    child: Text(
+                      'Back',
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.onBackground),
+                    ),
+                  ),
+                  ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            Theme.of(context).colorScheme.errorContainer,
+                      ),
+                      onPressed: _closeStore,
+                      child: Text(
+                        'Proceed',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onErrorContainer,
+                        ),
+                      )),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+      useSafeArea: true,
+    );
+  }
+
+  Future<void> _closeStore() async {
+    final storeNotifier = ref.read(_storeProvider.notifier);
+
+    Navigator.of(context).pop();
+
+    setState(() {
+      _isClosingStore = true;
+    });
+
+    final store = ref.read(_storeProvider);
+    if (store == null) return;
+
+    // Close Store
+    try {
+      await owner_apis.closeStore(id: store.id);
+    } on Exception catch (e) {
+      Carol.showExceptionSnackBar(
+        e,
+        contextMessage: 'Failed to delete card.',
+      );
+      return;
+    }
+
+    final closedStore = store.copyWith(
+      isClosed: true,
+      isInactive: true,
+    );
+
+    // Propagate
+    // ownerStoresListStoresProvider
+    final storesNotifier = ref.read(ownerStoresListStoresProvider.notifier);
+    storesNotifier.replaceOrPrepend(closedStore);
+    // ownerStoreScreenStoreProvider
+    storeNotifier.set(closedStore);
+
+    Carol.showTextSnackBar(
+      text: 'Closed store!',
+      level: SnackBarLevel.success,
+    );
+
+    setState(() {
+      _isClosingStore = false;
+    });
+  }
+
+  /// Fetched store must have <i>non-null<i> blueprints.
+  Future<void> _onPressRefreshStore() async {
+    final store = ref.read(_storeProvider);
+    final storeNotifier = ref.read(_storeProvider.notifier);
+    if (store == null) return;
+
+    final Store storeWithBlueprints;
+
+    final Store fetchedStore;
+    // TODO: Fetch blueprints with store.
+    final Set<Blueprint> fetchedBlueprints;
+    if (_mode == StoreScreenMode.customer) {
+      // Customer mode
+      try {
+        // [
+        //   fetchedStore as Store,
+        //   fetchedBlueprints as Set<Blueprint>,
+        // ] = await Future.wait([
+        //   customer_apis.getStore(id: store.id),
+        //   customer_apis.listBlueprints(storeId: store.id),
+        // ]);
+        fetchedStore = await customer_apis.getStore(id: store.id);
+        fetchedBlueprints =
+            await customer_apis.listBlueprints(storeId: store.id);
+      } on Exception catch (e) {
+        Carol.showExceptionSnackBar(
+          e,
+          contextMessage: 'Failed to get store information.',
+        );
+        return;
+      }
+      storeWithBlueprints =
+          fetchedStore.copyWith(blueprints: fetchedBlueprints);
+
+      // Propagate
+      // customerStoresListStoresProvider
+      final storesNotifier =
+          ref.read(customerStoresListStoresProvider.notifier);
+      storesNotifier.replaceOrPrepend(storeWithBlueprints);
+      // customerCardsListCardsProvider,customerCardScreenCardProvider
+      final cardsNotifier = ref.read(customerCardsListCardsProvider.notifier);
+      final cardNotifier = ref.read(customerCardScreenCardProvider.notifier);
+      final card = ref.read(customerCardScreenCardProvider);
+      if (card?.blueprint != null) {
+        final modifiedCard = card!.copyWith(
+          blueprint: card.blueprint!.copyWith(
+            store: storeWithBlueprints,
+          ),
+        );
+        cardNotifier.set(modifiedCard);
+        cardsNotifier.replaceOrPrepend(modifiedCard);
+      }
+    } else {
+      // Owner mode
+      try {
+        [
+          fetchedStore as Store,
+          fetchedBlueprints as Set<Blueprint>,
+        ] = await Future.wait([
+          owner_apis.getStore(id: store.id),
+          owner_apis.listBlueprints(storeId: store.id),
+        ]);
+      } on Exception catch (e) {
+        Carol.showExceptionSnackBar(
+          e,
+          contextMessage: 'Failed to get store information.',
+        );
+        return;
+      }
+      storeWithBlueprints =
+          fetchedStore.copyWith(blueprints: fetchedBlueprints);
+      // Propagate
+      // ownerStoresListStoresProvider
+      final storesNotifier = ref.read(ownerStoresListStoresProvider.notifier);
+      storesNotifier.replaceOrPrepend(storeWithBlueprints);
+    }
+
+    storeNotifier.set(storeWithBlueprints);
+    Carol.showTextSnackBar(
+      text: 'Refreshed store!',
+      level: SnackBarLevel.info,
+    );
+  }
+
+  void _onPressQrCode() {
+    final store = ref.read(_storeProvider);
+    if (store == null) return;
+
+    final qrImageView = QrImageView(
+      data: json.encode(SimpleStoreQr.fromStore(store).toJson()),
+      version: QrVersions.auto,
+      // size: constraints.maxWidth * 0.4,
+      size: 150,
+    );
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('Store QR'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: 150,
+                height: 150,
+                child: qrImageView,
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }
 

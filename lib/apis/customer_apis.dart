@@ -247,7 +247,7 @@ Future<void> putStampCard({
   return;
 }
 
-Future<void> softDeleteStampCard({
+Future<void> discardStampCard({
   required int id,
 }) async {
   final url = Uri.http(

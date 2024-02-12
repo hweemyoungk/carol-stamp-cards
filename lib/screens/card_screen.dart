@@ -268,11 +268,27 @@ class _CardScreenState extends ConsumerState<CardScreen> {
                   Icon(Icons.warning,
                       color: Theme.of(context).colorScheme.error),
                   const SizedBox(width: 8),
-                  Text(
-                    'Delete this card?',
-                    style: Theme.of(context).textTheme.headlineSmall!.copyWith(
-                          color: Theme.of(context).colorScheme.onBackground,
-                        ),
+                  Column(
+                    children: [
+                      Text(
+                        'Delete this card?',
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineSmall!
+                            .copyWith(
+                              color: Theme.of(context).colorScheme.onBackground,
+                            ),
+                      ),
+                      Text(
+                        '(cannot undo)',
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium!
+                            .copyWith(
+                              color: Theme.of(context).colorScheme.onBackground,
+                            ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -365,9 +381,9 @@ class _CardScreenState extends ConsumerState<CardScreen> {
     final card = ref.read(customerCardScreenCardProvider);
     if (card == null) return;
 
-    // Soft delete StampCard
+    // Discard StampCard
     try {
-      await customer_apis.softDeleteStampCard(id: card.id);
+      await customer_apis.discardStampCard(id: card.id);
     } on Exception catch (e) {
       Carol.showExceptionSnackBar(
         e,
@@ -392,6 +408,7 @@ class _CardScreenState extends ConsumerState<CardScreen> {
       text: 'Deleted card!',
       level: SnackBarLevel.success,
     );
+
     setState(() {
       _isDeleting = false;
     });

@@ -292,6 +292,8 @@ class _OwnerDesignStoreScreenState
         displayName: _displayName,
         lat: _lat,
         lng: _lng,
+        isClosed: false,
+        isInactive: false,
         ownerId: currentUser.id,
         phone: _phone,
         zipcode: _zipcode,

@@ -181,7 +181,7 @@ class _OwnerScanQrScreenState extends ConsumerState<ScanQrScreen> {
   }
 
   void _handleStoreQr(SimpleStoreQr qr) {
-    if (qr.isDeleted) {
+    if (qr.isInactive) {
       Carol.showTextSnackBar(
         text: 'Invalid store',
         level: SnackBarLevel.info,

@@ -133,6 +133,7 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
       );
     } else {
       // Owner mode
+      final modifyButton = _getModifyButton(blueprint);
       return AlertDialog(
         title: dialogTitle,
         content: SingleChildScrollView(
@@ -141,27 +142,33 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               blueprintInfo,
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      Theme.of(context).colorScheme.tertiaryContainer,
-                  disabledBackgroundColor:
-                      Theme.of(context).colorScheme.tertiaryContainer,
-                ),
-                onPressed: _onPressModify,
-                child: Text(
-                  'Modify',
-                  textAlign: TextAlign.end,
-                  style: TextStyle(
-                      color: Theme.of(context).colorScheme.onTertiaryContainer),
-                ),
-              ),
+              if (modifyButton != null) modifyButton,
               backButton,
             ],
           ),
         ),
       );
     }
+  }
+
+  /// (Owner only) Generate <code>ElevatedButton</code> if blueprint's store is active.
+  ElevatedButton? _getModifyButton(Blueprint blueprint) {
+    if (blueprint.store == null || blueprint.store!.isInactive) {
+      return null;
+    }
+
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Theme.of(context).colorScheme.tertiaryContainer,
+      ),
+      onPressed: _onPressModify,
+      child: Text(
+        'Modify',
+        textAlign: TextAlign.end,
+        style:
+            TextStyle(color: Theme.of(context).colorScheme.onTertiaryContainer),
+      ),
+    );
   }
 
   void _setIssueButton() {
