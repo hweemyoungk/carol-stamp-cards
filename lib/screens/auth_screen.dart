@@ -13,6 +13,7 @@ import 'package:carol/params/shared_preferences.dart'
     as shared_preferences_params;
 import 'package:carol/providers/auth_status_notifier.dart';
 import 'package:carol/providers/current_user_notifier.dart';
+import 'package:carol/screens/dashboard_screen.dart';
 import 'package:carol/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,9 +22,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 final currentUserProvider = StateNotifierProvider<CurrentUserNotifier, User?>(
     (ref) => CurrentUserNotifier());
-final authStatusProvider =
-    StateNotifierProvider<AuthStatusNotifier, AuthStatus>(
-        (ref) => AuthStatusNotifier());
+// final authStatusProvider =
+//     StateNotifierProvider<AuthStatusNotifier, AuthStatus>(
+//         (ref) => AuthStatusNotifier());
 
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
@@ -33,6 +34,7 @@ class AuthScreen extends ConsumerStatefulWidget {
 }
 
 class _AuthScreenState extends ConsumerState<AuthScreen> {
+  AuthStatus _authStatus = AuthStatus.authenticating;
   bool _isAutoSigningIn = true;
   bool _isAutoSignInEnabled = false;
   late AppLinks _appLinks;
@@ -43,20 +45,21 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   void initState() {
     super.initState();
     _bindAuthCallback();
-    _tryAutoSignIn(ignore: false);
+    _tryAutoSignIn(ignore: true);
   }
 
   Future<void> _tryAutoSignIn({bool ignore = false}) async {
+    final currentUserNotifier = ref.read(currentUserProvider.notifier);
+
     if (ignore) {
       if (mounted) {
         setState(() {
+          _authStatus = AuthStatus.unauthenticated;
           _isAutoSigningIn = false;
         });
       }
       return;
     }
-    final authStatusNotifier = ref.read(authStatusProvider.notifier);
-    final currentUserNotifier = ref.read(currentUserProvider.notifier);
 
     // 1. Get stored credential
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -66,6 +69,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     if (oidcString == null) {
       if (mounted) {
         setState(() {
+          _authStatus = AuthStatus.unauthenticated;
           _isAutoSigningIn = false;
         });
       }
@@ -86,6 +90,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       );
       if (mounted) {
         setState(() {
+          _authStatus = AuthStatus.unauthenticated;
           _isAutoSigningIn = false;
         });
       }
@@ -101,9 +106,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         e,
         contextMessage: 'Failed to auto-sign-in.',
       );
-      authStatusNotifier.set(AuthStatus.unauthenticated);
       if (mounted) {
         setState(() {
+          _authStatus = AuthStatus.unauthenticated;
           _isAutoSigningIn = false;
         });
       }
@@ -137,9 +142,12 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     prefs.setString(shared_preferences_params.oidcKey, json.encode(newOidc));
 
     // 5. Navigate to DashboardScreen
-    setState(() {
-      _isAutoSigningIn = false;
-    });
+    if (mounted) {
+      setState(() {
+        _authStatus = AuthStatus.authenticated;
+        _isAutoSigningIn = false;
+      });
+    }
 
     // Set User
     final currentUser = User(
@@ -155,14 +163,16 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
     // Next Screen
     if (!mounted) return;
-    Navigator.of(context).pushReplacementNamed(
-      '/dashboard',
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (context) => const DashboardScreen(),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final authStatus = ref.watch(authStatusProvider);
+    // final authStatus = ref.watch(authStatusProvider);
     // final isAutoSignInEnabled = ref.watch(autoSignInEnabledProvider);
     final currentUser = ref.watch(currentUserProvider);
     final autoSignInSection = Row(
@@ -180,32 +190,34 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         // const SizedBox(width: 10),
         Switch(
           value: _isAutoSignInEnabled,
-          onChanged: _isAutoSigningIn || authStatus == AuthStatus.authenticating
-              ? null
-              : (value) {
-                  setState(() {
-                    _isAutoSignInEnabled = value;
-                  });
-                },
+          onChanged:
+              _isAutoSigningIn || _authStatus == AuthStatus.authenticating
+                  ? null
+                  : (value) {
+                      setState(() {
+                        _isAutoSignInEnabled = value;
+                      });
+                    },
         ),
       ],
     );
     final ElevatedButton authButton;
     final authButtonStyle = ElevatedButton.styleFrom(
-      disabledBackgroundColor: Theme.of(context).colorScheme.primaryContainer,
+      disabledBackgroundColor: Theme.of(context).colorScheme.background,
       backgroundColor: Theme.of(context).colorScheme.primaryContainer,
     );
     if (_isAutoSigningIn) {
       authButton = ElevatedButton(
         onPressed: null,
+        style: authButtonStyle,
         child: Text(
           'Please wait...',
           style: TextStyle(
-            color: Theme.of(context).colorScheme.onPrimaryContainer,
+            color: Theme.of(context).colorScheme.onBackground,
           ),
         ),
       );
-    } else if (authStatus == AuthStatus.unauthenticated) {
+    } else if (_authStatus == AuthStatus.unauthenticated) {
       authButton = ElevatedButton(
         onPressed: _onPressSignIn,
         style: authButtonStyle,
@@ -216,7 +228,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           ),
         ),
       );
-    } else if (authStatus == AuthStatus.authenticating) {
+    } else if (_authStatus == AuthStatus.authenticating) {
       authButton = ElevatedButton(
         onPressed: _onPressCancelAuth,
         style: ElevatedButton.styleFrom(
@@ -233,8 +245,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       // authStatus == AuthStatus.authenticated
       authButton = ElevatedButton(
         onPressed: () {
-          Navigator.of(context).pushReplacementNamed(
-            '/dashboard',
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => const DashboardScreen(),
+            ),
           );
         },
         style: authButtonStyle,
@@ -265,63 +279,59 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   size: 150,
                 ),
               ),
-              _isAutoSigningIn
-                  ? CircularProgressIndicator(
-                      color: Theme.of(context).colorScheme.onPrimary,
-                    )
-                  : Card(
-                      margin: const EdgeInsets.all(20),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        child: Padding(
-                          padding: DesignUtils.basicWidgetEdgeInsets(2),
-                          child: SingleChildScrollView(
+              Card(
+                margin: const EdgeInsets.all(20),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Padding(
+                    padding: DesignUtils.basicWidgetEdgeInsets(2),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: DesignUtils.basicWidgetEdgeInsets(),
                             child: Column(
                               children: [
-                                Padding(
-                                  padding: DesignUtils.basicWidgetEdgeInsets(),
-                                  child: Column(
-                                    children: [
-                                      Text(
-                                        'Welcome to',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleLarge!
-                                            .copyWith(
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .onSurface,
-                                            ),
+                                Text(
+                                  'Welcome to',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleLarge!
+                                      .copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface,
                                       ),
-                                      Text(
-                                        'Carol Cards',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .displayMedium!
-                                            .copyWith(
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .onSurface,
-                                            ),
-                                      ),
-                                    ],
-                                  ),
                                 ),
-                                Padding(
-                                  padding: DesignUtils.basicWidgetEdgeInsets(),
-                                  child: Column(
-                                    children: [
-                                      authButton,
-                                      autoSignInSection,
-                                    ],
-                                  ),
+                                Text(
+                                  'Carol Cards',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .displayMedium!
+                                      .copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface,
+                                      ),
                                 ),
                               ],
                             ),
                           ),
-                        ),
+                          Padding(
+                            padding: DesignUtils.basicWidgetEdgeInsets(),
+                            child: Column(
+                              children: [
+                                authButton,
+                                autoSignInSection,
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                    )
+                    ),
+                  ),
+                ),
+              )
             ],
           ),
         ),
@@ -330,8 +340,12 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   }
 
   Future<void> _onPressSignIn() async {
-    final authStatusNotifier = ref.read(authStatusProvider.notifier);
-    authStatusNotifier.set(AuthStatus.authenticating);
+    // final authStatusNotifier = ref.read(authStatusProvider.notifier);
+    if (mounted) {
+      setState(() {
+        _authStatus = AuthStatus.authenticating;
+      });
+    }
 
     // Generate state
     _stateToken = genState();
@@ -355,7 +369,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   }
 
   Future<void> _handleAuthCallback(Uri uri) async {
-    final authStatusNotifier = ref.read(authStatusProvider.notifier);
+    // final authStatusNotifier = ref.read(authStatusProvider.notifier);
     // final isAutoSignInEnabled = ref.read(autoSignInEnabledProvider);
     final currentUserNotifier = ref.read(currentUserProvider.notifier);
 
@@ -364,9 +378,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         text: 'Lost PKCE data',
         level: SnackBarLevel.error,
       );
-      authStatusNotifier.set(AuthStatus.unauthenticated);
-      // Pop all
-      Navigator.of(context).popUntil(ModalRoute.withName('/auth'));
+      if (mounted) {
+        setState(() {
+          _authStatus = AuthStatus.unauthenticated;
+        });
+      }
       return;
     }
 
@@ -377,9 +393,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         text: 'Invalid state token',
         level: SnackBarLevel.error,
       );
-      authStatusNotifier.set(AuthStatus.unauthenticated);
-      // Pop all
-      Navigator.of(context).popUntil(ModalRoute.withName('/auth'));
+      if (mounted) {
+        setState(() {
+          _authStatus = AuthStatus.unauthenticated;
+        });
+      }
       return;
     }
 
@@ -405,15 +423,15 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       final invalidOidcMsgs = validateOidc(oidc);
       if (invalidOidcMsgs != null) {
         // Invalid OIDC token
-        authStatusNotifier.set(AuthStatus.unauthenticated);
         Carol.showTextSnackBar(
           text:
               'Failed to authenticate. Please contact admin.${invalidOidcMsgs.fold('\n- ', (prev, cur) => '$prev\n- $cur')}',
           level: SnackBarLevel.error,
         );
-        // Pop all
         if (mounted) {
-          Navigator.of(context).popUntil(ModalRoute.withName('/auth'));
+          setState(() {
+            _authStatus = AuthStatus.unauthenticated;
+          });
         }
         return;
       }
@@ -427,13 +445,21 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         prefs.remove(shared_preferences_params.oidcKey);
       }
 
-      authStatusNotifier.set(AuthStatus.authenticated);
+      if (mounted) {
+        setState(() {
+          _authStatus = AuthStatus.authenticated;
+        });
+      }
     } on Exception catch (e) {
-      authStatusNotifier.set(AuthStatus.unauthenticated);
       Carol.showExceptionSnackBar(
         e,
         contextMessage: 'Failed to sign in.',
       );
+      if (mounted) {
+        setState(() {
+          _authStatus = AuthStatus.unauthenticated;
+        });
+      }
       return;
     }
 
@@ -454,13 +480,17 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
     // Next Screen
     if (!mounted) return;
-    Navigator.of(context).pushReplacementNamed(
-      '/dashboard',
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (context) => const DashboardScreen(),
+      ),
     );
   }
 
   void _onPressCancelAuth() {
-    ref.read(authStatusProvider.notifier).set(AuthStatus.unauthenticated);
+    setState(() {
+      _authStatus = AuthStatus.unauthenticated;
+    });
     ref.read(currentUserProvider.notifier).set(null);
   }
 

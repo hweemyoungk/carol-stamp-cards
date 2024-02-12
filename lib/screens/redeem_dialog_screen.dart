@@ -13,7 +13,6 @@ import 'package:carol/widgets/cards_explorer/cards_list.dart';
 import 'package:carol/widgets/common/circular_progress_indicator_in_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:transparent_image/transparent_image.dart';
 
 class RedeemDialogScreen extends ConsumerStatefulWidget {
   final StampCard card;
@@ -67,11 +66,13 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
       );
     }
 
-    Widget image = redeemRule.imageUrl == null
-        ? Image.memory(
-            kTransparentImage,
-            fit: BoxFit.contain,
-          )
+    Widget? image = redeemRule.imageUrl == null
+        // ? Image.memory(
+        //     kTransparentImage,
+        //     // width: double.infinity,
+        //     fit: BoxFit.contain,
+        //   )
+        ? null
         : Image.asset(
             redeemRule.imageUrl!,
             fit: BoxFit.contain,
@@ -84,7 +85,7 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            image,
+            if (image != null) image,
             Padding(
               padding: DesignUtils.basicWidgetEdgeInsets(),
               child: Text(redeemRule.description),

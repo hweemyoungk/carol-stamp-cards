@@ -1,9 +1,8 @@
 import 'package:carol/models/stamp_card.dart';
 import 'package:carol/utils.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class CardInfo extends ConsumerWidget {
+class CardInfo extends StatelessWidget {
   final StampCard card;
   const CardInfo({
     super.key,
@@ -11,7 +10,7 @@ class CardInfo extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return Column(
       // mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,

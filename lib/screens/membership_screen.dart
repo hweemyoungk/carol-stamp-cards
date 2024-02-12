@@ -31,7 +31,7 @@ final customerMemberships = [
     ],
     colorScheme: colorScheme,
     iconData: Icons.credit_score,
-    monthlyPrice: '\$0.99',
+    monthlyPrice: '(Example) \$0.99',
   ),
 ];
 final ownerMemberships = [
@@ -63,7 +63,7 @@ final ownerMemberships = [
     ],
     colorScheme: colorScheme,
     iconData: Icons.store,
-    monthlyPrice: '\$4.50',
+    monthlyPrice: '(Example) \$4.50',
   ),
   Membership(
     requiredRole: 'owner-business',
@@ -78,7 +78,7 @@ final ownerMemberships = [
     ],
     colorScheme: colorScheme,
     iconData: Icons.business,
-    monthlyPrice: '\$9.90',
+    monthlyPrice: '(Example) \$9.90',
   ),
 ];
 
@@ -207,7 +207,7 @@ class MembershipsListItem extends StatelessWidget {
                 Row(
                   children: [
                     Icon(
-                      Icons.credit_score,
+                      membership.iconData,
                       size: 44,
                       color: membership.onBgColor,
                     ),

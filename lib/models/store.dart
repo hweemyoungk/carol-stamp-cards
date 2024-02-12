@@ -124,3 +124,32 @@ class Store extends IntModel {
     }
   }
 }
+
+class SimpleStoreQr {
+  final String type = 'SimpleStoreQr';
+  final int storeId;
+  final bool isDeleted;
+
+  SimpleStoreQr({
+    required this.storeId,
+    required this.isDeleted,
+  });
+
+  SimpleStoreQr.fromJson(Map<String, dynamic> json)
+      : storeId = json['storeId'] as int,
+        isDeleted = json['isDeleted'] as bool {
+    if (json['type'] != 'SimpleStoreQr') {
+      throw const FormatException('Not valid SimpleStoreQr');
+    }
+  }
+
+  SimpleStoreQr.fromStore(Store store)
+      : storeId = store.id,
+        isDeleted = store.isDeleted;
+
+  Map<String, dynamic> toJson() => {
+        'type': type,
+        'storeId': storeId,
+        'isDeleted': isDeleted,
+      };
+}

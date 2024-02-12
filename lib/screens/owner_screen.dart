@@ -3,7 +3,7 @@ import 'package:carol/main.dart';
 import 'package:carol/models/redeem_request.dart';
 import 'package:carol/screens/auth_screen.dart';
 import 'package:carol/screens/owner_design_store_screen.dart';
-import 'package:carol/screens/owner_scan_qr_screen.dart';
+import 'package:carol/screens/scan_qr_screen.dart';
 import 'package:carol/widgets/common/icon_button_in_progress.dart';
 import 'package:carol/widgets/main_drawer.dart';
 import 'package:carol/widgets/redeem_requests_explorer/redeem_requests_explorer.dart';
@@ -84,7 +84,7 @@ class _OwnerScreenState extends ConsumerState<OwnerScreen> {
 
   void _onPressScanQr() {
     Navigator.of(context).push(MaterialPageRoute(
-      builder: (context) => const OwnerScanQrScreen(),
+      builder: (context) => const ScanQrScreen(),
     ));
     // final qr =
     //     await Navigator.of(context).push<SimpleStampCardQr>(MaterialPageRoute(

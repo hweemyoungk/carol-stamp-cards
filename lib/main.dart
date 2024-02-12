@@ -14,7 +14,7 @@ import 'package:carol/screens/customer_screen.dart';
 import 'package:carol/screens/dashboard_screen.dart';
 import 'package:carol/screens/owner_design_blueprint_screen.dart';
 import 'package:carol/screens/owner_design_store_screen.dart';
-import 'package:carol/screens/owner_scan_qr_screen.dart';
+import 'package:carol/screens/scan_qr_screen.dart';
 import 'package:carol/screens/owner_screen.dart';
 import 'package:carol/screens/redeem_request_dialog_screen.dart';
 import 'package:carol/screens/store_screen.dart';
@@ -97,6 +97,10 @@ class Carol extends StatelessWidget {
             const StoreScreen(), // Done by _notifyStoreScreen()
         // customerCardsListCardsProvider
         // customerStoresListStoresProvider
+        '/dashboard#customer#stores-list/scan-qr': (context) =>
+            const ScanQrScreen(),
+        // customerCardsListCardsProvider
+        // customerStoresListStoresProvider
         // customerStoreScreenStoreProvider
         '/dashboard#customer#stores-list/store': (context) =>
             const StoreScreen(), // Done by StoresListItem._notifyStoreScreen()
@@ -115,7 +119,7 @@ class Carol extends StatelessWidget {
         // ownerStoresListStoresProvider
         // Ignore: ownerRedeemRequestsListRedeemRequestsProvider
         '/dashboard/owner/scan-qr': (context) =>
-            const OwnerScanQrScreen(), // No notification
+            const ScanQrScreen(), // No notification
         // ownerStoresListStoresProvider
         // Ignore: ownerRedeemRequestsListRedeemRequestsProvider
         // ownerRedeemRequestDialogRedeemRequestProvider

@@ -35,12 +35,37 @@ class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
             Hero(
               tag: stampCard.id,
               child: stampCard.bgImageUrl == null
-                  ? Image.memory(
-                      kTransparentImage,
-                      height: 300,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
+                  ? Stack(
+                      children: [
+                        Image.memory(
+                          kTransparentImage,
+                          height: 300,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
+                        Positioned.fill(
+                          child: Align(
+                            alignment: Alignment.center,
+                            child: Text(
+                              'No Image',
+                              style: TextStyle(
+                                fontStyle: FontStyle.italic,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurface
+                                    .withOpacity(0.5),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     )
+                  // ? Image.memory(
+                  //     kTransparentImage,
+                  //     height: 300,
+                  //     width: double.infinity,
+                  //     fit: BoxFit.cover,
+                  //   )
                   : FadeInImage(
                       placeholder: MemoryImage(kTransparentImage),
                       // image: NetworkImage(stampCard.imageUrl!),

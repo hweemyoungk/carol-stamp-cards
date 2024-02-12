@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:carol/main.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/models/store.dart';
@@ -11,6 +13,7 @@ import 'package:carol/widgets/common/loading.dart';
 import 'package:carol/widgets/main_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 final customerStoreScreenStoreProvider =
@@ -59,6 +62,8 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       return const Loading(message: 'Loading Blueprints...');
     }
 
+    final onSecondary = Theme.of(context).colorScheme.onSecondary;
+
     // Filter blueprints
     final blueprintsToDisplay = _mode == StoreScreenMode.owner
         ? blueprints
@@ -69,10 +74,26 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
             .toList();
 
     final bgImage = store.bgImageUrl == null
-        ? Image.memory(
-            kTransparentImage,
-            width: double.infinity,
-            fit: BoxFit.fitWidth,
+        ? Stack(
+            children: [
+              Image.memory(
+                kTransparentImage,
+                width: double.infinity,
+                fit: BoxFit.fitWidth,
+              ),
+              Positioned.fill(
+                child: Align(
+                  alignment: Alignment.center,
+                  child: Text(
+                    'No Image',
+                    style: TextStyle(
+                      fontStyle: FontStyle.italic,
+                      color: onSecondary.withOpacity(0.5),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           )
         : FadeInImage(
             placeholder: MemoryImage(kTransparentImage),
@@ -83,10 +104,10 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
             width: double.infinity,
           );
 
-    final Widget googleMap = Padding(
-      padding: DesignUtils.basicWidgetEdgeInsets(),
-      child: const Text('Here comes google map. (Click to open external app)'),
-    );
+    // final Widget googleMap = Padding(
+    //   padding: DesignUtils.basicWidgetEdgeInsets(),
+    //   child: const Text('Here comes google map. (Click to open external app)'),
+    // );
 
     final phone = Row(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -134,7 +155,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         style: Theme.of(context)
             .textTheme
             .displayMedium!
-            .copyWith(color: Theme.of(context).colorScheme.onSecondary),
+            .copyWith(color: onSecondary),
       ),
     );
 
@@ -144,7 +165,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         Text(
           'Cards being Published',
           style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                color: Theme.of(context).colorScheme.onSecondary,
+                color: onSecondary,
               ),
           textAlign: TextAlign.left,
         ),
@@ -182,7 +203,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                         ? null
                         : Icon(
                             Icons.visibility_off,
-                            color: Theme.of(context).colorScheme.onSecondary,
+                            color: onSecondary,
                           ),
                     onTap: () async {
                       _notifyBlueprintDialogScreen(blueprint);
@@ -211,7 +232,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     //     Text(
     //       'Notices',
     //       style: Theme.of(context).textTheme.titleLarge!.copyWith(
-    //             color: Theme.of(context).colorScheme.onSecondary,
+    //             color: onSecondary,
     //           ),
     //       textAlign: TextAlign.left,
     //     ),
@@ -242,7 +263,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     //               return ListTile(
     //                 leading: Icon(
     //                   notice.icon,
-    //                   color: Theme.of(context).colorScheme.onSecondary,
+    //                   color: onSecondary,
     //                 ),
     //                 title: Text(
     //                   notice.displayName,
@@ -259,7 +280,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         storeName,
         address,
         phone,
-        googleMap,
+        // googleMap,
         blueprintsExplorer,
         description,
         // noticesExplorer,
@@ -296,6 +317,12 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       backgroundColor: Theme.of(context).colorScheme.secondary,
       body: LayoutBuilder(
         builder: (ctx, constraints) {
+          final qrImageView = QrImageView(
+            data: json.encode(SimpleStoreQr.fromStore(store).toJson()),
+            version: QrVersions.auto,
+            size: constraints.maxWidth * 0.4,
+            // size: 150,
+          );
           return Container(
             alignment: Alignment.center,
             margin: DesignUtils.basicScreenEdgeInsets(ctx, constraints, 0),
@@ -304,7 +331,16 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
               width: double.infinity,
               child: Stack(
                 children: [
-                  bgImage,
+                  Stack(
+                    children: [
+                      bgImage,
+                      Positioned(
+                        top: 50,
+                        left: 10,
+                        child: qrImageView,
+                      )
+                    ],
+                  ),
                   Positioned(
                     top: 0,
                     bottom: 0,
