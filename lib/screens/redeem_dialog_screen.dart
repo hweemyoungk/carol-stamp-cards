@@ -2,12 +2,14 @@ import 'dart:async';
 import 'dart:developer' as developer;
 
 import 'package:carol/apis/customer_apis.dart' as customer_apis;
+import 'package:carol/apis/utils.dart';
 import 'package:carol/main.dart';
 import 'package:carol/models/redeem_request.dart';
 import 'package:carol/models/redeem_rule.dart';
 import 'package:carol/models/stamp_card.dart';
 import 'package:carol/params/app.dart' as app_params;
 import 'package:carol/screens/auth_screen.dart';
+import 'package:carol/screens/card_screen.dart';
 import 'package:carol/utils.dart';
 import 'package:carol/widgets/cards_explorer/cards_list.dart';
 import 'package:carol/widgets/common/circular_progress_indicator_in_button.dart';
@@ -110,7 +112,8 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
 
   void _onPressRedeem() async {
     final cardsNotifier = ref.read(customerCardsListCardsProvider.notifier);
-    final stampCard = widget.card;
+    final cardNotifier = ref.read(customerCardScreenCardProvider.notifier);
+    final oldCard = widget.card;
     final redeemRule = widget.redeemRule;
 
     // 0. Disable Redeem button.
@@ -120,7 +123,7 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
 
     // 1. Post RedeemRequest and receive location.
     _redeemRequestId = await _postRedeemRequest(
-      stampCardId: stampCard.id,
+      stampCardId: oldCard.id,
       redeemRuleId: redeemRule.id,
     );
     if (_redeemRequestId == null) return;
@@ -153,24 +156,18 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
             ),
           );
         });
-
-        // Get StampCard
-        final refreshStampCardTask =
-            customer_apis.getStampCard(id: stampCard.id).then((value) {
-          // Refresh Card
-          cardsNotifier.replaceOrPrepend(value);
-        }).onError((error, stackTrace) {
-          if (error is Exception) {
-            Carol.showExceptionSnackBar(
-              error,
-              contextMessage:
-                  'Failed to refresh card information after redeem.',
-            );
-          }
-        });
-
-        await Future.wait([refreshStampCardTask, DesignUtils.delaySeconds(1)]);
+        await Future.delayed(durationOneSecond);
       }
+      final newCard = oldCard.copyWith(
+        lastModifiedDate: DateTime.now(),
+        numCollectedStamps: oldCard.numCollectedStamps - redeemRule.consumes,
+      );
+      // Propagate
+      // customerCardsListCardsProvider
+      cardsNotifier.replaceIfIdMatch(newCard);
+      // customerStoresListStoresProvider: Not relevant
+      // customerCardScreenCardProvider
+      cardNotifier.set(newCard);
 
       Carol.showTextSnackBar(
         text: 'Redeem success!',
@@ -192,7 +189,7 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
             ),
           );
         });
-        await DesignUtils.delaySeconds(1);
+        await Future.delayed(durationOneSecond);
       }
       Carol.showTextSnackBar(
         text: 'Redeem failed!',
@@ -313,6 +310,7 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
     final redeemRequest = RedeemRequest(
       id: '',
       isDeleted: false,
+      displayName: 'Dummy Display Name',
       customerId: currentUser.id,
       customerDisplayName: currentUser.displayName,
       blueprintDisplayName: '',

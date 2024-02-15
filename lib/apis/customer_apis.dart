@@ -312,10 +312,7 @@ Future<bool> redeemRequestExists({
   // final url = Uri.http(
   final url = Uri.https(
     backend_params.apigateway,
-    backend_params.customerRedeemRequestExistsPath,
-    {
-      'id': id,
-    },
+    backend_params.customerRedeemRequestExistsPath(id),
   );
   final res = await httpGet(url);
   return bool.parse(res.body);
@@ -327,7 +324,7 @@ Future<bool> redeemExists({
   // final url = Uri.http(
   final url = Uri.https(
     backend_params.apigateway,
-    backend_params.customerRedeemExistsPath,
+    backend_params.customerRedeemListExistsPath,
     {
       'redeemRequestId': redeemRequestId,
     },

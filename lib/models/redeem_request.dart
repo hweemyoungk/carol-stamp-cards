@@ -4,6 +4,7 @@ import 'package:carol/models/string_model.dart';
 import 'package:flutter/material.dart';
 
 class RedeemRequest extends StringModel {
+  final String displayName;
   final String customerId;
   final String customerDisplayName;
   final String blueprintDisplayName;
@@ -16,6 +17,7 @@ class RedeemRequest extends StringModel {
   RedeemRequest({
     required super.id,
     required super.isDeleted,
+    required this.displayName,
     required this.customerId,
     required this.customerDisplayName,
     required this.stampCardId,
@@ -27,7 +29,8 @@ class RedeemRequest extends StringModel {
   });
 
   RedeemRequest.fromJson(Map<String, dynamic> json)
-      : stampCardId = json['cardId'] as int,
+      : displayName = json['displayName'] as String,
+        stampCardId = json['cardId'] as int,
         customerId = json['customerId'] as String,
         customerDisplayName = json['customerDisplayName'] as String,
         blueprintDisplayName = json['blueprintDisplayName'] as String,
@@ -45,6 +48,7 @@ class RedeemRequest extends StringModel {
   Map<String, dynamic> toJson() => {
         'id': id,
         'isDeleted': isDeleted,
+        'displayName': displayName,
         'customerId': customerId,
         'customerDisplayName': customerDisplayName,
         'cardId': stampCardId,

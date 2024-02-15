@@ -14,9 +14,9 @@ import 'package:carol/screens/customer_screen.dart';
 import 'package:carol/screens/dashboard_screen.dart';
 import 'package:carol/screens/owner_design_blueprint_screen.dart';
 import 'package:carol/screens/owner_design_store_screen.dart';
-import 'package:carol/screens/scan_qr_screen.dart';
 import 'package:carol/screens/owner_screen.dart';
 import 'package:carol/screens/redeem_request_dialog_screen.dart';
+import 'package:carol/screens/scan_qr_screen.dart';
 import 'package:carol/screens/store_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -83,6 +83,10 @@ class Carol extends StatelessWidget {
         // customerCardScreenCardProvider
         '/dashboard#customer#cards-list/card': (context) =>
             const CardScreen(), // Done by _notifyCardScreen()
+        // customerCardsListCardsProvider
+        // customerStoresListStoresProvider
+        // customerCardScreenCardProvider
+        // '/dashboard#customer#cards-list/card': (context) => const RedeemDialogScreen(card: card, redeemRule: redeemRule),
         // customerCardsListCardsProvider
         // customerStoresListStoresProvider
         // customerCardScreenCardProvider
