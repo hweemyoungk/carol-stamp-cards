@@ -88,7 +88,8 @@ Future<Set<RedeemRule>> listRedeemRules({
   if (blueprintId == null && (ids == null || ids.isEmpty)) {
     return {};
   }
-  final url = Uri.http(
+  // final url = Uri.http(
+  final url = Uri.https(
     backend_params.apigateway,
     backend_params.ownerRedeemRuleListPath,
     {
@@ -110,7 +111,8 @@ Future<Set<RedeemRule>> listRedeemRules({
 Future<Set<RedeemRequest>> listRedeemRequests({
   required String ownerId,
 }) async {
-  final url = Uri.http(
+  // final url = Uri.http(
+  final url = Uri.https(
     backend_params.apigateway,
     backend_params.ownerRedeemRequestListPath,
     {
@@ -130,7 +132,8 @@ Future<Set<RedeemRequest>> listRedeemRequests({
 Future<void> approveRedeemRequest({
   required String redeemRequestId,
 }) async {
-  final url = Uri.http(
+  // final url = Uri.http(
+  final url = Uri.https(
     backend_params.apigateway,
     backend_params.ownerRedeemRequestApprovePath(redeemRequestId),
   );
@@ -146,7 +149,8 @@ Future<Set<Blueprint>> listBlueprints({
     return {};
   }
 
-  final url = Uri.http(
+  // final url = Uri.http(
+  final url = Uri.https(
     backend_params.apigateway,
     backend_params.ownerBlueprintListPath,
     {
@@ -169,7 +173,8 @@ Future<Set<Blueprint>> listBlueprints({
 Future<int> postBlueprint({
   required Blueprint blueprint,
 }) async {
-  final url = Uri.http(
+  // final url = Uri.http(
+  final url = Uri.https(
     backend_params.apigateway,
     backend_params.ownerBlueprintPath,
   );
@@ -197,7 +202,8 @@ Future<int> postBlueprint({
 Future<Blueprint> getBlueprint({
   required int id,
 }) async {
-  final url = Uri.http(
+  // final url = Uri.http(
+  final url = Uri.https(
     backend_params.apigateway,
     '${backend_params.ownerBlueprintPath}/$id',
   );
@@ -210,7 +216,8 @@ Future<void> putBlueprint({
   required int id,
   required Blueprint blueprint,
 }) async {
-  final url = Uri.http(
+  // final url = Uri.http(
+  final url = Uri.https(
     backend_params.apigateway,
     '${backend_params.ownerBlueprintPath}/$id',
   );
@@ -242,7 +249,8 @@ Future<Set<Store>> listStores({
     return {};
   }
 
-  final url = Uri.http(
+  // final url = Uri.http(
+  final url = Uri.https(
     backend_params.apigateway,
     backend_params.ownerStoreListPath,
     {
@@ -265,7 +273,8 @@ Future<Set<Store>> listStores({
 Future<int> postStore({
   required Store store,
 }) async {
-  final url = Uri.http(
+  // final url = Uri.http(
+  final url = Uri.https(
     backend_params.apigateway,
     backend_params.ownerStorePath,
   );
@@ -290,7 +299,8 @@ Future<int> postStore({
 Future<Store> getStore({
   required int id,
 }) async {
-  final url = Uri.http(
+  // final url = Uri.http(
+  final url = Uri.https(
     backend_params.apigateway,
     '${backend_params.ownerStorePath}/$id',
   );
@@ -303,7 +313,8 @@ Future<void> putStore({
   required int id,
   required Store store,
 }) async {
-  final url = Uri.http(
+  // final url = Uri.http(
+  final url = Uri.https(
     backend_params.apigateway,
     '${backend_params.ownerStorePath}/$id',
   );
@@ -327,7 +338,8 @@ Future<void> putStore({
 Future<void> closeStore({
   required int id,
 }) async {
-  final url = Uri.http(
+  // final url = Uri.http(
+  final url = Uri.https(
     backend_params.apigateway,
     '${backend_params.ownerStorePath}/$id',
   );
@@ -338,7 +350,8 @@ Future<void> closeStore({
 Future<StampCard> getStampCard({
   required int id,
 }) async {
-  final url = Uri.http(
+  // final url = Uri.http(
+  final url = Uri.https(
     backend_params.apigateway,
     '${backend_params.ownerStampCardPath}/$id',
   );
@@ -351,7 +364,8 @@ Future<String> grantStamp({
   required int stampCardId,
   required int numStamps,
 }) async {
-  final url = Uri.http(
+  // final url = Uri.http(
+  final url = Uri.https(
     backend_params.apigateway,
     backend_params.ownerStampGrantPath,
   );
@@ -375,7 +389,8 @@ Future<String> grantStamp({
 Future<String> postRedeem({
   required Redeem redeem,
 }) async {
-  final url = Uri.http(
+  // final url = Uri.http(
+  final url = Uri.https(
     backend_params.apigateway,
     backend_params.ownerRedeemPath,
   );

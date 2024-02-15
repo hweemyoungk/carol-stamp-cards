@@ -51,7 +51,8 @@ Future<Set<StampCard>> listStampCards({
     return {};
   }
 
-  final url = Uri.http(
+  // final url = Uri.http(
+  final url = Uri.https(
     backend_params.apigateway,
     backend_params.customerStampCardListPath,
     {
@@ -80,7 +81,8 @@ Future<Set<Blueprint>> listBlueprints({
     return {};
   }
 
-  final url = Uri.http(
+  // final url = Uri.http(
+  final url = Uri.https(
     backend_params.apigateway,
     backend_params.customerBlueprintListPath,
     {
@@ -105,7 +107,8 @@ Future<Set<Blueprint>> listBlueprints({
 Future<Blueprint> getBlueprint({
   required int id,
 }) async {
-  final url = Uri.http(
+  // final url = Uri.http(
+  final url = Uri.https(
     backend_params.apigateway,
     '${backend_params.customerBlueprintPath}/$id',
   );
@@ -122,7 +125,8 @@ Future<Set<Store>> listStores({
     return {};
   }
 
-  final url = Uri.http(
+  // final url = Uri.http(
+  final url = Uri.https(
     backend_params.apigateway,
     backend_params.customerStoreListPath,
     {
@@ -143,7 +147,8 @@ Future<Set<Store>> listStores({
 Future<Store> getStore({
   required int id,
 }) async {
-  final url = Uri.http(
+  // final url = Uri.http(
+  final url = Uri.https(
     backend_params.apigateway,
     '${backend_params.customerStorePath}/$id',
   );
@@ -155,7 +160,8 @@ Future<Store> getStore({
 Future<Set<RedeemRule>> listRedeemRules({
   required int blueprintId,
 }) async {
-  final url = Uri.http(
+  // final url = Uri.http(
+  final url = Uri.https(
     backend_params.apigateway,
     backend_params.customerRedeemRuleListPath,
     {
@@ -176,7 +182,8 @@ Future<int> getNumCustomerIssuedCards({
   required String customerId,
   required int blueprintId,
 }) async {
-  final url = Uri.http(
+  // final url = Uri.http(
+  final url = Uri.https(
     backend_params.apigateway,
     backend_params.customerNumCustomerIssuedCardsPath,
     {
@@ -191,7 +198,8 @@ Future<int> getNumCustomerIssuedCards({
 Future<int> getNumTotalIssuedCards({
   required int blueprintId,
 }) async {
-  final url = Uri.http(
+  // final url = Uri.http(
+  final url = Uri.https(
     backend_params.apigateway,
     backend_params.customerNumTotalIssuedCardsPath,
     {
@@ -205,7 +213,8 @@ Future<int> getNumTotalIssuedCards({
 Future<int> postStampCard({
   required StampCard stampCard,
 }) async {
-  final url = Uri.http(
+  // final url = Uri.http(
+  final url = Uri.https(
     backend_params.apigateway,
     backend_params.customerStampCardPath,
   );
@@ -225,7 +234,8 @@ Future<int> postStampCard({
 Future<StampCard> getStampCard({
   required int id,
 }) async {
-  final url = Uri.http(
+  // final url = Uri.http(
+  final url = Uri.https(
     backend_params.apigateway,
     '${backend_params.customerStampCardPath}/$id',
   );
@@ -238,7 +248,8 @@ Future<void> putStampCard({
   required int id,
   required StampCard stampCard,
 }) async {
-  final url = Uri.http(
+  // final url = Uri.http(
+  final url = Uri.https(
     backend_params.apigateway,
     '${backend_params.customerStampCardPath}/$id',
   );
@@ -252,7 +263,8 @@ Future<void> putStampCard({
 Future<void> discardStampCard({
   required int id,
 }) async {
-  final url = Uri.http(
+  // final url = Uri.http(
+  final url = Uri.https(
     backend_params.apigateway,
     '${backend_params.customerStampCardPath}/$id',
   );
@@ -263,7 +275,8 @@ Future<void> discardStampCard({
 Future<String> postRedeemRequest({
   required RedeemRequest redeemRequest,
 }) async {
-  final url = Uri.http(
+  // final url = Uri.http(
+  final url = Uri.https(
     backend_params.apigateway,
     backend_params.customerRedeemRequestPath,
   );
@@ -284,7 +297,8 @@ Future<String> postRedeemRequest({
 Future<void> deleteRedeemRequest({
   required String id,
 }) async {
-  final url = Uri.http(
+  // final url = Uri.http(
+  final url = Uri.https(
     backend_params.apigateway,
     '${backend_params.customerRedeemRequestPath}/$id',
   );
@@ -295,10 +309,14 @@ Future<void> deleteRedeemRequest({
 Future<bool> redeemRequestExists({
   required String id,
 }) async {
-  final url = Uri.http(backend_params.apigateway,
-      backend_params.customerRedeemRequestExistsPath, {
-    'id': id,
-  });
+  // final url = Uri.http(
+  final url = Uri.https(
+    backend_params.apigateway,
+    backend_params.customerRedeemRequestExistsPath,
+    {
+      'id': id,
+    },
+  );
   final res = await httpGet(url);
   return bool.parse(res.body);
 }
@@ -306,7 +324,8 @@ Future<bool> redeemRequestExists({
 Future<bool> redeemExists({
   required String redeemRequestId,
 }) async {
-  final url = Uri.http(
+  // final url = Uri.http(
+  final url = Uri.https(
     backend_params.apigateway,
     backend_params.customerRedeemExistsPath,
     {
