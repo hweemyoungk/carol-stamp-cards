@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:carol/apis/customer_apis.dart' as customer_apis;
 import 'package:carol/main.dart';
+import 'package:carol/models/redeem_rule.dart';
 import 'package:carol/models/stamp_card.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/providers/card_notifier.dart';
@@ -117,6 +118,10 @@ class _CardScreenState extends ConsumerState<CardScreen> {
           IconButton(
             onPressed: _onPressModifyCard,
             icon: const Icon(Icons.construction),
+          ),
+          IconButton(
+            onPressed: _onPressRefreshCard,
+            icon: const Icon(Icons.refresh),
           ),
         ],
       ),
@@ -412,5 +417,64 @@ class _CardScreenState extends ConsumerState<CardScreen> {
     setState(() {
       _isDeleting = false;
     });
+  }
+
+  Future<void> _onPressRefreshCard() async {
+    final oldCard = ref.read(customerCardScreenCardProvider);
+    if (oldCard == null) {
+      return;
+    }
+
+    final cardNotifier = ref.read(customerCardScreenCardProvider.notifier);
+    final cardsNotifier = ref.read(customerCardsListCardsProvider.notifier);
+    final storesNotifier = ref.read(customerStoresListStoresProvider.notifier);
+
+    StampCard fetchedCard;
+    try {
+      fetchedCard = await customer_apis.getStampCard(id: oldCard.id);
+    } on Exception catch (e) {
+      Carol.showExceptionSnackBar(
+        e,
+        contextMessage: 'Failed to get card information.',
+      );
+      return;
+    }
+
+    var fetchedBlueprint = fetchedCard.blueprint;
+    if (fetchedBlueprint == null) {
+      Carol.showTextSnackBar(
+        text: 'Failed to get blueprint information.',
+        level: SnackBarLevel.error,
+      );
+      return;
+    }
+
+    if (fetchedBlueprint.redeemRules == null) {
+      // Try fetch redeemRules
+      Set<RedeemRule> fetchedRedeemRules;
+      try {
+        fetchedRedeemRules = await customer_apis.listRedeemRules(
+          blueprintId: fetchedBlueprint.id,
+        );
+      } on Exception {
+        // Attach old redeemRules
+        fetchedRedeemRules = oldCard.blueprint!.redeemRules!;
+      }
+      fetchedBlueprint = fetchedBlueprint.copyWith(
+        redeemRules: fetchedRedeemRules,
+      );
+      fetchedCard = fetchedCard.copyWith(blueprint: fetchedBlueprint);
+    }
+
+    // Propagate
+    // customerCardsListCardsProvider
+    cardsNotifier.replaceIfIdMatch(fetchedCard);
+    // customerStoresListStoresProvider
+    final fetchedStore = fetchedCard.blueprint?.store;
+    if (fetchedStore != null) {
+      storesNotifier.replaceOrPrepend(fetchedStore);
+    }
+    // customerCardScreenCardProvider
+    cardNotifier.set(fetchedCard);
   }
 }

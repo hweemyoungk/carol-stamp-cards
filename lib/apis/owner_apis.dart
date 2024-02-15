@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:carol/apis/utils.dart';
 import 'package:carol/main.dart';
-import 'package:carol/models/redeem.dart';
 import 'package:carol/models/redeem_request.dart';
 import 'package:carol/models/redeem_rule.dart';
 import 'package:carol/models/stamp_card.dart';
@@ -386,6 +385,9 @@ Future<String> grantStamp({
   return newId;
 }
 
+/* 
+// Owner doesn't post Redeem directly.
+
 Future<String> postRedeem({
   required Redeem redeem,
 }) async {
@@ -412,3 +414,4 @@ Future<String> postRedeem({
       .group(0)!;
   return newId;
 }
+ */

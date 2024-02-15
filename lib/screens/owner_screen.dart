@@ -150,6 +150,7 @@ class _OwnerScreenState extends ConsumerState<OwnerScreen> {
     try {
       redeemRequests = await listRedeemRequests(ownerId: currentUser.id);
     } on Exception catch (e) {
+      redeemRequestsNotifier.set([]);
       Carol.showExceptionSnackBar(
         e,
         contextMessage: 'Failed to reload redeem requests.',

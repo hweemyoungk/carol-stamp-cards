@@ -204,7 +204,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
               ),
           textAlign: TextAlign.left,
         ),
-        if (_mode == StoreScreenMode.owner)
+        if (_mode == StoreScreenMode.owner && !store.isClosed)
           IconButton(
             onPressed: _onPressNewBlueprint,
             icon: const Icon(Icons.add_box),
@@ -383,7 +383,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     return Scaffold(
       appBar: AppBar(
         actions: [
-          if (_mode == StoreScreenMode.owner)
+          if (_mode == StoreScreenMode.owner && !store.isClosed)
             IconButton(
               onPressed: _onPressModifyStore,
               icon: const Icon(Icons.construction),
