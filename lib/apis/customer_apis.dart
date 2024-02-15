@@ -22,6 +22,8 @@ Future<void> reloadCustomerModels(WidgetRef ref) async {
   try {
     cards = await listStampCards(customerId: currentUser.id);
   } on Exception catch (e) {
+    cardsNotifier.set([]);
+    storesNotifier.set([]);
     Carol.showExceptionSnackBar(
       e,
       contextMessage: 'Failed to load customer models.',

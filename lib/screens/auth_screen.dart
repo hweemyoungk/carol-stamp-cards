@@ -157,7 +157,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     currentUserNotifier.set(currentUser);
     developer.log('[+]access token: ${newOidc['access_token']}');
 
-    // Load Init Entities: Landing page is CustomerScreen, so load Customer Cards and Stores
     if (!mounted) return;
     _loadInitialModels();
 
@@ -474,7 +473,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     );
     currentUserNotifier.set(currentUser);
 
-    // Load Init Entities: Landing page is CustomerScreen, so load Customer Cards and Stores
     if (!mounted) return;
     _loadInitialModels();
 
