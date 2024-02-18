@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:carol/apis/utils.dart';
 import 'package:carol/main.dart';
 import 'package:carol/params/auth.dart' as auth_params;
-import 'package:carol/utils.dart';
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:pkce/pkce.dart';
 
@@ -50,14 +49,6 @@ Future<Map<String, dynamic>?> tryRefreshOidc(
 
   return newOidc;
 }
-
-const alphanumericChars =
-    'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
-
-String genAlphanumeric(int length) => String.fromCharCodes(Iterable.generate(
-    length,
-    (_) => alphanumericChars
-        .codeUnitAt(random.nextInt(alphanumericChars.length))));
 
 String genState({int length = 30}) => genAlphanumeric(length);
 

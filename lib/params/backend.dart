@@ -7,6 +7,10 @@ const locationHostname = 'http://localhost:8080';
 
 // Paths
 
+// App service
+// TODO: Implement in backend
+const appMinRequirementsPath = 'app/api/v1/minRequirements'; // GET
+
 // Customer service
 const customerStampCardPath = '/customer/api/v1/card'; // POST,GET,PUT,DELETE
 const customerStampCardListPath = '/customer/api/v1/card/list'; // GET
