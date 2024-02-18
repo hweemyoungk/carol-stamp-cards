@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:developer' as developer;
 
 import 'package:app_links/app_links.dart';
+import 'package:carol/apis/app_apis.dart';
 import 'package:carol/apis/auth_apis.dart';
 import 'package:carol/apis/customer_apis.dart' as customer_apis;
 import 'package:carol/apis/utils.dart';
@@ -16,15 +17,14 @@ import 'package:carol/providers/current_user_notifier.dart';
 import 'package:carol/screens/dashboard_screen.dart';
 import 'package:carol/utils.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:pkce/pkce.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 final currentUserProvider = StateNotifierProvider<CurrentUserNotifier, User?>(
     (ref) => CurrentUserNotifier());
-// final authStatusProvider =
-//     StateNotifierProvider<AuthStatusNotifier, AuthStatus>(
-//         (ref) => AuthStatusNotifier());
 
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
@@ -35,7 +35,7 @@ class AuthScreen extends ConsumerStatefulWidget {
 
 class _AuthScreenState extends ConsumerState<AuthScreen> {
   AuthStatus _authStatus = AuthStatus.authenticating;
-  bool _isAutoSigningIn = true;
+  bool _waiting = true;
   bool _isAutoSignInEnabled = false;
   late AppLinks _appLinks;
   String? _stateToken;
@@ -45,7 +45,176 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   void initState() {
     super.initState();
     _bindAuthCallback();
-    _tryAutoSignIn(ignore: false);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _checkRequirements(ignore: false).then(
+      (_) async {
+        await _tryAutoSignIn(ignore: false);
+      },
+    );
+  }
+
+  /// Currently, checks only version name (x.y.z).
+  Future<void> _checkRequirements({bool ignore = false}) async {
+    if (ignore) return;
+
+    final errorTextColor = Theme.of(context).colorScheme.onError;
+    final errorBgColor = Theme.of(context).colorScheme.error;
+
+    // Fetch min requirements
+    try {
+      minRequirements = await getMinRequirements();
+    } on Exception {
+      if (mounted) {
+        await showDialog(
+          context: context,
+          builder: (ctx) {
+            return AlertDialog(
+              actions: [
+                TextButton.icon(
+                  style: TextButton.styleFrom(
+                    backgroundColor: errorBgColor,
+                  ),
+                  icon: const Icon(Icons.close),
+                  label: Text(
+                    'Exit',
+                    style: TextStyle(
+                      color: errorTextColor,
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.of(ctx).pop();
+                  },
+                ),
+              ],
+              content: const SingleChildScrollView(
+                child: Text(
+                  'Failed to compare current version name and required minimum version name.\nExiting Application.',
+                ),
+              ),
+            );
+          },
+        );
+      }
+      SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+      rethrow;
+    }
+
+    final packageInfo = await PackageInfo.fromPlatform();
+
+    final currrentVersionName = packageInfo.version;
+    await _checkVersionName(currrentVersionName);
+  }
+
+  Future<void> _checkVersionName(String currrentVersionName) async {
+    final errorTextColor = Theme.of(context).colorScheme.onError;
+    final errorBgColor = Theme.of(context).colorScheme.error;
+
+    final int compareVersionName;
+    try {
+      compareVersionName = _compareSemanticVersion(
+        currrentVersionName,
+        minRequirements['minVersionName'],
+      );
+    } on Exception {
+      if (mounted) {
+        await showDialog(
+          context: context,
+          builder: (ctx) {
+            return AlertDialog(
+              actions: [
+                TextButton.icon(
+                  style: TextButton.styleFrom(
+                    backgroundColor: errorBgColor,
+                  ),
+                  icon: const Icon(Icons.close),
+                  label: Text(
+                    'Exit',
+                    style: TextStyle(
+                      color: errorTextColor,
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.of(ctx).pop();
+                  },
+                ),
+              ],
+              content: const SingleChildScrollView(
+                child: Text(
+                  'Failed to compare current version name and required minimum version name.\nExiting Application.',
+                ),
+              ),
+            );
+          },
+        );
+      }
+      SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+      rethrow;
+    }
+
+    if (compareVersionName < 0) {
+      // Needs upgrade
+      if (mounted) {
+        await showDialog(
+          context: context,
+          builder: (ctx) {
+            return AlertDialog(
+              actions: [
+                TextButton.icon(
+                  style: TextButton.styleFrom(
+                    backgroundColor: errorBgColor,
+                  ),
+                  icon: const Icon(Icons.close),
+                  label: Text(
+                    'Exit',
+                    style: TextStyle(
+                      color: errorTextColor,
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.of(ctx).pop();
+                  },
+                ),
+              ],
+              content: const SingleChildScrollView(
+                child: Text(
+                  'Failed to compare current version name and required minimum version name.\nExiting Application.',
+                ),
+              ),
+            );
+          },
+        );
+      }
+      SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+      throw Exception();
+    }
+  }
+
+  /// Assumes semantic versioning. (e.g. '3.12.4')
+  int _compareSemanticVersion(String current, String min) {
+    final splitCurrent = current.split('.');
+    final splitMin = min.split('.');
+    if (splitCurrent.length != splitMin.length) {
+      throw FormatException(
+        'Provided semantic versions are not in the same format',
+        {
+          'current': current,
+          'min': min,
+        },
+      );
+    }
+    for (var i = 0; i < splitCurrent.length; i++) {
+      final compareTo =
+          int.parse(splitCurrent[i]).compareTo(int.parse(splitMin[i]));
+      if (compareTo == 0) {
+        continue;
+      }
+      return compareTo;
+    }
+    return 0;
   }
 
   Future<void> _tryAutoSignIn({bool ignore = false}) async {
@@ -55,7 +224,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       if (mounted) {
         setState(() {
           _authStatus = AuthStatus.unauthenticated;
-          _isAutoSigningIn = false;
+          _waiting = false;
         });
       }
       return;
@@ -70,7 +239,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       if (mounted) {
         setState(() {
           _authStatus = AuthStatus.unauthenticated;
-          _isAutoSigningIn = false;
+          _waiting = false;
         });
       }
       return;
@@ -91,7 +260,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       if (mounted) {
         setState(() {
           _authStatus = AuthStatus.unauthenticated;
-          _isAutoSigningIn = false;
+          _waiting = false;
         });
       }
       return;
@@ -109,7 +278,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       if (mounted) {
         setState(() {
           _authStatus = AuthStatus.unauthenticated;
-          _isAutoSigningIn = false;
+          _waiting = false;
         });
       }
       return;
@@ -145,7 +314,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     if (mounted) {
       setState(() {
         _authStatus = AuthStatus.authenticated;
-        _isAutoSigningIn = false;
+        _waiting = false;
       });
     }
 
@@ -189,14 +358,13 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         // const SizedBox(width: 10),
         Switch(
           value: _isAutoSignInEnabled,
-          onChanged:
-              _isAutoSigningIn || _authStatus == AuthStatus.authenticating
-                  ? null
-                  : (value) {
-                      setState(() {
-                        _isAutoSignInEnabled = value;
-                      });
-                    },
+          onChanged: _waiting || _authStatus == AuthStatus.authenticating
+              ? null
+              : (value) {
+                  setState(() {
+                    _isAutoSignInEnabled = value;
+                  });
+                },
         ),
       ],
     );
@@ -205,7 +373,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       disabledBackgroundColor: Theme.of(context).colorScheme.background,
       backgroundColor: Theme.of(context).colorScheme.primaryContainer,
     );
-    if (_isAutoSigningIn) {
+    if (_waiting) {
       authButton = ElevatedButton(
         onPressed: null,
         style: authButtonStyle,

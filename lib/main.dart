@@ -33,17 +33,18 @@ final theme = ThemeData().copyWith(
   useMaterial3: true,
   scaffoldBackgroundColor: colorScheme.background,
   colorScheme: colorScheme,
-  textTheme: GoogleFonts.ubuntuCondensedTextTheme().copyWith(
-    titleSmall: GoogleFonts.ubuntuCondensed(
-      fontWeight: FontWeight.bold,
-    ),
-    titleMedium: GoogleFonts.ubuntuCondensed(
-      fontWeight: FontWeight.bold,
-    ),
-    titleLarge: GoogleFonts.ubuntuCondensed(
-      fontWeight: FontWeight.bold,
-    ),
-  ),
+  textTheme: GoogleFonts.ubuntuCondensedTextTheme(),
+  // textTheme: GoogleFonts.ubuntuCondensedTextTheme().copyWith(
+  //   titleSmall: GoogleFonts.ubuntuCondensed(
+  //     fontWeight: FontWeight.bold,
+  //   ),
+  //   titleMedium: GoogleFonts.ubuntuCondensed(
+  //     fontWeight: FontWeight.bold,
+  //   ),
+  //   titleLarge: GoogleFonts.ubuntuCondensed(
+  //     fontWeight: FontWeight.bold,
+  //   ),
+  // ),
 );
 
 void main() {
@@ -51,7 +52,7 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
-  ]).then((value) {
+  ]).then((value) async {
     runApp(const ProviderScope(child: Carol()));
   });
 }

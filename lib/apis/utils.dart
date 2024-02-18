@@ -8,6 +8,7 @@ import 'package:carol/apis/exceptions/unauthenticated.dart';
 import 'package:carol/apis/exceptions/unauthorized.dart';
 import 'package:carol/params/auth.dart' as auth_params;
 import 'package:carol/params/app.dart' as app_params;
+import 'package:carol/utils.dart';
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:retry/retry.dart';
 import 'package:http/http.dart' as http;
@@ -238,6 +239,14 @@ int getCurrentTimestampMilliseconds() =>
 
 int getCurrentTimestampSeconds() =>
     (getCurrentTimestampMilliseconds() / 1000).ceil();
+
+const alphanumericChars =
+    'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
+
+String genAlphanumeric(int length) => String.fromCharCodes(Iterable.generate(
+    length,
+    (_) => alphanumericChars
+        .codeUnitAt(random.nextInt(alphanumericChars.length))));
 
 const retryOptions = RetryOptions(maxAttempts: app_params.httpMaxRetry);
 const durationOneSecond = Duration(seconds: 1);
