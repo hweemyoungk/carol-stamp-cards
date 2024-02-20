@@ -7,8 +7,9 @@ Map<String, dynamic> minRequirements = {};
 
 Future<Map<String, dynamic>> getMinRequirements() async {
   final url = Uri.https(
-    backend_params.apigateway,
-    backend_params.appMinRequirementsPath,
+    // backend_params.apigateway,
+    backend_params.appServiceHost,
+    backend_params.appPublicMinRequirementsPath,
   );
   final res = await httpGet(
     url,

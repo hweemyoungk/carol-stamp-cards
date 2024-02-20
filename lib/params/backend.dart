@@ -8,8 +8,13 @@ const locationHostname = 'http://localhost:8080';
 // Paths
 
 // App service
-// TODO: Implement in backend
-const appMinRequirementsPath = 'app/api/v1/minRequirements'; // GET
+const appServiceHost = '10.0.2.2:8082'; // if profile is 'local'
+const appPublicMinRequirementsPath =
+    '/app/api/v1/public/minRequirements'; // GET
+const appPublicCustomerMembershipMapPath =
+    '/app/api/v1/public/customer/membership/map'; // GET
+const appPublicOwnerMembershipMapPath =
+    '/app/api/v1/public/owner/membership/map'; // GET
 
 // Customer service
 const customerStampCardPath = '/customer/api/v1/card'; // POST,GET,PUT,DELETE

@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:developer' as developer;
 
 import 'package:app_links/app_links.dart';
-import 'package:carol/apis/app_apis.dart';
+import 'package:carol/apis/app_apis.dart' as app_apis;
 import 'package:carol/apis/auth_apis.dart';
 import 'package:carol/apis/customer_apis.dart' as customer_apis;
 import 'package:carol/apis/utils.dart';
@@ -66,7 +66,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
     // Fetch min requirements
     try {
-      minRequirements = await getMinRequirements();
+      app_apis.minRequirements = await app_apis.getMinRequirements();
     } on Exception {
       if (mounted) {
         await showDialog(
@@ -78,7 +78,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   style: TextButton.styleFrom(
                     backgroundColor: errorBgColor,
                   ),
-                  icon: const Icon(Icons.close),
+                  icon: Icon(
+                    Icons.close,
+                    color: errorTextColor,
+                  ),
                   label: Text(
                     'Exit',
                     style: TextStyle(
@@ -117,7 +120,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     try {
       compareVersionName = _compareSemanticVersion(
         currrentVersionName,
-        minRequirements['minVersionName'],
+        app_apis.minRequirements['minVersionName'],
       );
     } on Exception {
       if (mounted) {
@@ -130,7 +133,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   style: TextButton.styleFrom(
                     backgroundColor: errorBgColor,
                   ),
-                  icon: const Icon(Icons.close),
+                  icon: Icon(
+                    Icons.close,
+                    color: errorTextColor,
+                  ),
                   label: Text(
                     'Exit',
                     style: TextStyle(
@@ -167,7 +173,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   style: TextButton.styleFrom(
                     backgroundColor: errorBgColor,
                   ),
-                  icon: const Icon(Icons.close),
+                  icon: Icon(
+                    Icons.close,
+                    color: errorTextColor,
+                  ),
                   label: Text(
                     'Exit',
                     style: TextStyle(
