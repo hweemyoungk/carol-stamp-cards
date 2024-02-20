@@ -15,7 +15,6 @@ import 'package:carol/screens/dashboard_screen.dart';
 import 'package:carol/screens/owner_design_blueprint_screen.dart';
 import 'package:carol/screens/owner_design_store_screen.dart';
 import 'package:carol/screens/owner_screen.dart';
-import 'package:carol/screens/redeem_request_dialog_screen.dart';
 import 'package:carol/screens/scan_qr_screen.dart';
 import 'package:carol/screens/store_screen.dart';
 import 'package:flutter/material.dart';
@@ -128,8 +127,7 @@ class Carol extends StatelessWidget {
         // ownerStoresListStoresProvider
         // Ignore: ownerRedeemRequestsListRedeemRequestsProvider
         // ownerRedeemRequestDialogRedeemRequestProvider
-        '/dashboard/owner#rr-list/redeem-request-dialog': (context) =>
-            const RedeemRequestDialogScreen(), // Done by RedeemRequestsListItem._notifyRedeemRequestDialogScreen()
+        // '/dashboard/owner#rr-list/redeem-request-dialog': (context) => const RedeemRequestDialogScreen(), // Done by RedeemRequestsListItem._notifyRedeemRequestDialogScreen()
         // ownerStoresListStoresProvider
         // Ignore: ownerRedeemRequestsListRedeemRequestsProvider
         '/dashboard/owner#stores-list/new-store': (context) =>

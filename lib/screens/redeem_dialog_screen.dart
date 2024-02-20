@@ -19,10 +19,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class RedeemDialogScreen extends ConsumerStatefulWidget {
   final StampCard card;
   final RedeemRule redeemRule;
+  final void Function(String? redeemRequestId) setRedeemRequestIdToParent;
+
   const RedeemDialogScreen({
     super.key,
     required this.card,
     required this.redeemRule,
+    required this.setRedeemRequestIdToParent,
   });
 
   @override
@@ -129,8 +132,29 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
     if (_redeemRequestId == null) return;
     developer.log('[+]RedeemRequestId: $_redeemRequestId');
 
+    // Notify to parent(RedeemRuleListItem)
+    // Await a second for fade out animation (if any)
+    Future.delayed(
+      durationOneSecond,
+      () {
+        if (mounted) {
+          // If mounted(still alive), set so that parent try deleting after pop.
+          widget.setRedeemRequestIdToParent(_redeemRequestId);
+        } else {
+          // It not mounted(poped), delete immediately.
+          _deleteRedeemRequest(_redeemRequestId!);
+        }
+      },
+    );
+
     // 2. Watch request exists
     await _watchRedeemRequestExist();
+
+    // RedeemRequest no longer exists. Notify to parent(RedeemRuleListItem)
+    // If mounted(still alive), set so that parent try deleting after pop.
+    if (mounted) {
+      widget.setRedeemRequestIdToParent(null);
+    }
 
     // 3. Check if RedeemHistory exists.
     final hasRedeemHistory = _redeemRequestId == null
@@ -140,6 +164,7 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
           );
 
     if (hasRedeemHistory == null) return;
+
     if (hasRedeemHistory) {
       // 3-1. If exists, redeem succeeded.
       // 3-1.2. Change Progress widget to Completed widget
@@ -333,22 +358,20 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
   }
 
   void _onPressBack() {
-    // If redeemRequestId exists, try deleting RedeemRequest
-    if (_redeemRequestId != null) {
-      customer_apis.deleteRedeemRequest(id: _redeemRequestId!).then((value) {
-        if (mounted) {
-          setState(() {
-            _redeemStatus = RedeemStatus.redeemCanceled;
-          });
-        }
-      }).onError<Exception>((error, stackTrace) {
-        Carol.showExceptionSnackBar(
-          error,
-          contextMessage: 'Failed to cancel redeem request.',
-        );
-      });
-    }
+    // Deleting redeem request will be done in RedeemRuleListItem, after pop.
     Navigator.of(context).pop();
+  }
+
+  Future<void> _deleteRedeemRequest(String redeemRequestId) async {
+    try {
+      await customer_apis.deleteRedeemRequest(id: redeemRequestId);
+    } on Exception catch (e) {
+      Carol.showExceptionSnackBar(
+        e,
+        contextMessage: 'Failed to cancel redeem request.',
+      );
+      return;
+    }
   }
 }
 

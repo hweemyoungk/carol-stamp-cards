@@ -1,5 +1,6 @@
 import 'package:carol/apis/customer_apis.dart' as customer_apis;
 import 'package:carol/screens/scan_qr_screen.dart';
+import 'package:carol/utils.dart';
 import 'package:carol/widgets/cards_explorer/cards_explorer.dart';
 import 'package:carol/widgets/cards_explorer/cards_list.dart';
 import 'package:carol/widgets/common/icon_button_in_progress.dart';
@@ -35,6 +36,7 @@ class CustomerScreen extends ConsumerStatefulWidget {
 
 class _CustomerScreenState extends ConsumerState<CustomerScreen> {
   int _activeBottomItemIndex = 0;
+  bool _isRefreshCooling = false;
 
   @override
   Widget build(BuildContext context) {
@@ -51,10 +53,15 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
             ),
           !isLoaded
               ? const IconButtonInProgress()
-              : IconButton(
-                  onPressed: _reloadCardsAndStores,
-                  icon: const Icon(Icons.refresh),
-                ),
+              : _isRefreshCooling
+                  ? const IconButton(
+                      onPressed: null,
+                      icon: Icon(Icons.refresh),
+                    )
+                  : IconButton(
+                      onPressed: _reloadCardsAndStores,
+                      icon: const Icon(Icons.refresh),
+                    ),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -83,13 +90,26 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
     }
   }
 
-  void _reloadCardsAndStores() {
-    customer_apis.reloadCustomerModels(ref);
-  }
-
   void _onPressScanQr() {
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => const ScanQrScreen(),
     ));
+  }
+
+  void _reloadCardsAndStores() {
+    _setRefreshCooling();
+    customer_apis.reloadCustomerModels(ref);
+  }
+
+  Future<void> _setRefreshCooling() async {
+    if (!mounted) return;
+    setState(() {
+      _isRefreshCooling = true;
+    });
+    await Future.delayed(refreshCoolingDuration);
+    if (!mounted) return;
+    setState(() {
+      _isRefreshCooling = false;
+    });
   }
 }

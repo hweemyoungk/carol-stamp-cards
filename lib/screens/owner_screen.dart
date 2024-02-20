@@ -4,7 +4,7 @@ import 'package:carol/models/redeem_request.dart';
 import 'package:carol/screens/auth_screen.dart';
 import 'package:carol/screens/owner_design_store_screen.dart';
 import 'package:carol/screens/scan_qr_screen.dart';
-import 'package:carol/widgets/common/icon_button_in_progress.dart';
+import 'package:carol/utils.dart';
 import 'package:carol/widgets/main_drawer.dart';
 import 'package:carol/widgets/redeem_requests_explorer/redeem_requests_explorer.dart';
 import 'package:carol/widgets/redeem_requests_explorer/redeem_requests_list.dart';
@@ -31,6 +31,8 @@ class OwnerScreen extends ConsumerStatefulWidget {
 
 class _OwnerScreenState extends ConsumerState<OwnerScreen> {
   int _activeBottomItemIndex = 0;
+  bool _isRefreshStoresCooling = false;
+  bool _isRefreshRedeemRequestsCooling = false;
   // bool _isReloadingStores = false;
 
   @override
@@ -113,15 +115,16 @@ class _OwnerScreenState extends ConsumerState<OwnerScreen> {
 
   List<Widget>? _getAppBarActions() {
     if (_activeBottomItemIndex == 0) {
-      final stores = ref.watch(ownerStoresListStoresProvider);
-      final isLoadingStores = stores == null;
       return [
         IconButton(
           onPressed: _onPressNewStore,
           icon: const Icon(Icons.add),
         ),
-        isLoadingStores
-            ? const IconButtonInProgress()
+        _isRefreshStoresCooling
+            ? const IconButton(
+                onPressed: null,
+                icon: Icon(Icons.refresh),
+              )
             : IconButton(
                 onPressed: _onPressRefreshStores,
                 icon: const Icon(Icons.refresh),
@@ -129,13 +132,15 @@ class _OwnerScreenState extends ConsumerState<OwnerScreen> {
       ];
     } else {
       return [
-        IconButton(
-          onPressed: () {
-            _reloadOwnerRedeemRequests()
-                .onError<Exception>((error, stackTrace) {});
-          },
-          icon: const Icon(Icons.refresh),
-        ),
+        _isRefreshRedeemRequestsCooling
+            ? const IconButton(
+                onPressed: null,
+                icon: Icon(Icons.refresh),
+              )
+            : IconButton(
+                onPressed: _onPressRefreshRedeemRequests,
+                icon: const Icon(Icons.refresh),
+              ),
       ];
     }
   }
@@ -163,6 +168,36 @@ class _OwnerScreenState extends ConsumerState<OwnerScreen> {
   }
 
   void _onPressRefreshStores() {
+    _setRefreshStoresCooling();
     reloadOwnerModels(ref);
+  }
+
+  Future<void> _setRefreshStoresCooling() async {
+    if (!mounted) return;
+    setState(() {
+      _isRefreshStoresCooling = true;
+    });
+    await Future.delayed(refreshCoolingDuration);
+    if (!mounted) return;
+    setState(() {
+      _isRefreshStoresCooling = false;
+    });
+  }
+
+  Future<void> _onPressRefreshRedeemRequests() async {
+    _setRefreshRedeemRequestsCooling();
+    _reloadOwnerRedeemRequests();
+  }
+
+  Future<void> _setRefreshRedeemRequestsCooling() async {
+    if (!mounted) return;
+    setState(() {
+      _isRefreshRedeemRequestsCooling = true;
+    });
+    await Future.delayed(refreshOwnerRedeemRequestsListCoolingDuration);
+    if (!mounted) return;
+    setState(() {
+      _isRefreshRedeemRequestsCooling = false;
+    });
   }
 }

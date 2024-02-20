@@ -41,6 +41,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   late StateNotifierProvider<StoreNotifier, Store?> _storeProvider;
 
   bool _isClosingStore = false;
+  bool _isRefreshCooling = false;
 
   @override
   void initState() {
@@ -388,10 +389,15 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
               onPressed: _onPressModifyStore,
               icon: const Icon(Icons.construction),
             ),
-          IconButton(
-            onPressed: _onPressRefreshStore,
-            icon: const Icon(Icons.refresh),
-          ),
+          _isRefreshCooling
+              ? const IconButton(
+                  onPressed: null,
+                  icon: Icon(Icons.refresh),
+                )
+              : IconButton(
+                  onPressed: _onPressRefreshStore,
+                  icon: const Icon(Icons.refresh),
+                ),
         ],
       ),
       // appBar: _mode == StoreScreenMode.customer
@@ -442,7 +448,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       blueprintProvider = ownerBlueprintDialogScreenBlueprintProvider;
       // Attach store to blueprint
       final store = ref.read(_storeProvider);
-      blueprint.copyWith(store: store);
+      blueprint = blueprint.copyWith(store: store);
     } else {
       Carol.showTextSnackBar(
         text: 'Can only be reached from customer or owner drawer item',
@@ -603,6 +609,8 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
 
   /// Fetched store must have <i>non-null<i> blueprints.
   Future<void> _onPressRefreshStore() async {
+    _setRefreshCooling();
+
     final store = ref.read(_storeProvider);
     final storeNotifier = ref.read(_storeProvider.notifier);
     if (store == null) return;
@@ -685,12 +693,25 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     );
   }
 
+  Future<void> _setRefreshCooling() async {
+    if (!mounted) return;
+    setState(() {
+      _isRefreshCooling = true;
+    });
+    await Future.delayed(refreshCoolingDuration);
+    if (!mounted) return;
+    setState(() {
+      _isRefreshCooling = false;
+    });
+  }
+
   void _onPressQrCode() {
     final store = ref.read(_storeProvider);
     if (store == null) return;
 
     final qrImageView = QrImageView(
-      data: json.encode(SimpleStoreQr.fromStore(store).toJson()),
+      data: base64.encode(
+          json.encode(SimpleStoreQr.fromStore(store).toJson()).codeUnits),
       version: QrVersions.auto,
       // size: constraints.maxWidth * 0.4,
       size: 150,
@@ -708,6 +729,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                 height: 150,
                 child: qrImageView,
               ),
+              const Text('Let customers scan!')
             ],
           ),
         );

@@ -1,3 +1,5 @@
+import 'package:carol/apis/customer_apis.dart' as customer_apis;
+import 'package:carol/main.dart';
 import 'package:carol/models/redeem_rule.dart';
 import 'package:carol/models/stamp_card.dart';
 import 'package:carol/screens/redeem_dialog_screen.dart';
@@ -23,6 +25,8 @@ class RedeemRuleListItem extends ConsumerStatefulWidget {
 }
 
 class _RedeemRuleListItemState extends ConsumerState<RedeemRuleListItem> {
+  String? _redeemRequestId;
+
   @override
   Widget build(BuildContext context) {
     final card = widget.card;
@@ -38,9 +42,12 @@ class _RedeemRuleListItemState extends ConsumerState<RedeemRuleListItem> {
             return RedeemDialogScreen(
               card: card,
               redeemRule: redeemRule,
+              setRedeemRequestIdToParent:
+                  _setRedeemRequestIdToRedeemRuleListItem,
             );
           },
         );
+        _tryCleanUpRedeemRequest();
       },
       key: ValueKey(redeemRule.id),
       leading: redeemRule.consumesWidget(
@@ -52,5 +59,28 @@ class _RedeemRuleListItemState extends ConsumerState<RedeemRuleListItem> {
         style: widget.style.copyWith(color: appliedColor),
       ),
     );
+  }
+
+  void _setRedeemRequestIdToRedeemRuleListItem(String? redeemRequestId) {
+    _redeemRequestId = redeemRequestId;
+  }
+
+  void _tryCleanUpRedeemRequest() {
+    if (_redeemRequestId == null) return;
+    // Try deleting redeem request
+    _deleteRedeemRequest(_redeemRequestId!);
+    _redeemRequestId = null;
+  }
+
+  Future<void> _deleteRedeemRequest(String redeemRequestId) async {
+    try {
+      await customer_apis.deleteRedeemRequest(id: redeemRequestId);
+    } on Exception catch (e) {
+      Carol.showExceptionSnackBar(
+        e,
+        contextMessage: 'Failed to cancel redeem request.',
+      );
+      return;
+    }
   }
 }

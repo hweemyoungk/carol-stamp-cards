@@ -42,17 +42,26 @@ class _StoresListState extends ConsumerState<StoresList> {
 
     return stores == null
         ? const CircularProgressIndicator()
-        : Expanded(
-            child: ListView.builder(
-              itemCount: stores.length,
-              itemBuilder: (ctx, index) {
-                return StoresListItem(
-                  key: ValueKey(stores[index].id),
-                  store: stores[index],
-                );
-              },
-            ),
-          );
+        : stores.isEmpty
+            ? Center(
+                child: Text(
+                  'No data found!',
+                  style: Theme.of(context).textTheme.headlineSmall!.copyWith(
+                        color: Theme.of(context).colorScheme.onBackground,
+                      ),
+                ),
+              )
+            : Expanded(
+                child: ListView.builder(
+                  itemCount: stores.length,
+                  itemBuilder: (ctx, index) {
+                    return StoresListItem(
+                      key: ValueKey(stores[index].id),
+                      store: stores[index],
+                    );
+                  },
+                ),
+              );
   }
 
   // Skip in phase 1

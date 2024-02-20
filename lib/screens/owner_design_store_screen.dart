@@ -326,6 +326,11 @@ class _OwnerDesignStoreScreenState
           e,
           contextMessage: 'Failed to get newly create store information.',
         );
+        if (mounted) {
+          setState(() {
+            _status = StoreDesignStatus.userInput;
+          });
+        }
         return;
       }
 

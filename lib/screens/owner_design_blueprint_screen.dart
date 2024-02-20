@@ -624,6 +624,11 @@ class _OwnerDesignStoreScreenState
           e,
           contextMessage: 'Failed to save new blueprint.',
         );
+        if (mounted) {
+          setState(() {
+            _status = BlueprintDesignStatus.userInput;
+          });
+        }
         return;
       }
 
@@ -636,6 +641,11 @@ class _OwnerDesignStoreScreenState
           e,
           contextMessage: 'Failed to get newly created blueprint information.',
         );
+        if (mounted) {
+          setState(() {
+            _status = BlueprintDesignStatus.userInput;
+          });
+        }
         return;
       }
 
@@ -684,6 +694,11 @@ class _OwnerDesignStoreScreenState
           e,
           contextMessage: 'Failed to modify blueprint.',
         );
+        if (mounted) {
+          setState(() {
+            _status = BlueprintDesignStatus.userInput;
+          });
+        }
         return;
       }
 
@@ -697,6 +712,11 @@ class _OwnerDesignStoreScreenState
           e,
           contextMessage: 'Failed to get modified blueprint information.',
         );
+        if (mounted) {
+          setState(() {
+            _status = BlueprintDesignStatus.userInput;
+          });
+        }
         return;
       }
 
