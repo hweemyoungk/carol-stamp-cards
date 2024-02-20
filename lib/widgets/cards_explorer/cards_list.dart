@@ -25,21 +25,30 @@ class _CardsListState extends ConsumerState<CardsList> {
 
     return cards == null
         ? const CircularProgressIndicator()
-        : Expanded(
-            child: NotificationListener<ScrollNotification>(
-              // onNotification: _handleScrollNotification,
-              child: ListView.builder(
-                itemCount: cards.length,
-                itemBuilder: (ctx, index) {
-                  final stampCard = cards[index];
-                  return CardsListItemCard(
-                    key: ValueKey(stampCard.id),
-                    card: stampCard,
-                  );
-                },
-              ),
-            ),
-          );
+        : cards.isEmpty
+            ? Center(
+                child: Text(
+                  'No data found!',
+                  style: Theme.of(context).textTheme.headlineSmall!.copyWith(
+                        color: Theme.of(context).colorScheme.onBackground,
+                      ),
+                ),
+              )
+            : Expanded(
+                child: NotificationListener<ScrollNotification>(
+                  // onNotification: _handleScrollNotification,
+                  child: ListView.builder(
+                    itemCount: cards.length,
+                    itemBuilder: (ctx, index) {
+                      final stampCard = cards[index];
+                      return CardsListItemCard(
+                        key: ValueKey(stampCard.id),
+                        card: stampCard,
+                      );
+                    },
+                  ),
+                ),
+              );
   }
 
   // void loadFromEntityProviders() {

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:carol/params/app.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
@@ -12,6 +13,10 @@ final random = Random();
 const distance = Distance();
 final dateFormatter = DateFormat.yMd();
 final timeFormatter = DateFormat.Hms();
+
+const refreshCoolingDuration = Duration(seconds: refreshCoolingSeconds);
+const refreshOwnerRedeemRequestsListCoolingDuration =
+    Duration(seconds: refreshOwnerRedeemRequestsListCoolingSeconds);
 
 String formatRemaining(Duration duration) {
   if (duration.isNegative) {

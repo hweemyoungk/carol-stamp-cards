@@ -1,3 +1,4 @@
+import 'package:carol/apis/utils.dart';
 import 'package:carol/models/redeem_request.dart';
 import 'package:carol/screens/redeem_request_dialog_screen.dart';
 import 'package:carol/widgets/common/circular_progress_indicator_in_button.dart';
@@ -18,30 +19,54 @@ class RedeemRequestsListItem extends ConsumerStatefulWidget {
 
 class _RedeemRequestsListItemState
     extends ConsumerState<RedeemRequestsListItem> {
+  late RedeemRequest _redeemRequest;
+  @override
+  void initState() {
+    super.initState();
+    _redeemRequest = widget.redeemRequest;
+    _notifyEverySecond();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final redeemRequest = widget.redeemRequest;
-    if (redeemRequest.redeemRule?.blueprint?.store == null) {
+    // final redeemRequest = widget.redeemRequest;
+    if (_redeemRequest.redeemRule?.blueprint?.store == null) {
       return const ListTile(
         onTap: null,
         leading: CircularProgressIndicatorInButton(),
         title: Text('Loading redeem request...'),
       );
-      // return const Loading(message: 'Loading redeem request...');
     }
+
+    var disabled = _redeemRequest.expired || _redeemRequest.isRedeemed;
+    final textStyle = TextStyle(
+      color: disabled
+          ? Theme.of(context).colorScheme.onBackground.withOpacity(0.5)
+          : Theme.of(context).colorScheme.onBackground,
+    );
     return ListTile(
-      onTap: () {
-        _notifyRedeemRequestDialogScreen();
-        showDialog(
-          context: context,
-          builder: (ctx) {
-            return const RedeemRequestDialogScreen();
-          },
-        );
-      },
-      leading: Text(redeemRequest.customerDisplayName),
-      title: Text(redeemRequest.redeemRule!.displayName),
-      trailing: redeemRequest.remainingSecondsWidget,
+      onTap: disabled
+          ? null
+          : () {
+              _notifyRedeemRequestDialogScreen();
+              showDialog(
+                context: context,
+                builder: (ctx) {
+                  return RedeemRequestDialogScreen(
+                    notifyRedeemRequestToParent: _notifyRedeemRequest,
+                  );
+                },
+              );
+            },
+      leading: Text(
+        _redeemRequest.customerDisplayName,
+        style: textStyle,
+      ),
+      title: Text(
+        _redeemRequest.redeemRule!.displayName,
+        style: textStyle,
+      ),
+      trailing: _redeemRequest.remainingSecondsWidget,
     );
   }
 
@@ -50,6 +75,21 @@ class _RedeemRequestsListItemState
     final redeemRequestNotifier =
         ref.read(ownerRedeemRequestDialogRedeemRequestProvider.notifier);
     redeemRequestNotifier.set(null);
-    redeemRequestNotifier.set(widget.redeemRequest);
+    redeemRequestNotifier.set(_redeemRequest);
+  }
+
+  Future<void> _notifyEverySecond() async {
+    while (!_redeemRequest.expired) {
+      await Future.delayed(durationOneSecond);
+      if (!mounted) return;
+      setState(() {});
+    }
+  }
+
+  void _notifyRedeemRequest(RedeemRequest redeemRequest) {
+    if (!mounted) return;
+    setState(() {
+      _redeemRequest = redeemRequest;
+    });
   }
 }

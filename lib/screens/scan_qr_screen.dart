@@ -298,7 +298,7 @@ class _OwnerScanQrScreenState extends ConsumerState<ScanQrScreen> {
       Carol.showTextSnackBar(text: 'Data is empty');
       return null;
     }
-    return tryParse(json.decode(code));
+    return tryParse(json.decode(String.fromCharCodes(base64.decode(code))));
   }
 
   dynamic tryParse(dynamic json) {

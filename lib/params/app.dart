@@ -7,3 +7,7 @@ const watchRedeemRequestDurationSeconds = 30;
 
 const httpTimeoutSeconds = 5;
 const httpMaxRetry = 3;
+
+// Refresh
+const refreshCoolingSeconds = 5;
+const refreshOwnerRedeemRequestsListCoolingSeconds = 3;

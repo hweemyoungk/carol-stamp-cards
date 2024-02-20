@@ -27,6 +27,33 @@ class RedeemRequest extends StringModel {
     required this.redeemRule,
     required this.redeemRuleId,
   });
+  RedeemRequest copyWith({
+    String? id,
+    bool? isDeleted,
+    String? displayName,
+    String? customerId,
+    String? customerDisplayName,
+    String? blueprintDisplayName,
+    int? expMilliseconds,
+    bool? isRedeemed,
+    int? stampCardId,
+    RedeemRule? redeemRule,
+    int? redeemRuleId,
+  }) {
+    return RedeemRequest(
+      id: id ?? this.id,
+      isDeleted: isDeleted ?? this.isDeleted,
+      displayName: displayName ?? this.displayName,
+      customerId: customerId ?? this.customerId,
+      customerDisplayName: customerDisplayName ?? this.customerDisplayName,
+      stampCardId: stampCardId ?? this.stampCardId,
+      blueprintDisplayName: blueprintDisplayName ?? this.blueprintDisplayName,
+      expMilliseconds: expMilliseconds ?? this.expMilliseconds,
+      isRedeemed: isRedeemed ?? this.isRedeemed,
+      redeemRule: redeemRule ?? this.redeemRule,
+      redeemRuleId: redeemRuleId ?? this.redeemRuleId,
+    );
+  }
 
   RedeemRequest.fromJson(Map<String, dynamic> json)
       : displayName = json['displayName'] as String,
@@ -64,6 +91,9 @@ class RedeemRequest extends StringModel {
 
   bool get expired => ttlMilliseconds < 0;
 
-  Text get remainingSecondsWidget =>
-      Text('${(ttlMilliseconds / 1000).floor().toString()}s');
+  Text get remainingSecondsWidget => isRedeemed
+      ? const Text('Approved')
+      : expired
+          ? const Text('-')
+          : Text('${(ttlMilliseconds / 1000).floor().toString()}s');
 }

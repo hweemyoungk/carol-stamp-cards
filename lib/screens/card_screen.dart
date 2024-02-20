@@ -34,6 +34,7 @@ class CardScreen extends ConsumerStatefulWidget {
 
 class _CardScreenState extends ConsumerState<CardScreen> {
   var _isDeleting = false;
+  var _isRefreshCooling = false;
 
   @override
   Widget build(BuildContext context) {
@@ -119,10 +120,15 @@ class _CardScreenState extends ConsumerState<CardScreen> {
             onPressed: _onPressModifyCard,
             icon: const Icon(Icons.construction),
           ),
-          IconButton(
-            onPressed: _onPressRefreshCard,
-            icon: const Icon(Icons.refresh),
-          ),
+          _isRefreshCooling
+              ? const IconButton(
+                  onPressed: null,
+                  icon: Icon(Icons.refresh),
+                )
+              : IconButton(
+                  onPressed: _onPressRefreshCard,
+                  icon: const Icon(Icons.refresh),
+                ),
         ],
       ),
       backgroundColor: Theme.of(context).colorScheme.secondary,
@@ -130,7 +136,7 @@ class _CardScreenState extends ConsumerState<CardScreen> {
         builder: (ctx, constraints) {
           final qr = SimpleCardQr.fromStampCard(card);
           final qrImageView = QrImageView(
-            data: json.encode(qr.toJson()),
+            data: base64.encode(json.encode(qr.toJson()).codeUnits),
             version: QrVersions.auto,
             size: constraints.maxWidth * 0.4,
           );
@@ -420,6 +426,8 @@ class _CardScreenState extends ConsumerState<CardScreen> {
   }
 
   Future<void> _onPressRefreshCard() async {
+    _setRefreshCooling();
+
     final oldCard = ref.read(customerCardScreenCardProvider);
     if (oldCard == null) {
       return;
@@ -476,5 +484,17 @@ class _CardScreenState extends ConsumerState<CardScreen> {
     }
     // customerCardScreenCardProvider
     cardNotifier.set(fetchedCard);
+  }
+
+  Future<void> _setRefreshCooling() async {
+    if (!mounted) return;
+    setState(() {
+      _isRefreshCooling = true;
+    });
+    await Future.delayed(refreshCoolingDuration);
+    if (!mounted) return;
+    setState(() {
+      _isRefreshCooling = false;
+    });
   }
 }

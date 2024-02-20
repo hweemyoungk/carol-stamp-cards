@@ -13,8 +13,10 @@ final ownerRedeemRequestDialogRedeemRequestProvider =
         (ref) => RedeemRequestNotifier(null));
 
 class RedeemRequestDialogScreen extends ConsumerStatefulWidget {
+  final void Function(RedeemRequest redeemRequest) notifyRedeemRequestToParent;
   const RedeemRequestDialogScreen({
     super.key,
+    required this.notifyRedeemRequestToParent,
   });
 
   @override
@@ -189,6 +191,10 @@ class _RedeemRequestDialogScreenState
       if (!mounted) return;
       Navigator.of(context).pop();
     }
+
+    widget.notifyRedeemRequestToParent(
+      redeemRequest.copyWith(isRedeemed: true),
+    );
 
     if (mounted) {
       setState(() {
