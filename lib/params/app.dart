@@ -1,6 +1,9 @@
 const versionName = '1.0.0';
 const versionCode = '1';
 
+// Store
+const deleteClosedStoreInDays = 7;
+
 // Redeem process
 const watchRedeemRequestIntervalSeconds = 3;
 const watchRedeemRequestDurationSeconds = 30;

@@ -7,6 +7,7 @@ import 'package:carol/screens/owner_design_redeem_rule_screen.dart';
 import 'package:carol/screens/store_screen.dart';
 import 'package:carol/utils.dart';
 import 'package:carol/widgets/common/icon_button_in_progress.dart';
+import 'package:carol/widgets/common/proceed_alert_dialog.dart';
 import 'package:carol/widgets/stores_explorer/stores_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -573,6 +574,33 @@ class _OwnerDesignStoreScreenState
       return;
     }
 
+    // Proceed alert
+    final title = widget.designMode == BlueprintDesignMode.create
+        ? const Text('Create Blueprint?')
+        : const Text('Modify Blueprint?');
+    final content = widget.designMode == BlueprintDesignMode.create
+        ? _isPublishing
+            ? const Text(
+                'This will take up 1 active blueprint of current store.')
+            : const Text('This will take up 1 blueprint of current store.')
+        : null;
+    final proceedButtonString =
+        widget.designMode == BlueprintDesignMode.create ? 'Create' : 'Modify';
+    final proceed = await showAdaptiveDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        return ProceedAlertDialog(
+          title: title,
+          content: content,
+          proceedButtonString: proceedButtonString,
+        );
+      },
+    );
+    if (proceed == null || !proceed) {
+      return;
+    }
+
+    // Save
     final storesNotifier = ref.read(ownerStoresListStoresProvider.notifier);
     final storeNotifier = ref.read(ownerStoreScreenStoreProvider.notifier);
     final blueprintNotifier =
@@ -811,11 +839,15 @@ class _OwnerDesignStoreScreenState
     if (newRedeemRule == null) {
       return;
     }
-    if (mounted) {
-      setState(() {
-        _redeemRules.add(newRedeemRule);
-      });
-    }
+    Carol.showTextSnackBar(
+      text: 'This will take up 1 redeem rule of current blueprint.',
+      level: SnackBarLevel.info,
+    );
+
+    if (!mounted) return;
+    setState(() {
+      _redeemRules.add(newRedeemRule);
+    });
   }
 }
 

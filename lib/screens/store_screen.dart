@@ -5,6 +5,7 @@ import 'package:carol/apis/owner_apis.dart' as owner_apis;
 import 'package:carol/main.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/models/store.dart';
+import 'package:carol/params/app.dart';
 import 'package:carol/providers/blueprint_notifier.dart';
 import 'package:carol/providers/store_notifier.dart';
 import 'package:carol/screens/blueprint_dialog_screen.dart';
@@ -145,39 +146,62 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     //   child: const Text('Here comes google map. (Click to open external app)'),
     // );
 
-    final phone = Row(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        Padding(
-          padding: DesignUtils.basicWidgetEdgeInsets(),
-          child: const Icon(Icons.phone),
-        ),
-        Padding(
-          padding: DesignUtils.basicWidgetEdgeInsets(),
-          child: Text(
-            store.phone,
-            style: Theme.of(context).textTheme.bodyLarge,
-          ),
-        ),
-      ],
-    );
+    final phone = store.phone == null
+        ? null
+        : Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Padding(
+                padding: DesignUtils.basicWidgetEdgeInsets(),
+                child: const Icon(Icons.phone),
+              ),
+              Padding(
+                padding: DesignUtils.basicWidgetEdgeInsets(),
+                child: Text(
+                  store.phone!,
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+              ),
+            ],
+          );
 
-    final address = Row(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        Padding(
-          padding: DesignUtils.basicWidgetEdgeInsets(),
-          child: const Icon(Icons.home),
-        ),
-        Padding(
-          padding: DesignUtils.basicWidgetEdgeInsets(),
-          child: Text(
-            store.address,
-            style: Theme.of(context).textTheme.bodyLarge,
-          ),
-        ),
-      ],
-    );
+    final zipcode = store.zipcode == null
+        ? null
+        : Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Padding(
+                padding: DesignUtils.basicWidgetEdgeInsets(),
+                child: const Icon(Icons.location_on),
+              ),
+              Padding(
+                padding: DesignUtils.basicWidgetEdgeInsets(),
+                child: Text(
+                  store.zipcode!,
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+              ),
+            ],
+          );
+
+    final address = store.address == null
+        ? null
+        : Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Padding(
+                padding: DesignUtils.basicWidgetEdgeInsets(),
+                child: const Icon(Icons.home),
+              ),
+              Padding(
+                padding: DesignUtils.basicWidgetEdgeInsets(),
+                child: Text(
+                  store.address!,
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+              ),
+            ],
+          );
 
     final Widget description = Padding(
       padding: DesignUtils.basicWidgetEdgeInsets(),
@@ -351,8 +375,9 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       mainAxisSize: MainAxisSize.min,
       children: [
         storeName,
-        address,
-        phone,
+        if (zipcode != null) zipcode,
+        if (address != null) address,
+        if (phone != null) phone,
         // googleMap,
         blueprintsExplorer,
         description,
@@ -522,6 +547,8 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                 ],
               ),
             ),
+            const Text(
+                'Closed store will be deleted in $deleteClosedStoreInDays days automatically.'),
             Padding(
               padding: DesignUtils.basicWidgetEdgeInsets(),
               child: Row(
@@ -618,7 +645,6 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     final Store storeWithBlueprints;
 
     final Store fetchedStore;
-    // TODO: Fetch blueprints with store.
     final Set<Blueprint> fetchedBlueprints;
     if (_mode == StoreScreenMode.customer) {
       // Customer mode

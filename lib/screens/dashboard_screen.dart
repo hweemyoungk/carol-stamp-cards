@@ -1,3 +1,4 @@
+import 'package:carol/screens/account_screen.dart';
 import 'package:carol/screens/customer_screen.dart';
 import 'package:carol/screens/membership_screen.dart';
 import 'package:carol/screens/owner_screen.dart';
@@ -19,11 +20,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   Widget build(BuildContext context) {
     final activeDrawerItemEnum = ref.watch(activeDrawerItemProvider);
     if (activeDrawerItemEnum == DrawerItemEnum.customer) {
+      content = const AccountScreen();
+    } else if (activeDrawerItemEnum == DrawerItemEnum.customer) {
       content = CustomerScreen();
     } else if (activeDrawerItemEnum == DrawerItemEnum.owner) {
       content = OwnerScreen();
     } else if (activeDrawerItemEnum == DrawerItemEnum.membership) {
-      content = MembershipScreen();
+      content = const MembershipScreen();
     } else {
       content = Scaffold(
         appBar: AppBar(),

@@ -26,16 +26,19 @@ class _StoresListItemState extends ConsumerState<StoresListItem> {
     final store = widget.store;
     final inactiveColor =
         Theme.of(context).colorScheme.onBackground.withOpacity(0.5);
+    final distanceString = store.getDistanceString(0.0, 0.0);
     return ListTile(
       onTap: _onTapItem,
       title: Text(
         store.displayName,
         style: !store.isInactive ? null : TextStyle(color: inactiveColor),
       ),
-      trailing: Text(
-        store.getDistanceString(0.0, 0.0),
-        style: !store.isInactive ? null : TextStyle(color: inactiveColor),
-      ),
+      trailing: distanceString == null
+          ? null
+          : Text(
+              distanceString,
+              style: !store.isInactive ? null : TextStyle(color: inactiveColor),
+            ),
     );
   }
 

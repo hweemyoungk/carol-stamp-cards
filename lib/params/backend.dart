@@ -16,6 +16,9 @@ const appPublicCustomerMembershipMapPath =
 const appPublicOwnerMembershipMapPath =
     '/app/api/v1/public/owner/membership/map'; // GET
 
+// Auth service
+const authUserPath = '/auth/api/v1/user'; // DELETE
+
 // Customer service
 const customerStampCardPath = '/customer/api/v1/card'; // POST,GET,PUT,DELETE
 const customerStampCardListPath = '/customer/api/v1/card/list'; // GET

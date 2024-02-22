@@ -1,8 +1,6 @@
 import 'package:carol/apis/customer_apis.dart' as customer_apis;
 import 'package:carol/apis/owner_apis.dart' as owner_apis;
-import 'package:carol/apis/utils.dart';
 import 'package:carol/main.dart';
-import 'package:carol/params/auth.dart';
 import 'package:carol/providers/active_drawer_item_notifier.dart';
 import 'package:carol/screens/auth_screen.dart';
 import 'package:carol/screens/customer_screen.dart';
@@ -66,7 +64,11 @@ class MainDrawer extends ConsumerWidget {
         children: [
           DrawerHeader(
             child: TextButton(
-              onPressed: _onPressAccount,
+              onPressed: () {
+                ref
+                    .read(activeDrawerItemProvider.notifier)
+                    .set(DrawerItemEnum.account);
+              },
               child: Row(
                 children: [
                   profileIcon,
@@ -130,12 +132,6 @@ class MainDrawer extends ConsumerWidget {
         ],
       ),
     );
-  }
-
-  Future<void> _onPressAccount() async {
-    // final url = Uri.http(keycloakHostname, accountPath);
-    final url = Uri.https(keycloakHostname, accountPath);
-    await launchInBrowserView(url);
   }
 }
 
@@ -207,6 +203,7 @@ class _DrawerItemState extends ConsumerState<DrawerItem> {
 }
 
 enum DrawerItemEnum {
+  account,
   customer,
   owner,
   membership,

@@ -4,12 +4,12 @@ import 'dart:developer' as developer;
 
 import 'package:app_links/app_links.dart';
 import 'package:carol/apis/app_apis.dart' as app_apis;
-import 'package:carol/apis/auth_apis.dart';
+import 'package:carol/apis/athena_apis.dart';
 import 'package:carol/apis/customer_apis.dart' as customer_apis;
 import 'package:carol/apis/utils.dart';
 import 'package:carol/main.dart';
 import 'package:carol/models/user.dart';
-import 'package:carol/params/auth.dart' as auth_params;
+import 'package:carol/params/athena.dart' as auth_params;
 import 'package:carol/params/shared_preferences.dart'
     as shared_preferences_params;
 import 'package:carol/providers/auth_status_notifier.dart';

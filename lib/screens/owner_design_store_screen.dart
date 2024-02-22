@@ -4,6 +4,7 @@ import 'package:carol/models/store.dart';
 import 'package:carol/screens/auth_screen.dart';
 import 'package:carol/screens/store_screen.dart';
 import 'package:carol/utils.dart';
+import 'package:carol/widgets/common/proceed_alert_dialog.dart';
 import 'package:carol/widgets/stores_explorer/stores_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -28,11 +29,11 @@ class _OwnerDesignStoreScreenState
   final _formKey = GlobalKey<FormState>();
   late String _displayName;
   late String _description;
-  late String _zipcode;
-  late String _address;
-  late String _phone;
-  late double _lat;
-  late double _lng;
+  late String? _zipcode;
+  late String? _address;
+  late String? _phone;
+  late double? _lat;
+  late double? _lng;
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +45,7 @@ class _OwnerDesignStoreScreenState
         actions: [
           _status == StoreDesignStatus.userInput
               ? IconButton(
-                  onPressed: _saveStore,
+                  onPressed: _onPressSave,
                   icon: const Icon(Icons.check),
                 )
               : Padding(
@@ -124,8 +125,10 @@ class _OwnerDesignStoreScreenState
                           label: Text('Zipcode'),
                         ),
                         validator: (value) {
-                          if (value == null ||
-                              value.trim().length <= 1 ||
+                          if (value == null) {
+                            return null;
+                          }
+                          if (value.trim().length <= 1 ||
                               value.trim().length > 8) {
                             return 'Must be between 1 and 8 characters long';
                           }
@@ -147,8 +150,10 @@ class _OwnerDesignStoreScreenState
                           label: Text('Address'),
                         ),
                         validator: (value) {
-                          if (value == null ||
-                              value.trim().length <= 1 ||
+                          if (value == null) {
+                            return null;
+                          }
+                          if (value.trim().length <= 1 ||
                               value.trim().length > 100) {
                             return 'Must be between 1 and 100 characters long';
                           }
@@ -171,8 +176,10 @@ class _OwnerDesignStoreScreenState
                           label: Text('Phone'),
                         ),
                         validator: (value) {
-                          if (value == null ||
-                              value.trim().length <= 1 ||
+                          if (value == null) {
+                            return null;
+                          }
+                          if (value.trim().length <= 1 ||
                               value.trim().length > 15) {
                             return 'Must be between 1 and 15 characters long';
                           }
@@ -206,8 +213,10 @@ class _OwnerDesignStoreScreenState
                                 label: Text('Latitude'),
                               ),
                               validator: (value) {
-                                if (value == null ||
-                                    double.tryParse(value) == null ||
+                                if (value == null) {
+                                  return null;
+                                }
+                                if (double.tryParse(value) == null ||
                                     90 < double.parse(value) ||
                                     double.parse(value) < -90) {
                                   return 'Must be valid float between -90 and 90';
@@ -239,8 +248,10 @@ class _OwnerDesignStoreScreenState
                                 label: Text('Longitude'),
                               ),
                               validator: (value) {
-                                if (value == null ||
-                                    double.tryParse(value) == null ||
+                                if (value == null) {
+                                  return null;
+                                }
+                                if (double.tryParse(value) == null ||
                                     180 < double.parse(value) ||
                                     double.parse(value) < -180) {
                                   return 'Must be valid float between -180 and 180';
@@ -268,7 +279,32 @@ class _OwnerDesignStoreScreenState
     );
   }
 
-  void _saveStore() async {
+  Future<void> _onPressSave() async {
+    final title = widget.designMode == StoreDesignMode.create
+        ? const Text('Create Store?')
+        : const Text('Modify Store?');
+    final content = widget.designMode == StoreDesignMode.create
+        ? const Text('This will take up 1 active store.')
+        : null;
+    final proceedButtonString =
+        widget.designMode == StoreDesignMode.create ? 'Create' : 'Modify';
+    final proceed = await showAdaptiveDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        return ProceedAlertDialog(
+          title: title,
+          content: content,
+          proceedButtonString: proceedButtonString,
+        );
+      },
+    );
+    if (proceed == null || !proceed) {
+      return;
+    }
+    _saveStore();
+  }
+
+  Future<void> _saveStore() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
