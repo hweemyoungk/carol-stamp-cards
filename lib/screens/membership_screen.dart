@@ -1,17 +1,20 @@
 import 'package:carol/main.dart';
+import 'package:carol/models/customer_membership.dart';
 import 'package:carol/models/membership.dart';
+import 'package:carol/models/owner_membership.dart';
 import 'package:carol/screens/auth_screen.dart';
 import 'package:carol/utils.dart';
 import 'package:carol/widgets/main_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final customerMemberships = [
-  Membership(
-    requiredRole: 'customer-starter',
+final customerMemberships = {
+  'customer-alpha': CustomerMembership(
+    priority: 1,
+    requiredRole: 'customer-alpha',
     isPublishing: true,
     isActive: false,
-    displayName: 'Starter',
+    displayName: 'Alpha',
     descriptions: [
       'Unlimited active cards',
       'Ads included',
@@ -19,8 +22,12 @@ final customerMemberships = [
     colorScheme: colorScheme,
     iconData: Icons.credit_card,
     monthlyPrice: null,
+    numMaxAccumulatedTotalCards: -1,
+    numMaxCurrentTotalCards: -1,
+    numMaxCurrentActiveCards: -1,
   ),
-  Membership(
+  'customer-premium': CustomerMembership(
+    priority: 2,
     requiredRole: 'customer-premium',
     isPublishing: false,
     isActive: false,
@@ -32,55 +39,80 @@ final customerMemberships = [
     colorScheme: colorScheme,
     iconData: Icons.credit_score,
     monthlyPrice: '(Example) \$0.99',
+    numMaxAccumulatedTotalCards: -1,
+    numMaxCurrentTotalCards: -1,
+    numMaxCurrentActiveCards: -1,
   ),
-];
-final ownerMemberships = [
-  Membership(
-    requiredRole: 'owner-starter',
+};
+final ownerMemberships = {
+  'owner-alpha': OwnerMembership(
+    priority: 1,
+    requiredRole: 'owner-alpha',
     isPublishing: true,
     isActive: false,
-    displayName: 'Starter',
+    displayName: 'Alpha',
     descriptions: [
-      '1 active store',
-      '1 publishing blueprint',
-      '2 redeem rules',
+      '1 active (2 total) store',
+      '3 publishing (3 total) blueprints per store',
+      '3 redeem rules per blueprint',
       'Ads included',
     ],
     colorScheme: colorScheme,
     iconData: Icons.house,
     monthlyPrice: null,
+    numMaxAccumulatedTotalStores: -1,
+    numMaxCurrentTotalStores: 2,
+    numMaxCurrentActiveStores: 1,
+    numMaxCurrentTotalBlueprintsPerStore: 3,
+    numMaxCurrentActiveBlueprintsPerStore: 3,
+    numMaxCurrentTotalRedeemRulesPerBlueprint: 3,
+    numMaxCurrentActiveRedeemRulesPerBlueprint: 3,
   ),
-  Membership(
+  'owner-premium': OwnerMembership(
+    priority: 2,
     requiredRole: 'owner-premium',
     isPublishing: false,
     isActive: false,
     displayName: 'Premium',
     descriptions: [
-      '2 active stores',
-      '3 publishing blueprint per store',
+      '2 active (4 total) stores',
+      '3 publishing (5 total) blueprint per store',
       '5 redeem rules per blueprint',
       'Ads removed',
     ],
     colorScheme: colorScheme,
     iconData: Icons.store,
     monthlyPrice: '(Example) \$4.50',
+    numMaxAccumulatedTotalStores: -1,
+    numMaxCurrentTotalStores: 4,
+    numMaxCurrentActiveStores: 2,
+    numMaxCurrentTotalBlueprintsPerStore: 5,
+    numMaxCurrentActiveBlueprintsPerStore: 3,
+    numMaxCurrentTotalRedeemRulesPerBlueprint: 5,
+    numMaxCurrentActiveRedeemRulesPerBlueprint: 5,
   ),
-  Membership(
+  'owner-business': OwnerMembership(
+    priority: 3,
     requiredRole: 'owner-business',
     isPublishing: false,
     isActive: false,
     displayName: 'Business',
     descriptions: [
-      'Up to 5 active store',
-      '5 publishing blueprint per store',
-      '10 redeem rules per blueprint',
+      'Unlimited stores, blueprints and redeem rules',
       'Ads removed',
     ],
     colorScheme: colorScheme,
     iconData: Icons.business,
-    monthlyPrice: '(Example) \$9.90',
+    monthlyPrice: '(Contact us)',
+    numMaxAccumulatedTotalStores: -1,
+    numMaxCurrentTotalStores: -1,
+    numMaxCurrentActiveStores: -1,
+    numMaxCurrentTotalBlueprintsPerStore: -1,
+    numMaxCurrentActiveBlueprintsPerStore: -1,
+    numMaxCurrentTotalRedeemRulesPerBlueprint: -1,
+    numMaxCurrentActiveRedeemRulesPerBlueprint: -1,
   ),
-];
+};
 
 class MembershipScreen extends ConsumerStatefulWidget {
   const MembershipScreen({super.key});
@@ -136,9 +168,9 @@ class _MembershipScreenState extends ConsumerState<MembershipScreen> {
   List<Membership> _getMemberships() {
     switch (_activeBottomItemIndex) {
       case 0:
-        return customerMemberships;
+        return customerMemberships.values.toList();
       case 1:
-        return ownerMemberships;
+        return ownerMemberships.values.toList();
       default:
         return [];
     }

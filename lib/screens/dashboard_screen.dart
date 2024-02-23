@@ -19,7 +19,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final activeDrawerItemEnum = ref.watch(activeDrawerItemProvider);
-    if (activeDrawerItemEnum == DrawerItemEnum.customer) {
+    if (activeDrawerItemEnum == DrawerItemEnum.account) {
       content = const AccountScreen();
     } else if (activeDrawerItemEnum == DrawerItemEnum.customer) {
       content = CustomerScreen();

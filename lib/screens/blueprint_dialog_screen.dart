@@ -253,83 +253,23 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
     }
 
     // Check max issues per customer
-    Future<bool> numMaxIssuesPerCustomerTask;
-    if (blueprint.numMaxIssuesPerCustomer == 0) {
-      numMaxIssuesPerCustomerTask = Future.value(false);
-    } else {
-      numMaxIssuesPerCustomerTask = _violatedNumMaxIssuesPerCustomer(
-        user: user,
-        blueprint: blueprint,
-      ).then((violated) {
-        if (violated) {
-          if (mounted) {
-            setState(() {
-              _issueStatus = _IssueStatus.notIssuable;
-              _alertRows.add(
-                const AlertRow(
-                    text: 'Exceeded max number of issues per customer.'),
-              );
-            });
-          }
-        }
-        return violated;
-      }).onError((error, stackTrace) {
-        if (error is Exception) {
-          Carol.showExceptionSnackBar(
-            error,
-            contextMessage:
-                'Failed to get number of issued cards per customer.',
-          );
-        }
-        if (mounted) {
-          setState(() {
-            _issueStatus = _IssueStatus.notIssuable;
-            _alertRows.add(
-              const AlertRow(
-                  text: 'Failed to get number of issued cards per customer.'),
-            );
-          });
-        }
-        return true;
-      });
-    }
+    Future<bool> numMaxIssuesPerCustomerTask = _violatedNumMaxIssuesPerCustomer(
+      user: user,
+      blueprint: blueprint,
+    );
 
     // Check max total issues
     Future<bool> numMaxTotalIssuesTask = _violatedNumMaxTotalIssues(
       blueprint: blueprint,
-    ).then((violated) {
-      if (violated) {
-        if (mounted) {
-          setState(() {
-            _issueStatus = _IssueStatus.notIssuable;
-            _alertRows.add(
-              const AlertRow(text: 'Exceeded max total number of issues.'),
-            );
-          });
-        }
-      }
-      return violated;
-    }).onError((error, stackTrace) {
-      if (error is Exception) {
-        Carol.showExceptionSnackBar(
-          error,
-          contextMessage: 'Failed to get total number of issued cards.',
-        );
-      }
-      if (mounted) {
-        setState(() {
-          _issueStatus = _IssueStatus.notIssuable;
-          _alertRows.add(
-            const AlertRow(text: 'Failed to get total number of issued cards.'),
-          );
-        });
-      }
-      return true;
-    });
+    );
+
+    // Check customer membership
+    Future<bool> membershipTask = _violatedCustomerMembership(user);
 
     final tasks = [
       numMaxIssuesPerCustomerTask,
       numMaxTotalIssuesTask,
+      membershipTask,
     ];
     final violations = await Future.wait(tasks);
     if (violations.every((violated) => !violated)) {
@@ -345,23 +285,242 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
     required User user,
     required Blueprint blueprint,
   }) async {
-    final numCustomerIssuedCards =
-        await customer_apis.getNumCustomerIssuedCards(
-      customerId: user.id,
-      blueprintId: blueprint.id,
-    );
-    return blueprint.numMaxIssuesPerCustomer <= numCustomerIssuedCards;
+    // Check infinity
+    if (blueprint.numMaxIssuesPerCustomer == 0) return false;
+
+    final int numCustomerIssuedCards;
+    try {
+      numCustomerIssuedCards = await customer_apis.getNumCustomerIssuedCards(
+        customerId: user.id,
+        blueprintId: blueprint.id,
+      );
+    } on Exception {
+      if (mounted) {
+        setState(() {
+          _issueStatus = _IssueStatus.notIssuable;
+          _alertRows.add(
+            const AlertRow(
+              text: 'Failed to get number of issues per customer.',
+            ),
+          );
+        });
+      }
+      return true;
+    }
+    final violated =
+        blueprint.numMaxIssuesPerCustomer <= numCustomerIssuedCards;
+    if (violated) {
+      if (mounted) {
+        setState(() {
+          _issueStatus = _IssueStatus.notIssuable;
+          _alertRows.add(
+            const AlertRow(text: 'Exceeded max number of issues per customer.'),
+          );
+        });
+      }
+    }
+    return violated;
   }
 
   Future<bool> _violatedNumMaxTotalIssues({
     required Blueprint blueprint,
   }) async {
-    final numTotalIssuedCards = await customer_apis.getNumTotalIssuedCards(
-      blueprintId: blueprint.id,
-    );
+    final int numTotalIssuedCards;
+    try {
+      numTotalIssuedCards = await customer_apis.getNumTotalIssuedCards(
+        blueprintId: blueprint.id,
+      );
+    } on Exception {
+      if (mounted) {
+        setState(() {
+          _issueStatus = _IssueStatus.notIssuable;
+          _alertRows.add(
+            const AlertRow(text: 'Failed to get total number of issued cards.'),
+          );
+        });
+      }
+      return true;
+    }
+
     // 0: Infinite
-    return blueprint.numMaxIssues != 0 &&
+    final violated = blueprint.numMaxIssues != 0 &&
         blueprint.numMaxIssues <= numTotalIssuedCards;
+    if (violated) {
+      if (mounted) {
+        setState(() {
+          _issueStatus = _IssueStatus.notIssuable;
+          _alertRows.add(
+            const AlertRow(text: 'Exceeded max total number of issues.'),
+          );
+        });
+      }
+    }
+    return violated;
+  }
+
+  Future<bool> _violatedCustomerMembership(User user) async {
+    final violatedMembershipExists = _violatedMembershipExists(user);
+    if (violatedMembershipExists) {
+      return true;
+    }
+    // @Min(-1) numMaxAccumulatedTotalCards
+    Future<bool> violatedNumMaxAccumulatedTotalCardsTask =
+        _violatedNumMaxAccumulatedTotalCards(user: user);
+    // @Min(-1) numMaxCurrentTotalCards
+    Future<bool> violatedNumMaxCurrentTotalCardsTask =
+        _violatedNumMaxCurrentTotalCards(user: user);
+    // @Min(-1) numMaxCurrentActiveCards
+    Future<bool> violatedNumMaxCurrentActiveCardsTask =
+        _violatedMaxCurrentActiveCards(user: user);
+
+    final tasks = [
+      violatedNumMaxAccumulatedTotalCardsTask,
+      violatedNumMaxCurrentTotalCardsTask,
+      violatedNumMaxCurrentActiveCardsTask,
+    ];
+    final violations = await Future.wait(tasks);
+    return violations.any((violated) => violated);
+  }
+
+  bool _violatedMembershipExists(User user) {
+    if (user.customerMembership == null) {
+      Carol.showTextSnackBar(
+        text: 'Cannot find customer membership. Please sign in again.',
+        level: SnackBarLevel.error,
+      );
+      if (mounted) {
+        setState(() {
+          _issueStatus = _IssueStatus.notIssuable;
+          _alertRows.add(
+            const AlertRow(
+              text: 'Cannot find customer membership. Please sign in again.',
+            ),
+          );
+        });
+      }
+      return true;
+    }
+    return false;
+  }
+
+  Future<bool> _violatedNumMaxAccumulatedTotalCards({
+    required User user,
+  }) async {
+    // Check infinity
+    final numMaxAccumulatedTotalCards =
+        user.customerMembership!.numMaxAccumulatedTotalCards;
+    if (numMaxAccumulatedTotalCards == -1) return false;
+
+    // Fetch numAccumulatedTotalCards;
+    final int numAccumulatedTotalCards;
+    try {
+      numAccumulatedTotalCards =
+          await customer_apis.getNumAccumulatedTotalCards(
+        customerId: user.id,
+      );
+    } on Exception {
+      if (mounted) {
+        setState(() {
+          _issueStatus = _IssueStatus.notIssuable;
+          _alertRows.add(
+            const AlertRow(
+                text: 'Failed to get number of accumulated total cards.'),
+          );
+        });
+      }
+      return true;
+    }
+
+    final violated = numMaxAccumulatedTotalCards < numAccumulatedTotalCards + 1;
+    if (violated) {
+      if (mounted) {
+        setState(() {
+          _issueStatus = _IssueStatus.notIssuable;
+          _alertRows.add(
+            const AlertRow(text: 'Exceeded max of accumulated total cards.'),
+          );
+        });
+      }
+    }
+    return violated;
+  }
+
+  Future<bool> _violatedNumMaxCurrentTotalCards({required User user}) async {
+    // Check infinity
+    final numMaxCurrentTotalCards =
+        user.customerMembership!.numMaxCurrentTotalCards;
+    if (numMaxCurrentTotalCards == -1) return false;
+
+    // Fetch numAccumulatedTotalCards;
+    final int numCurrentTotalCards;
+    try {
+      numCurrentTotalCards = await customer_apis.getNumCurrentTotalCards(
+        customerId: user.id,
+      );
+    } on Exception {
+      if (mounted) {
+        setState(() {
+          _issueStatus = _IssueStatus.notIssuable;
+          _alertRows.add(
+            const AlertRow(
+                text: 'Failed to get number of current total cards.'),
+          );
+        });
+      }
+      return true;
+    }
+
+    final violated = numMaxCurrentTotalCards < numCurrentTotalCards + 1;
+    if (violated) {
+      if (mounted) {
+        setState(() {
+          _issueStatus = _IssueStatus.notIssuable;
+          _alertRows.add(
+            const AlertRow(text: 'Exceeded max of current total cards.'),
+          );
+        });
+      }
+    }
+    return violated;
+  }
+
+  Future<bool> _violatedMaxCurrentActiveCards({required User user}) async {
+    // Check infinity
+    final numMaxCurrentActiveCards =
+        user.customerMembership!.numMaxCurrentActiveCards;
+    if (numMaxCurrentActiveCards == -1) return false;
+
+    // Fetch numCurrentActiveCards;
+    final int numCurrentActiveCards;
+    try {
+      numCurrentActiveCards = await customer_apis.getNumCurrentActiveCards(
+        customerId: user.id,
+      );
+    } on Exception {
+      if (mounted) {
+        setState(() {
+          _issueStatus = _IssueStatus.notIssuable;
+          _alertRows.add(
+            const AlertRow(
+                text: 'Failed to get number of current active cards.'),
+          );
+        });
+      }
+      return true;
+    }
+
+    final violated = numMaxCurrentActiveCards < numCurrentActiveCards + 1;
+    if (violated) {
+      if (mounted) {
+        setState(() {
+          _issueStatus = _IssueStatus.notIssuable;
+          _alertRows.add(
+            const AlertRow(text: 'Exceeded max of current active cards.'),
+          );
+        });
+      }
+    }
+    return violated;
   }
 
   void _onPressIssue() async {

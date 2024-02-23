@@ -24,6 +24,12 @@ const customerStampCardPath = '/customer/api/v1/card'; // POST,GET,PUT,DELETE
 const customerStampCardListPath = '/customer/api/v1/card/list'; // GET
 const customerNumCustomerIssuedCardsPath =
     '/customer/api/v1/card/numIssues'; // GET
+const customerNumAccumulatedTotalCardsPath =
+    '/customer/api/v1/card/numAccumulatedTotalCards'; // GET
+const customerNumCurrentTotalCards =
+    '/customer/api/v1/card/numCurrentTotalCards'; // GET
+const customerNumCurrentActiveCards =
+    '/customer/api/v1/card/numCurrentActiveCards'; // GET
 const customerBlueprintPath = '/customer/api/v1/blueprint'; // GET
 const customerBlueprintListPath = '/customer/api/v1/blueprint/list'; // GET
 const customerNumTotalIssuedCardsPath =

@@ -27,51 +27,54 @@ class ProceedAlertDialog extends StatelessWidget {
     return AlertDialog(
       title: title,
       content: SingleChildScrollView(
-        child: Column(
-          children: [
-            if (content != null) content!,
-            Row(
-              children: [
-                Padding(
-                  padding: DesignUtils.basicWidgetEdgeInsets(),
-                  child: TextButton(
-                    style: TextButton.styleFrom(
-                        backgroundColor:
-                            Theme.of(context).colorScheme.background),
-                    onPressed: () {
-                      // Navigator.of(ctx).pop(false);
-                      Navigator.of(context).pop(false);
-                    },
-                    child: Text(
-                      'Back',
-                      textAlign: TextAlign.end,
-                      style: TextStyle(
-                          color: Theme.of(context).colorScheme.onBackground),
+        child: Center(
+          child: Column(
+            children: [
+              if (content != null) content!,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: DesignUtils.basicWidgetEdgeInsets(),
+                    child: TextButton(
+                      style: TextButton.styleFrom(
+                          backgroundColor:
+                              Theme.of(context).colorScheme.background),
+                      onPressed: () {
+                        // Navigator.of(ctx).pop(false);
+                        Navigator.of(context).pop(false);
+                      },
+                      child: Text(
+                        'Back',
+                        textAlign: TextAlign.end,
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.onBackground),
+                      ),
                     ),
                   ),
-                ),
-                Padding(
-                  padding: DesignUtils.basicWidgetEdgeInsets(),
-                  child: TextButton(
-                    style: TextButton.styleFrom(
-                        backgroundColor: proceedButtonColor ??
-                            Theme.of(context).colorScheme.primary),
-                    onPressed: () {
-                      // Navigator.of(ctx).pop(true);
-                      Navigator.of(context).pop(true);
-                    },
-                    child: Text(
-                      proceedButtonString ?? 'Proceed',
-                      textAlign: TextAlign.end,
-                      style: TextStyle(
-                          color: proceedButtonStringColor ??
-                              Theme.of(context).colorScheme.onPrimary),
+                  Padding(
+                    padding: DesignUtils.basicWidgetEdgeInsets(),
+                    child: TextButton(
+                      style: TextButton.styleFrom(
+                          backgroundColor: proceedButtonColor ??
+                              Theme.of(context).colorScheme.primary),
+                      onPressed: () {
+                        // Navigator.of(ctx).pop(true);
+                        Navigator.of(context).pop(true);
+                      },
+                      child: Text(
+                        proceedButtonString ?? 'Proceed',
+                        textAlign: TextAlign.end,
+                        style: TextStyle(
+                            color: proceedButtonStringColor ??
+                                Theme.of(context).colorScheme.onPrimary),
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

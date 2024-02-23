@@ -210,6 +210,51 @@ Future<int> getNumTotalIssuedCards({
   return int.parse(res.body);
 }
 
+Future<int> getNumAccumulatedTotalCards({
+  required String customerId,
+}) async {
+  // final url = Uri.http(
+  final url = Uri.https(
+    backend_params.apigateway,
+    backend_params.customerNumAccumulatedTotalCardsPath,
+    {
+      'customerId': customerId,
+    },
+  );
+  final res = await httpGet(url);
+  return int.parse(res.body);
+}
+
+Future<int> getNumCurrentTotalCards({
+  required String customerId,
+}) async {
+  // final url = Uri.http(
+  final url = Uri.https(
+    backend_params.apigateway,
+    backend_params.customerNumCurrentTotalCards,
+    {
+      'customerId': customerId,
+    },
+  );
+  final res = await httpGet(url);
+  return int.parse(res.body);
+}
+
+Future<int> getNumCurrentActiveCards({
+  required String customerId,
+}) async {
+  // final url = Uri.http(
+  final url = Uri.https(
+    backend_params.apigateway,
+    backend_params.customerNumCurrentActiveCards,
+    {
+      'customerId': customerId,
+    },
+  );
+  final res = await httpGet(url);
+  return int.parse(res.body);
+}
+
 Future<int> postStampCard({
   required StampCard stampCard,
 }) async {

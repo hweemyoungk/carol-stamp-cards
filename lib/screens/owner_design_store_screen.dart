@@ -125,7 +125,7 @@ class _OwnerDesignStoreScreenState
                           label: Text('Zipcode'),
                         ),
                         validator: (value) {
-                          if (value == null) {
+                          if (value == null || value.trim().isEmpty) {
                             return null;
                           }
                           if (value.trim().length <= 1 ||
@@ -135,7 +135,7 @@ class _OwnerDesignStoreScreenState
                           return null;
                         },
                         onSaved: (newValue) {
-                          _zipcode = newValue!;
+                          _zipcode = newValue;
                         },
                       ),
                     ),
@@ -150,7 +150,7 @@ class _OwnerDesignStoreScreenState
                           label: Text('Address'),
                         ),
                         validator: (value) {
-                          if (value == null) {
+                          if (value == null || value.trim().isEmpty) {
                             return null;
                           }
                           if (value.trim().length <= 1 ||
@@ -160,7 +160,7 @@ class _OwnerDesignStoreScreenState
                           return null;
                         },
                         onSaved: (newValue) {
-                          _address = newValue!;
+                          _address = newValue;
                         },
                       ),
                     ),
@@ -176,7 +176,7 @@ class _OwnerDesignStoreScreenState
                           label: Text('Phone'),
                         ),
                         validator: (value) {
-                          if (value == null) {
+                          if (value == null || value.trim().isEmpty) {
                             return null;
                           }
                           if (value.trim().length <= 1 ||
@@ -187,7 +187,7 @@ class _OwnerDesignStoreScreenState
                         },
                         keyboardType: TextInputType.phone,
                         onSaved: (newValue) {
-                          _phone = newValue!;
+                          _phone = newValue;
                         },
                       ),
                     ),
@@ -213,7 +213,7 @@ class _OwnerDesignStoreScreenState
                                 label: Text('Latitude'),
                               ),
                               validator: (value) {
-                                if (value == null) {
+                                if (value == null || value.trim().isEmpty) {
                                   return null;
                                 }
                                 if (double.tryParse(value) == null ||
@@ -225,7 +225,9 @@ class _OwnerDesignStoreScreenState
                               },
                               keyboardType: TextInputType.number,
                               onSaved: (newValue) {
-                                _lat = double.parse(newValue!);
+                                _lat = newValue == null || newValue.isEmpty
+                                    ? null
+                                    : double.parse(newValue);
                               },
                             ),
                           ),
@@ -248,7 +250,7 @@ class _OwnerDesignStoreScreenState
                                 label: Text('Longitude'),
                               ),
                               validator: (value) {
-                                if (value == null) {
+                                if (value == null || value.trim().isEmpty) {
                                   return null;
                                 }
                                 if (double.tryParse(value) == null ||
@@ -260,7 +262,9 @@ class _OwnerDesignStoreScreenState
                               },
                               keyboardType: TextInputType.number,
                               onSaved: (newValue) {
-                                _lng = double.parse(newValue!);
+                                _lng = newValue == null || newValue.isEmpty
+                                    ? null
+                                    : double.parse(newValue);
                               },
                             ),
                           ),
@@ -280,6 +284,15 @@ class _OwnerDesignStoreScreenState
   }
 
   Future<void> _onPressSave() async {
+    _saveStore();
+  }
+
+  Future<void> _saveStore() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    // Proceed alert
     final title = widget.designMode == StoreDesignMode.create
         ? const Text('Create Store?')
         : const Text('Modify Store?');
@@ -299,13 +312,6 @@ class _OwnerDesignStoreScreenState
       },
     );
     if (proceed == null || !proceed) {
-      return;
-    }
-    _saveStore();
-  }
-
-  Future<void> _saveStore() async {
-    if (!_formKey.currentState!.validate()) {
       return;
     }
 
