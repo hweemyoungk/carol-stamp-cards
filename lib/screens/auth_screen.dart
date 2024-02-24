@@ -4,14 +4,13 @@ import 'dart:developer' as developer;
 
 import 'package:app_links/app_links.dart';
 import 'package:carol/apis/app_apis.dart' as app_apis;
-import 'package:carol/apis/auth_apis.dart';
+import 'package:carol/apis/athena_apis.dart';
 import 'package:carol/apis/customer_apis.dart' as customer_apis;
 import 'package:carol/apis/utils.dart';
 import 'package:carol/main.dart';
 import 'package:carol/models/user.dart';
-import 'package:carol/params/auth.dart' as auth_params;
-import 'package:carol/params/shared_preferences.dart'
-    as shared_preferences_params;
+import 'package:carol/params/athena.dart' as auth_params;
+import 'package:carol/params/shared_preferences.dart' as prefs_params;
 import 'package:carol/providers/auth_status_notifier.dart';
 import 'package:carol/providers/current_user_notifier.dart';
 import 'package:carol/screens/dashboard_screen.dart';
@@ -241,7 +240,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
     // 1. Get stored credential
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final oidcString = prefs.getString(shared_preferences_params.oidcKey);
+    final oidcString = prefs.getString(prefs_params.oidcKey);
 
     // 2. Validate credential
     if (oidcString == null) {
@@ -295,7 +294,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
     if (newOidc == null) {
       // Got invalid OIDC
-      prefs.remove(shared_preferences_params.oidcKey);
+      prefs.remove(prefs_params.oidcKey);
       Carol.showTextSnackBar(
         text: 'Failed to auto sign in. Please sign in manually.',
         level: SnackBarLevel.error,
@@ -317,7 +316,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     // TEST: stale refresh token
     // final staleOidc = getStaleRefreshOidc(oidc);
     // prefs.setString(shared_preferences_params.oidcKey, json.encode(staleOidc));
-    prefs.setString(shared_preferences_params.oidcKey, json.encode(newOidc));
+    prefs.setString(prefs_params.oidcKey, json.encode(newOidc));
 
     // 5. Navigate to DashboardScreen
     if (mounted) {
@@ -438,79 +437,92 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     }
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.primary,
-      body: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              Container(
-                margin: const EdgeInsets.only(
-                  top: 30,
-                  bottom: 20,
-                  left: 20,
-                  right: 20,
-                ),
-                width: 200,
-                child: const Icon(
-                  Icons.card_giftcard,
-                  size: 150,
-                ),
-              ),
-              Card(
-                margin: const EdgeInsets.all(20),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Padding(
-                    padding: DesignUtils.basicWidgetEdgeInsets(2),
-                    child: SingleChildScrollView(
-                      child: Column(
-                        children: [
-                          Padding(
-                            padding: DesignUtils.basicWidgetEdgeInsets(),
-                            child: Column(
-                              children: [
-                                Text(
-                                  'Welcome to',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleLarge!
-                                      .copyWith(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSurface,
-                                      ),
-                                ),
-                                Text(
-                                  'Carol Cards',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .displayMedium!
-                                      .copyWith(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSurface,
-                                      ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Padding(
-                            padding: DesignUtils.basicWidgetEdgeInsets(),
-                            child: Column(
-                              children: [
-                                authButton,
-                                autoSignInSection,
-                              ],
-                            ),
-                          ),
-                        ],
+      body: LayoutBuilder(
+        builder: (ctx, constraints) {
+          return Center(
+            child: SingleChildScrollView(
+              child: Container(
+                margin: DesignUtils.basicScreenEdgeInsets(ctx, constraints),
+                child: Column(
+                  children: [
+                    Container(
+                      margin: const EdgeInsets.only(
+                        top: 30,
+                        bottom: 20,
+                        left: 20,
+                        right: 20,
+                      ),
+                      width: 200,
+                      child: const Icon(
+                        Icons.card_giftcard,
+                        size: 150,
                       ),
                     ),
-                  ),
+                    SizedBox(
+                      width: 400,
+                      height: 300,
+                      child: Card(
+                        margin: const EdgeInsets.all(20),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: Padding(
+                            padding: DesignUtils.basicWidgetEdgeInsets(2),
+                            child: SingleChildScrollView(
+                              child: Column(
+                                children: [
+                                  Padding(
+                                    padding:
+                                        DesignUtils.basicWidgetEdgeInsets(),
+                                    child: Column(
+                                      children: [
+                                        Text(
+                                          'Welcome to',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleLarge!
+                                              .copyWith(
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .onSurface,
+                                              ),
+                                        ),
+                                        Text(
+                                          'Carol Cards',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .displayMedium!
+                                              .copyWith(
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .onSurface,
+                                              ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding:
+                                        DesignUtils.basicWidgetEdgeInsets(),
+                                    child: Column(
+                                      children: [
+                                        authButton,
+                                        autoSignInSection,
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
+                  ],
                 ),
-              )
-            ],
-          ),
-        ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -615,10 +627,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       // Store credential if auto sign in is enabled
       final prefs = await SharedPreferences.getInstance();
       if (_isAutoSignInEnabled) {
-        prefs.setString(shared_preferences_params.oidcKey, res.body);
+        prefs.setString(prefs_params.oidcKey, res.body);
       } else {
         // Try removing credential if auto sign in is disabled
-        prefs.remove(shared_preferences_params.oidcKey);
+        prefs.remove(prefs_params.oidcKey);
       }
 
       if (mounted) {

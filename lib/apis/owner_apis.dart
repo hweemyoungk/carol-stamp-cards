@@ -346,6 +346,48 @@ Future<void> closeStore({
   return;
 }
 
+Future<int> getNumAccumulatedTotalStores({
+  required String ownerId,
+}) async {
+  final url = Uri.https(
+    backend_params.apigateway,
+    backend_params.ownerNumAccumulatedTotalStoresPath,
+    {
+      'ownerId': ownerId,
+    },
+  );
+  final res = await httpGet(url);
+  return int.parse(res.body);
+}
+
+Future<int> getNumCurrentTotalStores({
+  required String ownerId,
+}) async {
+  final url = Uri.https(
+    backend_params.apigateway,
+    backend_params.ownerNumCurrentTotalStoresPath,
+    {
+      'ownerId': ownerId,
+    },
+  );
+  final res = await httpGet(url);
+  return int.parse(res.body);
+}
+
+Future<int> getNumCurrentActiveStores({
+  required String ownerId,
+}) async {
+  final url = Uri.https(
+    backend_params.apigateway,
+    backend_params.ownerNumCurrentActiveStoresPath,
+    {
+      'ownerId': ownerId,
+    },
+  );
+  final res = await httpGet(url);
+  return int.parse(res.body);
+}
+
 Future<StampCard> getStampCard({
   required int id,
 }) async {

@@ -7,11 +7,11 @@ import 'package:latlong2/latlong.dart';
 class Store extends IntModel {
   final String displayName;
   final String description;
-  final String zipcode;
-  final String address;
-  final String phone;
-  final double lat;
-  final double lng;
+  final String? zipcode;
+  final String? address;
+  final String? phone;
+  final double? lat;
+  final double? lng;
   final bool isClosed;
   final bool isInactive;
   final String? bgImageUrl;
@@ -40,11 +40,11 @@ class Store extends IntModel {
   Store.fromJson(Map<String, dynamic> json)
       : displayName = json['displayName'] as String,
         description = json['description'] as String,
-        zipcode = json['zipcode'] as String,
-        address = json['address'] as String,
-        phone = json['phone'] as String,
-        lat = json['lat'] as double,
-        lng = json['lng'] as double,
+        zipcode = json['zipcode'] as String?,
+        address = json['address'] as String?,
+        phone = json['phone'] as String?,
+        lat = json['lat'] as double?,
+        lng = json['lng'] as double?,
         isClosed = json['isClosed'] as bool,
         isInactive = json['isInactive'] as bool,
         bgImageUrl = json['bgImageUrl'] as String?,
@@ -119,14 +119,20 @@ class Store extends IntModel {
     );
   }
 
-  double getDistanceMeters(double deviceLat, double deviceLng) {
+  double? getDistanceMeters(double deviceLat, double deviceLng) {
+    if (lat == null || lng == null) {
+      return null;
+    }
     // return random.nextDouble() * (random.nextInt(1000) + 1);
-    final meters = distance(LatLng(lat, lng), LatLng(deviceLat, deviceLng));
+    final meters = distance(LatLng(lat!, lng!), LatLng(deviceLat, deviceLng));
     return meters;
   }
 
-  String getDistanceString(double deviceLat, double deviceLng) {
+  String? getDistanceString(double deviceLat, double deviceLng) {
     final meters = getDistanceMeters(deviceLat, deviceLng);
+    if (meters == null) {
+      return null;
+    }
     if (meters < 0) {
       return 'Something\'s really wrong...';
     } else if (meters < 100) {

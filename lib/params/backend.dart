@@ -16,11 +16,20 @@ const appPublicCustomerMembershipMapPath =
 const appPublicOwnerMembershipMapPath =
     '/app/api/v1/public/owner/membership/map'; // GET
 
+// Auth service
+const authUserPath = '/auth/api/v1/user'; // DELETE
+
 // Customer service
 const customerStampCardPath = '/customer/api/v1/card'; // POST,GET,PUT,DELETE
 const customerStampCardListPath = '/customer/api/v1/card/list'; // GET
 const customerNumCustomerIssuedCardsPath =
     '/customer/api/v1/card/numIssues'; // GET
+const customerNumAccumulatedTotalCardsPath =
+    '/customer/api/v1/card/numAccumulatedTotalCards'; // GET
+const customerNumCurrentTotalCards =
+    '/customer/api/v1/card/numCurrentTotalCards'; // GET
+const customerNumCurrentActiveCards =
+    '/customer/api/v1/card/numCurrentActiveCards'; // GET
 const customerBlueprintPath = '/customer/api/v1/blueprint'; // GET
 const customerBlueprintListPath = '/customer/api/v1/blueprint/list'; // GET
 const customerNumTotalIssuedCardsPath =
@@ -52,6 +61,12 @@ const ownerBlueprintPath = '/owner/api/v1/blueprint'; // POST,GET,PUT
 const ownerBlueprintListPath = '/owner/api/v1/blueprint/list'; // GET
 const ownerStorePath = '/owner/api/v1/store'; // POST,GET,PUT,DELETE
 const ownerStoreListPath = '/owner/api/v1/store/list'; // GET
+const ownerNumAccumulatedTotalStoresPath =
+    '/owner/api/v1/store/numAccumulatedTotalStores'; // GET
+const ownerNumCurrentTotalStoresPath =
+    '/owner/api/v1/store/numCurrentTotalStores'; // GET
+const ownerNumCurrentActiveStoresPath =
+    '/owner/api/v1/store/numCurrentActiveStores'; // GET
 const ownerStampGrantPath = '/owner/api/v1/stampGrant'; // POST
 const ownerStampCardPath = '/owner/api/v1/card'; // GET
 // const ownerRedeemPath = '/owner/api/v1/redeem'; // TODO: Implement front/backend

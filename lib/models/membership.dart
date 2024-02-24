@@ -2,6 +2,7 @@ import 'package:carol/models/user.dart';
 import 'package:flutter/material.dart';
 
 class Membership {
+  final int priority;
   final String requiredRole;
   final bool isPublishing;
   final bool isActive;
@@ -12,6 +13,7 @@ class Membership {
   final String? monthlyPrice;
 
   Membership({
+    required this.priority,
     required this.requiredRole,
     required this.isPublishing,
     required this.isActive,
@@ -22,6 +24,7 @@ class Membership {
     required this.monthlyPrice,
   });
   Membership copyWith({
+    int? priority,
     String? requiredRole,
     bool? isPublishing,
     bool? isActive,
@@ -32,6 +35,7 @@ class Membership {
     String? monthlyPrice,
   }) =>
       Membership(
+        priority: priority ?? this.priority,
         requiredRole: requiredRole ?? this.requiredRole,
         isPublishing: isPublishing ?? this.isPublishing,
         isActive: isActive ?? this.isActive,
@@ -64,4 +68,9 @@ class Membership {
       : isActive
           ? colorScheme.onPrimary
           : colorScheme.onPrimaryContainer;
+
+  static Membership getHighestMembership(Iterable<Membership> candidates) {
+    return candidates.reduce((value, element) =>
+        value.priority > element.priority ? value : element);
+  }
 }

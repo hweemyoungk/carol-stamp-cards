@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:carol/apis/auth_apis.dart';
+import 'package:carol/apis/athena_apis.dart';
 import 'package:carol/apis/exceptions/bad_request.dart';
 import 'package:carol/apis/exceptions/server_error.dart';
 import 'package:carol/apis/exceptions/unauthenticated.dart';
 import 'package:carol/apis/exceptions/unauthorized.dart';
-import 'package:carol/params/auth.dart' as auth_params;
+import 'package:carol/params/athena.dart' as auth_params;
 import 'package:carol/params/app.dart' as app_params;
 import 'package:carol/utils.dart';
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
