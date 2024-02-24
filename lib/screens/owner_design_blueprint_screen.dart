@@ -2,10 +2,13 @@ import 'package:carol/apis/owner_apis.dart' as owner_apis;
 import 'package:carol/main.dart';
 import 'package:carol/models/redeem_rule.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
+import 'package:carol/models/user.dart';
+import 'package:carol/screens/auth_screen.dart';
 import 'package:carol/screens/blueprint_dialog_screen.dart';
 import 'package:carol/screens/owner_design_redeem_rule_screen.dart';
 import 'package:carol/screens/store_screen.dart';
 import 'package:carol/utils.dart';
+import 'package:carol/widgets/common/alert_row.dart';
 import 'package:carol/widgets/common/icon_button_in_progress.dart';
 import 'package:carol/widgets/common/proceed_alert_dialog.dart';
 import 'package:carol/widgets/stores_explorer/stores_list.dart';
@@ -29,7 +32,10 @@ class OwnerDesignBlueprintScreen extends ConsumerStatefulWidget {
 
 class _OwnerDesignStoreScreenState
     extends ConsumerState<OwnerDesignBlueprintScreen> {
+  final List<Widget> _addRedeemRuleAlertRows = [];
   var _status = BlueprintDesignStatus.userInput;
+  bool? _canAddRedeemRule;
+
   final _formKey = GlobalKey<FormState>();
   late String _displayName;
   late String _description;
@@ -63,6 +69,7 @@ class _OwnerDesignStoreScreenState
       // RedeemRules must be fetched in _BlueprintDialogScreenState._onPressModify
       _redeemRules.addAll(blueprint.redeemRules!);
     }
+    _checkCanAddRedeemRule();
   }
 
   @override
@@ -385,10 +392,20 @@ class _OwnerDesignStoreScreenState
                           ),
                         ),
                         IconButton(
-                          onPressed: _onPressAddRedeemRule,
+                          onPressed: _canAddRedeemRule == null
+                              ? null
+                              : _canAddRedeemRule!
+                                  ? _onPressAddRedeemRule
+                                  : _onPressAddRedeemRuleViolated,
                           icon: Icon(
                             Icons.add_box,
-                            color: Theme.of(context).colorScheme.onBackground,
+                            color:
+                                _canAddRedeemRule == null || _canAddRedeemRule!
+                                    ? Theme.of(context).colorScheme.onBackground
+                                    : Theme.of(context)
+                                        .colorScheme
+                                        .error
+                                        .withOpacity(0.5),
                           ),
                         ),
                         Expanded(
@@ -569,8 +586,58 @@ class _OwnerDesignStoreScreenState
     );
   }
 
+  Future<bool> _checkMembershipBlueprints() async {
+    final user = ref.read(currentUserProvider)!;
+    final violated =
+        await _violatedNumMaxCurrentActiveBlueprintsPerStore(user: user);
+    return !violated;
+  }
+
+  /// Checks <code>@Min(-1) numMaxCurrentActiveBlueprintsPerStore</code>.<br>
+  /// Currently, inactive blueprint means not publishing blueprint.<br>
+  /// Expired blueprint can be either active or inactive.
+  Future<bool> _violatedNumMaxCurrentActiveBlueprintsPerStore({
+    required User user,
+  }) async {
+    // Check infinity
+    final numMaxCurrentActiveBlueprintsPerStore =
+        user.ownerMembership!.numMaxCurrentActiveBlueprintsPerStore;
+    if (numMaxCurrentActiveBlueprintsPerStore == -1) return false;
+
+    final blueprints = ref.read(ownerStoreScreenStoreProvider)?.blueprints;
+    if (blueprints == null) {
+      Carol.showTextSnackBar(
+        text:
+            'Failed to get number of current active(i.e. publishing) blueprints per store.',
+        level: SnackBarLevel.error,
+      );
+      return true;
+    }
+
+    final numCurrentActiveBlueprintsPerStore =
+        blueprints.where((blueprint) => blueprint.isPublishing).length;
+    final bool violated;
+    if (widget.designMode == BlueprintDesignMode.create) {
+      // Create: numMax <= num
+      violated = numMaxCurrentActiveBlueprintsPerStore <=
+          numCurrentActiveBlueprintsPerStore;
+    } else {
+      // Modify: numMax < num - 1 + (whether _isPublishing)
+      violated = numMaxCurrentActiveBlueprintsPerStore <
+          numCurrentActiveBlueprintsPerStore - 1 + (_isPublishing ? 1 : 0);
+    }
+    if (violated) {
+      Carol.showTextSnackBar(
+        text:
+            'Reachedmax of current active(i.e. publishing) blueprints per store.',
+        level: SnackBarLevel.error,
+      );
+    }
+    return violated;
+  }
+
   Future<void> _saveBlueprint() async {
-    if (!_validateInput()) {
+    if (!_validateInput() || !await _checkMembershipBlueprints()) {
       return;
     }
 
@@ -586,6 +653,8 @@ class _OwnerDesignStoreScreenState
         : null;
     final proceedButtonString =
         widget.designMode == BlueprintDesignMode.create ? 'Create' : 'Modify';
+
+    if (!mounted) return;
     final proceed = await showAdaptiveDialog<bool>(
       context: context,
       builder: (ctx) {
@@ -847,7 +916,88 @@ class _OwnerDesignStoreScreenState
     if (!mounted) return;
     setState(() {
       _redeemRules.add(newRedeemRule);
+      _checkCanAddRedeemRule();
     });
+  }
+
+  Future<void> _checkCanAddRedeemRule() async {
+    final user = ref.read(currentUserProvider)!;
+
+    setState(() {
+      _addRedeemRuleAlertRows.clear();
+      _canAddRedeemRule = null;
+    });
+
+    final violatedNumMaxCurrentTotalRedeemRulesPerBlueprintTask =
+        _violatedNumMaxCurrentTotalRedeemRulesPerBlueprint(user: user);
+    final violatedNumMaxCurrentActiveRedeemRulesPerBlueprintTask =
+        _violatedNumMaxCurrentActiveRedeemRulesPerBlueprint(user: user);
+    final tasks = [
+      violatedNumMaxCurrentTotalRedeemRulesPerBlueprintTask,
+      violatedNumMaxCurrentActiveRedeemRulesPerBlueprintTask,
+    ];
+    final violations = await Future.wait(tasks);
+    if (violations.every((violated) => !violated)) {
+      if (mounted) {
+        setState(() {
+          _canAddRedeemRule = true;
+        });
+      }
+    }
+  }
+
+  /// Checks <code>@Min(-1) numMaxCurrentTotalBlueprintsPerStore</code>.
+  Future<bool> _violatedNumMaxCurrentTotalRedeemRulesPerBlueprint({
+    required User user,
+  }) async {
+    // Check infinity
+    final numMaxCurrentTotalRedeemRulesPerBlueprint =
+        user.ownerMembership!.numMaxCurrentTotalRedeemRulesPerBlueprint;
+    if (numMaxCurrentTotalRedeemRulesPerBlueprint == -1) return false;
+
+    final numCurrentTotalRedeemRulesPerBlueprint = _redeemRules.length;
+    final violated = numMaxCurrentTotalRedeemRulesPerBlueprint <=
+        numCurrentTotalRedeemRulesPerBlueprint;
+    if (violated) {
+      if (mounted) {
+        setState(() {
+          _canAddRedeemRule = false;
+          _addRedeemRuleAlertRows.add(const AlertRow(
+            text: 'Reached max of current total redeem rules per blueprint.',
+          ));
+        });
+      }
+    }
+    return violated;
+  }
+
+  /// Checks <code>@Min(-1) numMaxCurrentActiveBlueprintsPerStore</code>.
+  Future<bool> _violatedNumMaxCurrentActiveRedeemRulesPerBlueprint({
+    required User user,
+  }) async {
+    // NO-OP: Currently, there's no active/inactive redeem rule.
+    return false;
+  }
+
+  void _onPressAddRedeemRuleViolated() {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('Cannot add redeem rule'),
+          content: SingleChildScrollView(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: _addRedeemRuleAlertRows,
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 }
 

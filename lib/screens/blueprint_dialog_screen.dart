@@ -12,6 +12,7 @@ import 'package:carol/screens/store_screen.dart';
 import 'package:carol/utils.dart';
 import 'package:carol/widgets/blueprint/blueprint_info.dart';
 import 'package:carol/widgets/cards_explorer/cards_list.dart';
+import 'package:carol/widgets/common/alert_row.dart';
 import 'package:carol/widgets/common/loading.dart';
 import 'package:carol/widgets/stores_explorer/stores_list.dart';
 import 'package:flutter/material.dart';
@@ -314,7 +315,7 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
         setState(() {
           _issueStatus = _IssueStatus.notIssuable;
           _alertRows.add(
-            const AlertRow(text: 'Exceeded max number of issues per customer.'),
+            const AlertRow(text: 'Reached max number of issues per customer.'),
           );
         });
       }
@@ -350,7 +351,7 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
         setState(() {
           _issueStatus = _IssueStatus.notIssuable;
           _alertRows.add(
-            const AlertRow(text: 'Exceeded max total number of issues.'),
+            const AlertRow(text: 'Reached max of blueprint total issues.'),
           );
         });
       }
@@ -384,10 +385,6 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
 
   bool _violatedMembershipExists(User user) {
     if (user.customerMembership == null) {
-      Carol.showTextSnackBar(
-        text: 'Cannot find customer membership. Please sign in again.',
-        level: SnackBarLevel.error,
-      );
       if (mounted) {
         setState(() {
           _issueStatus = _IssueStatus.notIssuable;
@@ -431,13 +428,13 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
       return true;
     }
 
-    final violated = numMaxAccumulatedTotalCards < numAccumulatedTotalCards + 1;
+    final violated = numMaxAccumulatedTotalCards <= numAccumulatedTotalCards;
     if (violated) {
       if (mounted) {
         setState(() {
           _issueStatus = _IssueStatus.notIssuable;
           _alertRows.add(
-            const AlertRow(text: 'Exceeded max of accumulated total cards.'),
+            const AlertRow(text: 'Reached max of accumulated total cards.'),
           );
         });
       }
@@ -470,13 +467,13 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
       return true;
     }
 
-    final violated = numMaxCurrentTotalCards < numCurrentTotalCards + 1;
+    final violated = numMaxCurrentTotalCards <= numCurrentTotalCards;
     if (violated) {
       if (mounted) {
         setState(() {
           _issueStatus = _IssueStatus.notIssuable;
           _alertRows.add(
-            const AlertRow(text: 'Exceeded max of current total cards.'),
+            const AlertRow(text: 'Reached max of current total cards.'),
           );
         });
       }
@@ -509,13 +506,13 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
       return true;
     }
 
-    final violated = numMaxCurrentActiveCards < numCurrentActiveCards + 1;
+    final violated = numMaxCurrentActiveCards <= numCurrentActiveCards;
     if (violated) {
       if (mounted) {
         setState(() {
           _issueStatus = _IssueStatus.notIssuable;
           _alertRows.add(
-            const AlertRow(text: 'Exceeded max of current active cards.'),
+            const AlertRow(text: 'Reached max of current active cards.'),
           );
         });
       }
@@ -669,30 +666,6 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
         );
       },
     ));
-  }
-}
-
-class AlertRow extends StatelessWidget {
-  const AlertRow({
-    super.key,
-    required this.text,
-  });
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: Icon(
-            Icons.error,
-            color: Theme.of(context).colorScheme.errorContainer,
-          ),
-        ),
-        Text(text),
-      ],
-    );
   }
 }
 

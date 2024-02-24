@@ -2,18 +2,22 @@ import 'dart:convert';
 
 import 'package:carol/apis/customer_apis.dart' as customer_apis;
 import 'package:carol/apis/owner_apis.dart' as owner_apis;
+import 'package:carol/apis/utils.dart';
 import 'package:carol/main.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/models/store.dart';
+import 'package:carol/models/user.dart';
 import 'package:carol/params/app.dart';
 import 'package:carol/providers/blueprint_notifier.dart';
 import 'package:carol/providers/store_notifier.dart';
+import 'package:carol/screens/auth_screen.dart';
 import 'package:carol/screens/blueprint_dialog_screen.dart';
 import 'package:carol/screens/card_screen.dart';
 import 'package:carol/screens/owner_design_blueprint_screen.dart';
 import 'package:carol/screens/owner_design_store_screen.dart';
 import 'package:carol/utils.dart';
 import 'package:carol/widgets/cards_explorer/cards_list.dart';
+import 'package:carol/widgets/common/alert_row.dart';
 import 'package:carol/widgets/common/circular_progress_indicator_in_button.dart';
 import 'package:carol/widgets/common/loading.dart';
 import 'package:carol/widgets/main_drawer.dart';
@@ -38,11 +42,14 @@ class StoreScreen extends ConsumerStatefulWidget {
 }
 
 class _StoreScreenState extends ConsumerState<StoreScreen> {
+  final List<Widget> _newBlueprintAlertRows = [];
+
   late StoreScreenMode _mode;
   late StateNotifierProvider<StoreNotifier, Store?> _storeProvider;
 
   bool _isClosingStore = false;
   bool _isRefreshCooling = false;
+  bool? _canCreateNewBlueprint;
 
   @override
   void initState() {
@@ -54,10 +61,95 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     } else if (activeDrawerItemEnum == DrawerItemEnum.owner) {
       _mode = StoreScreenMode.owner;
       _storeProvider = ownerStoreScreenStoreProvider;
+      // Better wait for ownerStoreScreenStoreProvider to be notified
+      Future.delayed(
+        durationOneSecond,
+        () => _checkCanCreateNewBlueprint(),
+      );
     } else {
       throw Exception(
           'StoreScreen can only be reached from customer or owner drawer item');
     }
+  }
+
+  Future<void> _checkCanCreateNewBlueprint() async {
+    final user = ref.read(currentUserProvider)!;
+
+    setState(() {
+      _newBlueprintAlertRows.clear();
+      _canCreateNewBlueprint = null;
+    });
+
+    // Check owner membership
+    if (_violatedMembershipExists(user)) {
+      return;
+    }
+    final violatedNumMaxCurrentTotalBlueprintsPerStoreTask =
+        _violatedNumMaxCurrentTotalBlueprintsPerStore(user: user);
+    final tasks = [
+      violatedNumMaxCurrentTotalBlueprintsPerStoreTask,
+    ];
+    final violations = await Future.wait(tasks);
+    if (violations.every((violated) => !violated)) {
+      if (mounted) {
+        setState(() {
+          _canCreateNewBlueprint = true;
+        });
+      }
+    }
+  }
+
+  bool _violatedMembershipExists(User user) {
+    if (user.customerMembership == null) {
+      Carol.showTextSnackBar(
+        text: 'Cannot find owner membership. Please sign in again.',
+        level: SnackBarLevel.error,
+      );
+      if (mounted) {
+        setState(() {
+          _canCreateNewBlueprint = false;
+          _newBlueprintAlertRows.add(const AlertRow(
+            text: 'Cannot find owner membership. Please sign in again.',
+          ));
+        });
+      }
+      return true;
+    }
+    return false;
+  }
+
+  /// Checks <code>@Min(-1) numMaxCurrentTotalBlueprintsPerStore</code>.
+  Future<bool> _violatedNumMaxCurrentTotalBlueprintsPerStore({
+    required User user,
+  }) async {
+    // Check infinity
+    final numMaxCurrentTotalBlueprintsPerStore =
+        user.ownerMembership!.numMaxCurrentTotalBlueprintsPerStore;
+    if (numMaxCurrentTotalBlueprintsPerStore == -1) return false;
+
+    final blueprints = ref.read(_storeProvider)?.blueprints;
+    if (blueprints == null) {
+      _canCreateNewBlueprint = false;
+      _newBlueprintAlertRows.add(const AlertRow(
+        text: 'Failed to get number of current total blueprints per store.',
+      ));
+      return true;
+    }
+
+    final numCurrentTotalBlueprintsPerStore = blueprints.length;
+    final violated = numMaxCurrentTotalBlueprintsPerStore <=
+        numCurrentTotalBlueprintsPerStore;
+    if (violated) {
+      if (mounted) {
+        setState(() {
+          _canCreateNewBlueprint = false;
+          _newBlueprintAlertRows.add(const AlertRow(
+            text: 'Reached max of current total blueprints per store.',
+          ));
+        });
+      }
+    }
+    return violated;
   }
 
   @override
@@ -223,7 +315,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
-          'Cards being Published',
+          'Blueprints being Published',
           style: Theme.of(context).textTheme.titleLarge!.copyWith(
                 color: onSecondary,
               ),
@@ -231,8 +323,20 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         ),
         if (_mode == StoreScreenMode.owner && !store.isClosed)
           IconButton(
-            onPressed: _onPressNewBlueprint,
-            icon: const Icon(Icons.add_box),
+            onPressed: _canCreateNewBlueprint == null
+                ? null
+                : _canCreateNewBlueprint!
+                    ? _onPressNewBlueprint
+                    : _onPressNewBlueprintViolated,
+            icon: Icon(
+              Icons.add_box,
+              color: _canCreateNewBlueprint == null || _canCreateNewBlueprint!
+                  ? null
+                  : Theme.of(context)
+                      .colorScheme
+                      .errorContainer
+                      .withOpacity(0.5),
+            ),
           ),
       ],
     );
@@ -246,7 +350,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         blueprintsToDisplay.isEmpty
             ? Padding(
                 padding: DesignUtils.basicWidgetEdgeInsets(),
-                child: const Text('No publishing cards!'),
+                child: const Text('No publishing blueprints!'),
               )
             : ListView.builder(
                 shrinkWrap: true,
@@ -507,6 +611,27 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     ));
   }
 
+  void _onPressNewBlueprintViolated() {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('Cannot create blueprint'),
+          content: SingleChildScrollView(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: _newBlueprintAlertRows,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   void _onPressCloseStore() {
     showModalBottomSheet(
       context: context,
@@ -689,6 +814,11 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       }
     } else {
       // Owner mode
+      setState(() {
+        _newBlueprintAlertRows.clear();
+        _canCreateNewBlueprint = null;
+      });
+
       try {
         [
           fetchedStore as Store,
@@ -713,6 +843,9 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     }
 
     storeNotifier.set(storeWithBlueprints);
+
+    _checkCanCreateNewBlueprint();
+
     Carol.showTextSnackBar(
       text: 'Refreshed store!',
       level: SnackBarLevel.info,
