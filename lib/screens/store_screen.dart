@@ -43,6 +43,7 @@ class StoreScreen extends ConsumerStatefulWidget {
 
 class _StoreScreenState extends ConsumerState<StoreScreen> {
   final List<Widget> _newBlueprintAlertRows = [];
+  final List<Widget> _closeStoreAlertRows = [];
 
   late StoreScreenMode _mode;
   late StateNotifierProvider<StoreNotifier, Store?> _storeProvider;
@@ -50,6 +51,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   bool _isClosingStore = false;
   bool _isRefreshCooling = false;
   bool? _canCreateNewBlueprint;
+  bool? _canCloseStore;
 
   @override
   void initState() {
@@ -64,12 +66,55 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       // Better wait for ownerStoreScreenStoreProvider to be notified
       Future.delayed(
         durationOneSecond,
-        () => _checkCanCreateNewBlueprint(),
+        () {
+          _checkCanCreateNewBlueprint();
+          _checkCanCloseStore();
+        },
       );
     } else {
       throw Exception(
           'StoreScreen can only be reached from customer or owner drawer item');
     }
+  }
+
+  Future<void> _checkCanCloseStore() async {
+    setState(() {
+      _closeStoreAlertRows.clear();
+      _canCloseStore = null;
+    });
+
+    final violated = _violatedNoActiveBlueprints();
+
+    if (!violated) {
+      setState(() {
+        _canCloseStore = true;
+      });
+    }
+  }
+
+  bool _violatedNoActiveBlueprints() {
+    final store = ref.read(ownerStoreScreenStoreProvider);
+    final blueprints = store?.blueprints;
+    if (blueprints == null) {
+      // Very unlikely to happen.
+      return true;
+    }
+
+    final activeBlueprints =
+        blueprints.where((element) => !element.isExpired).toList();
+    if (activeBlueprints.isNotEmpty) {
+      if (mounted) {
+        setState(() {
+          _canCloseStore = false;
+          _closeStoreAlertRows.add(AlertRow(
+            text:
+                'Following blueprints are still active:${activeBlueprints.fold('', (previousValue, element) => '$previousValue\n- ${element.displayName}')}',
+          ));
+        });
+      }
+      return true;
+    }
+    return false;
   }
 
   Future<void> _checkCanCreateNewBlueprint() async {
@@ -341,6 +386,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       ],
     );
 
+    final onSecondaryHalfOpaque = onSecondary.withOpacity(0.5);
     final blueprintsExplorer = Column(
       children: [
         Padding(
@@ -361,13 +407,19 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                   return ListTile(
                     title: Text(
                       blueprint.displayName,
-                      style: Theme.of(context).textTheme.bodyLarge,
+                      style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                            color: blueprint.isExpired
+                                ? onSecondaryHalfOpaque
+                                : null,
+                          ),
                     ),
                     trailing: blueprint.isPublishing
                         ? null
                         : Icon(
                             Icons.visibility_off,
-                            color: onSecondary,
+                            color: blueprint.isExpired
+                                ? onSecondaryHalfOpaque
+                                : onSecondary,
                           ),
                     onTap: () async {
                       _notifyBlueprintDialogScreen(blueprint);
@@ -458,9 +510,14 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     final closeStoreButton = ElevatedButton.icon(
       style: ElevatedButton.styleFrom(
         backgroundColor: Theme.of(context).colorScheme.errorContainer,
-        disabledBackgroundColor: Theme.of(context).colorScheme.errorContainer,
+        disabledBackgroundColor:
+            Theme.of(context).colorScheme.errorContainer.withOpacity(0.5),
       ),
-      onPressed: _isClosingStore ? null : _onPressCloseStore,
+      onPressed: _isClosingStore || _canCloseStore == null
+          ? null
+          : _canCloseStore!
+              ? _onPressCloseStore
+              : _onPressCloseStoreVioldated,
       icon: Icon(
         Icons.delete,
         color: Theme.of(context).colorScheme.onErrorContainer,
@@ -672,8 +729,12 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                 ],
               ),
             ),
-            const Text(
-                'Closed store will be deleted in $deleteClosedStoreInDays days automatically.'),
+            Text(
+              'Closed store will be deleted in $softDeleteClosedStoreInDays days automatically.',
+              style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                    color: Theme.of(context).colorScheme.onBackground,
+                  ),
+            ),
             Padding(
               padding: DesignUtils.basicWidgetEdgeInsets(),
               child: Row(
@@ -711,6 +772,27 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         );
       },
       useSafeArea: true,
+    );
+  }
+
+  void _onPressCloseStoreVioldated() {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('Cannot close store'),
+          content: SingleChildScrollView(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: _closeStoreAlertRows,
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 

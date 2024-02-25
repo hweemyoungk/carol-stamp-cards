@@ -56,21 +56,103 @@ void main() {
   });
 }
 
-class Carol extends StatelessWidget {
+class Carol extends StatefulWidget {
   const Carol({Key? key}) : super(key: key);
 
   static GlobalKey<NavigatorState> materialKey = GlobalKey();
 
   @override
+  State<Carol> createState() => _CarolState();
+
+  static void showTextSnackBar({
+    required String text,
+    int seconds = 3,
+    SnackBarLevel level = SnackBarLevel.info,
+  }) {
+    ScaffoldMessenger.of(Carol.materialKey.currentContext!).showSnackBar(
+      SnackBar(
+        content: Text(
+          text,
+          style: TextStyle(color: level.textColor),
+        ),
+        duration: Duration(seconds: seconds),
+        backgroundColor: level.backgroundColor,
+      ),
+    );
+  }
+
+  static void showExceptionSnackBar(Exception e, {String? contextMessage}) {
+    final sb = StringBuffer();
+    if (contextMessage != null) {
+      sb
+        ..write(contextMessage)
+        ..write('\n');
+    }
+    if (e is ServerError) {
+      sb.write(
+          'Server failed to process your data. Please contact administrator if this problem persists.');
+      showTextSnackBar(
+        text: sb.toString(),
+        level: SnackBarLevel.error,
+        seconds: 10,
+      );
+      return;
+    }
+    if (e is BadRequest) {
+      sb.write('Your data looks stale. Please refresh and try again.');
+      showTextSnackBar(
+        text: sb.toString(),
+        level: SnackBarLevel.error,
+        seconds: 10,
+      );
+      return;
+    }
+    if (e is Unauthenticated || e is Unauthorized) {
+      sb.write('Your credential looks stale. Please sign in again.');
+      showTextSnackBar(
+        text: sb.toString(),
+        level: SnackBarLevel.error,
+        seconds: 10,
+      );
+      return;
+    }
+    if (e is TimeoutException) {
+      sb.write('Server looks busy. Please wait a while and try again.');
+      showTextSnackBar(
+        text: sb.toString(),
+        level: SnackBarLevel.warn,
+        seconds: 10,
+      );
+      return;
+    }
+    if (e is SocketException) {
+      sb.write('Server is under maintenance. Please wait a while try again.');
+      showTextSnackBar(
+        text: sb.toString(),
+        level: SnackBarLevel.warn,
+        seconds: 10,
+      );
+      return;
+    }
+    sb.write('Unexpected error occured: ${e.toString()}');
+    showTextSnackBar(
+      text: sb.toString(),
+      level: SnackBarLevel.error,
+      seconds: 10,
+    );
+  }
+}
+
+class _CarolState extends State<Carol> {
+  @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Carol Cards',
       theme: theme,
-      navigatorKey: materialKey,
+      navigatorKey: Carol.materialKey,
       initialRoute: '/auth',
       routes: {
         // currentUserProvider
-        // authStatusProvider
         '/auth': (context) => const AuthScreen(), // Done with default
         // No providers
         '/dashboard': (context) => const DashboardScreen(), // No notification
@@ -170,84 +252,6 @@ class Carol extends StatelessWidget {
                   // originalBlueprint: blueprint,
                 ), // No notification
       },
-    );
-  }
-
-  static void showTextSnackBar({
-    required String text,
-    int seconds = 3,
-    SnackBarLevel level = SnackBarLevel.info,
-  }) {
-    ScaffoldMessenger.of(Carol.materialKey.currentContext!).showSnackBar(
-      SnackBar(
-        content: Text(
-          text,
-          style: TextStyle(color: level.textColor),
-        ),
-        duration: Duration(seconds: seconds),
-        backgroundColor: level.backgroundColor,
-      ),
-    );
-  }
-
-  static void showExceptionSnackBar(Exception e, {String? contextMessage}) {
-    final sb = StringBuffer();
-    if (contextMessage != null) {
-      sb
-        ..write(contextMessage)
-        ..write('\n');
-    }
-    if (e is ServerError) {
-      sb.write(
-          'Server failed to process your data. Please contact administrator if this problem persists.');
-      showTextSnackBar(
-        text: sb.toString(),
-        level: SnackBarLevel.error,
-        seconds: 10,
-      );
-      return;
-    }
-    if (e is BadRequest) {
-      sb.write('Your data looks stale. Please refresh and try again.');
-      showTextSnackBar(
-        text: sb.toString(),
-        level: SnackBarLevel.error,
-        seconds: 10,
-      );
-      return;
-    }
-    if (e is Unauthenticated || e is Unauthorized) {
-      sb.write('Your credential looks stale. Please sign in again.');
-      showTextSnackBar(
-        text: sb.toString(),
-        level: SnackBarLevel.error,
-        seconds: 10,
-      );
-      return;
-    }
-    if (e is TimeoutException) {
-      sb.write('Server looks busy. Please wait a while and try again.');
-      showTextSnackBar(
-        text: sb.toString(),
-        level: SnackBarLevel.warn,
-        seconds: 10,
-      );
-      return;
-    }
-    if (e is SocketException) {
-      sb.write('Server is under maintenance. Please wait a while try again.');
-      showTextSnackBar(
-        text: sb.toString(),
-        level: SnackBarLevel.warn,
-        seconds: 10,
-      );
-      return;
-    }
-    sb.write('Unexpected error occured: ${e.toString()}');
-    showTextSnackBar(
-      text: sb.toString(),
-      level: SnackBarLevel.error,
-      seconds: 10,
     );
   }
 }

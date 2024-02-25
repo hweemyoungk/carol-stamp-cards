@@ -18,6 +18,10 @@ const refreshCoolingDuration = Duration(seconds: refreshCoolingSeconds);
 const refreshOwnerRedeemRequestsListCoolingDuration =
     Duration(seconds: refreshOwnerRedeemRequestsListCoolingSeconds);
 
+String formatDateTime(DateTime dateTime) {
+  return '${timeFormatter.format(dateTime)} ${dateFormatter.format(dateTime)} ${dateTime.timeZoneName} (UTC+${dateTime.timeZoneOffset.inHours})';
+}
+
 String formatRemaining(Duration duration) {
   if (duration.isNegative) {
     return 'Already passed';

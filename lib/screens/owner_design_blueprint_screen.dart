@@ -3,6 +3,7 @@ import 'package:carol/main.dart';
 import 'package:carol/models/redeem_rule.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/models/user.dart';
+import 'package:carol/params/app.dart';
 import 'package:carol/screens/auth_screen.dart';
 import 'package:carol/screens/blueprint_dialog_screen.dart';
 import 'package:carol/screens/owner_design_redeem_rule_screen.dart';
@@ -35,6 +36,7 @@ class _OwnerDesignStoreScreenState
   final List<Widget> _addRedeemRuleAlertRows = [];
   var _status = BlueprintDesignStatus.userInput;
   bool? _canAddRedeemRule;
+  late bool _isSetInfiniteNumMaxIssues;
 
   final _formKey = GlobalKey<FormState>();
   late String _displayName;
@@ -45,12 +47,9 @@ class _OwnerDesignStoreScreenState
   late int _numMaxRedeems;
   late int _numMaxIssuesPerCustomer;
   late int _numMaxIssues;
-  // late DateTime _lastModifiedDate;
   final List<RedeemRule> _redeemRules = [];
   List<bool>? _illegalRedeemRules;
   DateTime? _expirationDate;
-  // late String _storeId;
-  // late IconData? _icon;
   // late String? _bgImageUrl;
   bool _isPublishing = true;
 
@@ -61,6 +60,8 @@ class _OwnerDesignStoreScreenState
         TextEditingController(text: widget.blueprint?.numMaxStamps.toString());
     if (widget.blueprint != null) {
       final blueprint = widget.blueprint!;
+      // Set _isSetInfiniteNumMaxIssues
+      _isSetInfiniteNumMaxIssues = blueprint.numMaxIssues == 0;
       // Set _isPublishing
       _isPublishing = blueprint.isPublishing;
       // Set _expirationDate
@@ -80,9 +81,10 @@ class _OwnerDesignStoreScreenState
 
   @override
   Widget build(BuildContext context) {
-    final onBackgroundTernary = widget.designMode == BlueprintDesignMode.modify
-        ? Theme.of(context).colorScheme.onBackground.withOpacity(0.4)
-        : Theme.of(context).colorScheme.onBackground;
+    final onBackgroundTernary = Theme.of(context).colorScheme.onBackground;
+    // final onBackgroundTernary = widget.designMode == BlueprintDesignMode.modify
+    //     ? Theme.of(context).colorScheme.onBackground.withOpacity(0.4)
+    //     : Theme.of(context).colorScheme.onBackground;
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.designMode == BlueprintDesignMode.create
@@ -287,12 +289,6 @@ class _OwnerDesignStoreScreenState
                             ),
                           ),
                         ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
                         // late int _numMaxIssuesPerCustomer;
                         Padding(
                           padding: DesignUtils.basicWidgetEdgeInsets(),
@@ -335,43 +331,84 @@ class _OwnerDesignStoreScreenState
                             ),
                           ),
                         ),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         // late int _numMaxIssues;
                         Padding(
                           padding: DesignUtils.basicWidgetEdgeInsets(),
-                          child: SizedBox(
-                            width: 100,
-                            child: TextFormField(
-                              initialValue:
-                                  widget.blueprint?.numMaxIssues.toString(),
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyLarge!
-                                  .copyWith(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onBackground),
-                              decoration: InputDecoration(
-                                label: Text(
-                                  'Max Total Issues\n(0 for infinite)',
-                                  style: TextStyle(
-                                    color: onBackgroundTernary,
+                          child: Row(
+                            children: [
+                              SizedBox(
+                                width: 100,
+                                child: TextFormField(
+                                  enabled: !_isSetInfiniteNumMaxIssues,
+                                  initialValue:
+                                      widget.blueprint?.numMaxIssues.toString(),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyLarge!
+                                      .copyWith(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onBackground
+                                              .withOpacity(
+                                                  _isSetInfiniteNumMaxIssues
+                                                      ? 0.5
+                                                      : 1.0)),
+                                  decoration: InputDecoration(
+                                    label: Text(
+                                      'Max Total Issues',
+                                      style: TextStyle(
+                                        color: onBackgroundTernary,
+                                      ),
+                                    ),
                                   ),
+                                  validator: (value) {
+                                    if (_isSetInfiniteNumMaxIssues) {
+                                      return null;
+                                    }
+
+                                    if (value == null ||
+                                        int.tryParse(value) == null ||
+                                        int.parse(value) < 1) {
+                                      return 'Must be 1+ integer';
+                                    }
+                                    return null;
+                                  },
+                                  keyboardType: TextInputType.number,
+                                  onSaved: (newValue) {
+                                    if (_isSetInfiniteNumMaxIssues) {
+                                      _numMaxIssues = 0;
+                                      return;
+                                    }
+                                    _numMaxIssues = int.parse(newValue!);
+                                  },
                                 ),
                               ),
-                              validator: (value) {
-                                // 0 is infinite
-                                if (value == null ||
-                                    int.tryParse(value) == null ||
-                                    int.parse(value) < 0) {
-                                  return 'Must be 0+ integer';
-                                }
-                                return null;
-                              },
-                              keyboardType: TextInputType.number,
-                              onSaved: (newValue) {
-                                _numMaxIssues = int.parse(newValue!);
-                              },
-                            ),
+                              const SizedBox(width: 10),
+                              Row(
+                                children: [
+                                  Switch(
+                                    value: _isSetInfiniteNumMaxIssues,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _isSetInfiniteNumMaxIssues = value;
+                                      });
+                                    },
+                                  ),
+                                  Text(
+                                    'Infinite',
+                                    style: TextStyle(
+                                      color: onBackgroundTernary,
+                                    ),
+                                  ),
+                                ],
+                              )
+                            ],
                           ),
                         ),
                       ],
@@ -523,7 +560,7 @@ class _OwnerDesignStoreScreenState
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Text(
-                                      '${timeFormatter.format(_expirationDate!)} ${dateFormatter.format(_expirationDate!)} ${_expirationDate!.timeZoneName} (UTC+${_expirationDate!.timeZoneOffset.inHours})',
+                                      formatDateTime(_expirationDate!),
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodyLarge!
@@ -542,10 +579,7 @@ class _OwnerDesignStoreScreenState
                         Padding(
                           padding: DesignUtils.basicWidgetEdgeInsets(),
                           child: IconButton(
-                            onPressed:
-                                widget.designMode == BlueprintDesignMode.modify
-                                    ? null
-                                    : _onPressSelectExpDate,
+                            onPressed: _onPressSelectExpDate,
                             icon: Icon(Icons.calendar_month,
                                 color: onBackgroundTernary),
                           ),
@@ -841,12 +875,13 @@ class _OwnerDesignStoreScreenState
 
   void _onPressSelectExpDate() async {
     final now = DateTime.now();
-    final firstDate = now;
+    final firstDate = _getFirstDate(now);
     final lastDate = DateTime(now.year + 1, now.month, now.day);
     // Show date picker
     final selectedDate = await showDatePicker(
       context: context,
-      initialDate: firstDate,
+      initialDate:
+          _expirationDate ?? widget.blueprint?.expirationDate ?? firstDate,
       firstDate: firstDate,
       lastDate: lastDate,
     );
@@ -855,23 +890,55 @@ class _OwnerDesignStoreScreenState
     }
 
     if (!mounted) return;
-    final selectedTime =
-        await showTimePicker(context: context, initialTime: TimeOfDay.now());
+
+    final selectedTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(
+        _expirationDate ?? widget.blueprint?.expirationDate ?? now,
+      ),
+    );
     if (selectedTime == null) {
       return;
     }
 
     if (!mounted) return;
-    setState(() {
-      final target = DateTime(
-        selectedDate.year,
-        selectedDate.month,
-        selectedDate.day,
-        selectedTime.hour,
-        selectedTime.minute,
+    final target = DateTime(
+      selectedDate.year,
+      selectedDate.month,
+      selectedDate.day,
+      selectedTime.hour,
+      selectedTime.minute,
+    );
+    if (target.isBefore(firstDate)) {
+      Carol.showTextSnackBar(
+        text:
+            'Expiration date must be after ${formatDateTime(firstDate)}.\nChoose date again.',
+        level: SnackBarLevel.error,
+        seconds: 10,
       );
+      return;
+    }
+    setState(() {
       _expirationDate = target;
     });
+  }
+
+  DateTime _getFirstDate(DateTime now) {
+    if (widget.designMode == BlueprintDesignMode.create) {
+      return now;
+    }
+
+    final sevenDaysAfterNow = now.add(
+      const Duration(
+        days: modifyBlueprintExpDateMinRemainingFromNowInDays,
+      ),
+    );
+    var curExpirationDate = widget.blueprint!.expirationDate;
+
+    // Return min(sevenDaysAfterNow, curExpirationDate)
+    return sevenDaysAfterNow.compareTo(curExpirationDate) < 0
+        ? sevenDaysAfterNow
+        : curExpirationDate;
   }
 
   bool _validateInput() {
