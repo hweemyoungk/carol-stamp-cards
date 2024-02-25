@@ -46,12 +46,38 @@ class BlueprintInfo extends StatelessWidget {
         style: TextStyle(color: textColor),
       ),
     );
+    final expirationDateTitle = Padding(
+      padding: DesignUtils.basicWidgetEdgeInsets(),
+      child: Text(
+        'Expiriration Date',
+        style:
+            Theme.of(context).textTheme.titleLarge!.copyWith(color: textColor),
+      ),
+    );
+    final expirationDateDescText = Padding(
+      padding: DesignUtils.basicWidgetEdgeInsets(),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            formatDateTime(blueprint.expirationDate),
+            style: TextStyle(color: textColor),
+          ),
+          Text(
+            '(${formatRemaining(blueprint.expirationDate.difference(DateTime.now()))})',
+            style: TextStyle(color: textColor),
+          ),
+        ],
+      ),
+    );
     return Column(
       children: [
         if (image != null) image,
         blueprintDescText,
         stampGrantCondTitle,
         stampGrantCondDescText,
+        expirationDateTitle,
+        expirationDateDescText,
       ],
     );
   }

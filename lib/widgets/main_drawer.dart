@@ -2,10 +2,12 @@ import 'package:carol/apis/customer_apis.dart' as customer_apis;
 import 'package:carol/apis/owner_apis.dart' as owner_apis;
 import 'package:carol/main.dart';
 import 'package:carol/providers/active_drawer_item_notifier.dart';
+import 'package:carol/screens/account_dialog_screen.dart';
 import 'package:carol/screens/auth_screen.dart';
 import 'package:carol/screens/customer_screen.dart';
 import 'package:carol/screens/owner_screen.dart';
 import 'package:carol/utils.dart';
+import 'package:carol/widgets/common/loading.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:transparent_image/transparent_image.dart';
@@ -14,14 +16,26 @@ final activeDrawerItemProvider =
     StateNotifierProvider<ActiveDrawerItemNotifier, DrawerItemEnum>(
         (ref) => ActiveDrawerItemNotifier());
 
-class MainDrawer extends ConsumerWidget {
+class MainDrawer extends ConsumerStatefulWidget {
   const MainDrawer({
     super.key,
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final currentUser = ref.watch(currentUserProvider)!;
+  ConsumerState<MainDrawer> createState() => _MainDrawerState();
+}
+
+class _MainDrawerState extends ConsumerState<MainDrawer> {
+  @override
+  Widget build(BuildContext context) {
+    final currentUser = ref.watch(currentUserProvider);
+    if (currentUser == null) {
+      // Can happen when signed out
+      return const Loading(
+        message: 'Loading user...',
+      );
+    }
+
     final avatar = ClipRRect(
       borderRadius: BorderRadius.circular(25.0),
       child: currentUser.profileImageUrl == null
@@ -65,9 +79,15 @@ class MainDrawer extends ConsumerWidget {
           DrawerHeader(
             child: TextButton(
               onPressed: () {
-                ref
-                    .read(activeDrawerItemProvider.notifier)
-                    .set(DrawerItemEnum.account);
+                // ref
+                //     .read(activeDrawerItemProvider.notifier)
+                //     .set(DrawerItemEnum.account);
+                showDialog(
+                  context: context,
+                  builder: (ctx) {
+                    return const AccountDialogScreen();
+                  },
+                );
               },
               child: Row(
                 children: [
@@ -203,12 +223,10 @@ class _DrawerItemState extends ConsumerState<DrawerItem> {
 }
 
 enum DrawerItemEnum {
-  account,
   customer,
   owner,
   membership,
   settings,
   termsOfUse,
   privacyPolicy,
-  ;
 }

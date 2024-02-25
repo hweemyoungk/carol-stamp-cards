@@ -2,7 +2,10 @@ const versionName = '1.0.0';
 const versionCode = '1';
 
 // Store
-const deleteClosedStoreInDays = 7;
+const softDeleteClosedStoreInDays = 7;
+
+// Blueprint
+const modifyBlueprintExpDateMinRemainingFromNowInDays = 7;
 
 // Redeem process
 const watchRedeemRequestIntervalSeconds = 3;

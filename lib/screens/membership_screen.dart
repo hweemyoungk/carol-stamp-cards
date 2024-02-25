@@ -4,6 +4,7 @@ import 'package:carol/models/membership.dart';
 import 'package:carol/models/owner_membership.dart';
 import 'package:carol/screens/auth_screen.dart';
 import 'package:carol/utils.dart';
+import 'package:carol/widgets/common/loading.dart';
 import 'package:carol/widgets/main_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -126,7 +127,14 @@ class _MembershipScreenState extends ConsumerState<MembershipScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final currentUser = ref.watch(currentUserProvider)!;
+    final currentUser = ref.watch(currentUserProvider);
+    if (currentUser == null) {
+      // Can happen when signed out
+      return const Loading(
+        message: 'Loading user...',
+      );
+    }
+
     final memberships =
         _getMemberships().map((e) => e.checkUserRole(currentUser)).toList();
     final membershipsList = ListView.builder(

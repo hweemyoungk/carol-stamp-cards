@@ -100,7 +100,7 @@ class _OwnerScreenState extends ConsumerState<OwnerScreen> {
   void _onPressNewStoreViolated() {
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (ctx) {
         return AlertDialog(
           title: const Text('Cannot create store'),
           content: SingleChildScrollView(

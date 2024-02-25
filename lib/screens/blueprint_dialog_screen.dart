@@ -152,9 +152,11 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
     }
   }
 
-  /// (Owner only) Generate <code>ElevatedButton</code> if blueprint's store is active.
+  /// (Owner only) Generate <code>ElevatedButton</code> if blueprint is not expired and blueprint's store is active.
   ElevatedButton? _getModifyButton(Blueprint blueprint) {
-    if (blueprint.store == null || blueprint.store!.isInactive) {
+    if (blueprint.isExpired ||
+        blueprint.store == null ||
+        blueprint.store!.isInactive) {
       return null;
     }
 
@@ -251,6 +253,20 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
           );
         });
       }
+      return;
+    }
+
+    // Check expired
+    if (blueprint.isExpired) {
+      if (mounted) {
+        setState(() {
+          _issueStatus = _IssueStatus.notIssuable;
+          _alertRows.add(
+            const AlertRow(text: 'Blueprint is already expired'),
+          );
+        });
+      }
+      return;
     }
 
     // Check max issues per customer
