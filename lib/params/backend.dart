@@ -11,6 +11,9 @@ const locationHostname = 'http://localhost:8080';
 const appServiceHost = '10.0.2.2:8082'; // if profile is 'local'
 const appPublicMinRequirementsPath =
     '/app/api/v1/public/minRequirements'; // GET
+const appPublicAppNoticeListPath = '/app/api/v1/public/appNotice/list'; // GET
+const appPublicAppNoticeListIdPath =
+    '/app/api/v1/public/appNotice/list/id'; // GET
 const appPublicCustomerMembershipMapPath =
     '/app/api/v1/public/customer/membership/map'; // GET
 const appPublicOwnerMembershipMapPath =
