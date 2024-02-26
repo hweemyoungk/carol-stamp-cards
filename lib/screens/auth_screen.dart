@@ -52,90 +52,19 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     super.didChangeDependencies();
     _checkRequirements(ignore: false).then(
       (_) async {
-        await _showAppNotices();
+        try {
+          await _showAppNotices();
+        } on Exception catch (e) {
+          Carol.showExceptionSnackBar(
+            e,
+            contextMessage: 'Failed to get app notices.',
+          );
+        }
       },
     ).then(
       (_) async {
         await _tryAutoSignIn(ignore: false);
       },
-    );
-  }
-
-  Future<void> _showAppNotices() async {
-    // 1. GET /app/appNotice/list/id -> e.g. [6,8,9]
-    final incomingIds = await app_apis.listAppNoticesId();
-
-    // 2. compare with locally stored notices
-    // 2.1. Parse notices in local storage
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final storedNotices = (prefs.getStringList(prefs_params.appNoticesKey) ??
-            <String>[])
-        .map((encodedNotice) => AppNotice.fromJson(json.decode(encodedNotice)))
-        .toSet();
-    final storedNoticeIds = storedNotices.map((e) => e.id).toSet();
-
-    // 2.2. Split ids into groups
-    final idsToFetch = <int>{};
-    final storedNoticeIdsToShowCandidates = <int>{};
-    for (final id in incomingIds) {
-      if (storedNoticeIds.contains(id)) {
-        storedNoticeIdsToShowCandidates.add(id);
-        continue;
-      }
-      idsToFetch.add(id);
-    }
-
-    // 3. Fetch others: GET /app/appNotice/list
-    final fetchedNotices = await app_apis.listAppNotices(ids: idsToFetch);
-
-    // 4. Show notices
-    // 4.1. Split notices into groups
-    final noticesToSave = <AppNotice>[];
-    final storedNoticesToShow = <AppNotice>[];
-    for (final storedNotice in storedNotices) {
-      if (storedNotice.isSuppressed) {
-        noticesToSave.add(storedNotice);
-        continue;
-      }
-      if (storedNoticeIdsToShowCandidates.contains(storedNotice.id)) {
-        storedNoticesToShow.add(storedNotice);
-      }
-    }
-
-    // 4.2. Merge local and fetched and sort by priority
-    final noticesToShow = <AppNotice>[];
-    noticesToShow.addAll(fetchedNotices);
-    noticesToShow.addAll(storedNoticesToShow);
-    noticesToShow.sort((a, b) => b.priority - a.priority);
-
-    // 4.3. Show notices
-    for (final notice in noticesToShow) {
-      // 4.3.[].1. Show
-      if (!mounted) continue;
-      final suppress = await showDialog<bool>(
-        context: context,
-        builder: (ctx) {
-          return AppNoticeDialogScreen(notice: notice);
-        },
-      );
-
-      // 4.3.[].2. Check suppress
-      if (suppress != null && suppress) {
-        noticesToSave.add(notice.copyWith(isSuppressed: true));
-        continue;
-      }
-      noticesToSave.add(notice);
-    }
-
-    // 5. Save notices
-    prefs.setStringList(
-      prefs_params.appNoticesKey,
-      noticesToSave
-          .map((notice) => json.encode(
-                notice.toJson(),
-                toEncodable: customToEncodable,
-              ))
-          .toList(),
     );
   }
 
@@ -306,6 +235,84 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       return compareTo;
     }
     return 0;
+  }
+
+  Future<void> _showAppNotices() async {
+    // 1. GET /app/appNotice/list/id -> e.g. [6,8,9]
+    final incomingIds = await app_apis.listAppNoticesId();
+
+    // 2. compare with locally stored notices
+    // 2.1. Parse notices in local storage
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final storedNotices = (prefs.getStringList(prefs_params.appNoticesKey) ??
+            <String>[])
+        .map((encodedNotice) => AppNotice.fromJson(json.decode(encodedNotice)))
+        .toSet();
+    final storedNoticeIds = storedNotices.map((e) => e.id).toSet();
+
+    // 2.2. Split ids into groups
+    final idsToFetch = <int>{};
+    final storedNoticeIdsToShowCandidates = <int>{};
+    for (final id in incomingIds) {
+      if (storedNoticeIds.contains(id)) {
+        storedNoticeIdsToShowCandidates.add(id);
+        continue;
+      }
+      idsToFetch.add(id);
+    }
+
+    // 3. Fetch others: GET /app/appNotice/list
+    final fetchedNotices = await app_apis.listAppNotices(ids: idsToFetch);
+
+    // 4. Show notices
+    // 4.1. Split notices into groups
+    final noticesToSave = <AppNotice>[];
+    final storedNoticesToShow = <AppNotice>[];
+    for (final storedNotice in storedNotices) {
+      if (storedNotice.isSuppressed) {
+        noticesToSave.add(storedNotice);
+        continue;
+      }
+      if (storedNoticeIdsToShowCandidates.contains(storedNotice.id)) {
+        storedNoticesToShow.add(storedNotice);
+      }
+    }
+
+    // 4.2. Merge local and fetched and sort by priority
+    final noticesToShow = <AppNotice>[];
+    noticesToShow.addAll(fetchedNotices);
+    noticesToShow.addAll(storedNoticesToShow);
+    noticesToShow.sort((a, b) => b.priority - a.priority);
+
+    // 4.3. Show notices
+    for (final notice in noticesToShow) {
+      // 4.3.[].1. Show
+      if (!mounted) continue;
+      final suppress = await showDialog<bool>(
+        context: context,
+        builder: (ctx) {
+          return AppNoticeDialogScreen(notice: notice);
+        },
+      );
+
+      // 4.3.[].2. Check suppress
+      if (suppress != null && suppress) {
+        noticesToSave.add(notice.copyWith(isSuppressed: true));
+        continue;
+      }
+      noticesToSave.add(notice);
+    }
+
+    // 5. Save notices
+    prefs.setStringList(
+      prefs_params.appNoticesKey,
+      noticesToSave
+          .map((notice) => json.encode(
+                notice.toJson(),
+                toEncodable: customToEncodable,
+              ))
+          .toList(),
+    );
   }
 
   Future<void> _tryAutoSignIn({bool ignore = false}) async {

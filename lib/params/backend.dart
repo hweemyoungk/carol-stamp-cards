@@ -1,6 +1,6 @@
 // Alice
 const apigateway = '10.0.2.2:8080';
-// (localk8s) In your host machine: ncat -k -p 8080 -l -c "ncat 192.168.49.2 30001"
+// (localk8s) In your host machine: ncat -k -p 8080 -l -c "ncat 192.168.49.2 443"
 const imageStorageHost = '10.0.2.2:8080';
 const imageStoragePath = '/a-image-storage';
 const locationHostname = 'http://localhost:8080';
@@ -8,7 +8,8 @@ const locationHostname = 'http://localhost:8080';
 // Paths
 
 // App service
-const appServiceHost = '10.0.2.2:8082'; // if profile is 'local'
+const appServiceHost =
+    '10.0.2.2:8082'; // Use only when profile is 'local'. If using k8s, use apigateway(Ingress)
 const appPublicMinRequirementsPath =
     '/app/api/v1/public/minRequirements'; // GET
 const appPublicAppNoticeListPath = '/app/api/v1/public/appNotice/list'; // GET

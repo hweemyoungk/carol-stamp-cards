@@ -8,8 +8,8 @@ Map<String, dynamic> minRequirements = {};
 
 Future<Map<String, dynamic>> getMinRequirements() async {
   final url = Uri.https(
-    // backend_params.apigateway,
-    backend_params.appServiceHost,
+    backend_params.apigateway,
+    // backend_params.appServiceHost,
     backend_params.appPublicMinRequirementsPath,
   );
   final res = await httpGet(
@@ -22,8 +22,8 @@ Future<Map<String, dynamic>> getMinRequirements() async {
 
 Future<Set<int>> listAppNoticesId() async {
   final url = Uri.https(
-    // backend_params.apigateway,
-    backend_params.appServiceHost,
+    backend_params.apigateway,
+    // backend_params.appServiceHost,
     backend_params.appPublicAppNoticeListIdPath,
   );
   final res = await httpGet(
@@ -40,8 +40,8 @@ Future<List<AppNotice>> listAppNotices({
   if (ids != null && ids.isEmpty) return [];
 
   final url = Uri.https(
-    // backend_params.apigateway,
-    backend_params.appServiceHost,
+    backend_params.apigateway,
+    // backend_params.appServiceHost,
     backend_params.appPublicAppNoticeListPath,
     {
       if (ids != null && ids.isNotEmpty)
