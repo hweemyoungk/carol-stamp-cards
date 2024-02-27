@@ -5,7 +5,7 @@ Future<void> deleteAccount({
   required String userId,
 }) async {
   final url = Uri.https(
-    backend_params.apigateway,
+    backend_params.appGateway,
     '${backend_params.authUserPath}/$userId',
   );
   await httpDelete(url);

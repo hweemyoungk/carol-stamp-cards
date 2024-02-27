@@ -89,7 +89,7 @@ Future<Set<RedeemRule>> listRedeemRules({
   }
   // final url = Uri.http(
   final url = Uri.https(
-    backend_params.apigateway,
+    backend_params.appGateway,
     backend_params.ownerRedeemRuleListPath,
     {
       if (blueprintId != null) 'blueprintId': blueprintId.toString(),
@@ -112,7 +112,7 @@ Future<Set<RedeemRequest>> listRedeemRequests({
 }) async {
   // final url = Uri.http(
   final url = Uri.https(
-    backend_params.apigateway,
+    backend_params.appGateway,
     backend_params.ownerRedeemRequestListPath,
     {
       'ownerId': ownerId,
@@ -133,7 +133,7 @@ Future<void> approveRedeemRequest({
 }) async {
   // final url = Uri.http(
   final url = Uri.https(
-    backend_params.apigateway,
+    backend_params.appGateway,
     backend_params.ownerRedeemRequestApprovePath(redeemRequestId),
   );
   await httpPost(url);
@@ -150,7 +150,7 @@ Future<Set<Blueprint>> listBlueprints({
 
   // final url = Uri.http(
   final url = Uri.https(
-    backend_params.apigateway,
+    backend_params.appGateway,
     backend_params.ownerBlueprintListPath,
     {
       if (storeId != null) 'storeId': storeId.toString(),
@@ -174,7 +174,7 @@ Future<int> postBlueprint({
 }) async {
   // final url = Uri.http(
   final url = Uri.https(
-    backend_params.apigateway,
+    backend_params.appGateway,
     backend_params.ownerBlueprintPath,
   );
 
@@ -203,7 +203,7 @@ Future<Blueprint> getBlueprint({
 }) async {
   // final url = Uri.http(
   final url = Uri.https(
-    backend_params.apigateway,
+    backend_params.appGateway,
     '${backend_params.ownerBlueprintPath}/$id',
   );
   final res = await httpGet(url);
@@ -217,7 +217,7 @@ Future<void> putBlueprint({
 }) async {
   // final url = Uri.http(
   final url = Uri.https(
-    backend_params.apigateway,
+    backend_params.appGateway,
     '${backend_params.ownerBlueprintPath}/$id',
   );
 
@@ -250,7 +250,7 @@ Future<Set<Store>> listStores({
 
   // final url = Uri.http(
   final url = Uri.https(
-    backend_params.apigateway,
+    backend_params.appGateway,
     backend_params.ownerStoreListPath,
     {
       if (ownerId != null) 'ownerId': ownerId,
@@ -274,7 +274,7 @@ Future<int> postStore({
 }) async {
   // final url = Uri.http(
   final url = Uri.https(
-    backend_params.apigateway,
+    backend_params.appGateway,
     backend_params.ownerStorePath,
   );
 
@@ -300,7 +300,7 @@ Future<Store> getStore({
 }) async {
   // final url = Uri.http(
   final url = Uri.https(
-    backend_params.apigateway,
+    backend_params.appGateway,
     '${backend_params.ownerStorePath}/$id',
   );
   final res = await httpGet(url);
@@ -314,7 +314,7 @@ Future<void> putStore({
 }) async {
   // final url = Uri.http(
   final url = Uri.https(
-    backend_params.apigateway,
+    backend_params.appGateway,
     '${backend_params.ownerStorePath}/$id',
   );
 
@@ -339,7 +339,7 @@ Future<void> closeStore({
 }) async {
   // final url = Uri.http(
   final url = Uri.https(
-    backend_params.apigateway,
+    backend_params.appGateway,
     '${backend_params.ownerStorePath}/$id',
   );
   await httpDelete(url);
@@ -350,7 +350,7 @@ Future<int> getNumAccumulatedTotalStores({
   required String ownerId,
 }) async {
   final url = Uri.https(
-    backend_params.apigateway,
+    backend_params.appGateway,
     backend_params.ownerNumAccumulatedTotalStoresPath,
     {
       'ownerId': ownerId,
@@ -364,7 +364,7 @@ Future<int> getNumCurrentTotalStores({
   required String ownerId,
 }) async {
   final url = Uri.https(
-    backend_params.apigateway,
+    backend_params.appGateway,
     backend_params.ownerNumCurrentTotalStoresPath,
     {
       'ownerId': ownerId,
@@ -378,7 +378,7 @@ Future<int> getNumCurrentActiveStores({
   required String ownerId,
 }) async {
   final url = Uri.https(
-    backend_params.apigateway,
+    backend_params.appGateway,
     backend_params.ownerNumCurrentActiveStoresPath,
     {
       'ownerId': ownerId,
@@ -393,7 +393,7 @@ Future<StampCard> getStampCard({
 }) async {
   // final url = Uri.http(
   final url = Uri.https(
-    backend_params.apigateway,
+    backend_params.appGateway,
     '${backend_params.ownerStampCardPath}/$id',
   );
   final res = await httpGet(url);
@@ -407,7 +407,7 @@ Future<String> grantStamp({
 }) async {
   // final url = Uri.http(
   final url = Uri.https(
-    backend_params.apigateway,
+    backend_params.appGateway,
     backend_params.ownerStampGrantPath,
   );
 

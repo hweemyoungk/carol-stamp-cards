@@ -36,7 +36,7 @@ class _OwnerDesignStoreScreenState
   final List<Widget> _addRedeemRuleAlertRows = [];
   var _status = BlueprintDesignStatus.userInput;
   bool? _canAddRedeemRule;
-  late bool _isSetInfiniteNumMaxIssues;
+  bool _isSetInfiniteNumMaxIssues = false;
 
   final _formKey = GlobalKey<FormState>();
   late String _displayName;
@@ -506,7 +506,7 @@ class _OwnerDesignStoreScreenState
                                     if (outputRedeemRule == null) {
                                       return;
                                     }
-                                    if (outputRedeemRule.blueprintId == -1) {
+                                    if (outputRedeemRule.isDeleted) {
                                       // Deleted
                                       if (mounted) {
                                         setState(() {
@@ -868,7 +868,6 @@ class _OwnerDesignStoreScreenState
         level: SnackBarLevel.success,
       );
     }
-
     if (!mounted) return;
     Navigator.of(context).pop();
   }

@@ -57,27 +57,27 @@ String genState({int length = 30}) => genAlphanumeric(length);
 // Uri getTokenEndpoint() => Uri.http(
 Uri getTokenEndpoint() => Uri.https(
       athena_params.keycloakHostname,
-      '/realms/${athena_params.realmName}/protocol/openid-connect/token',
+      athena_params.tokenPath,
     );
 
 Uri getAuthEndpoint({
   required String state,
   required PkcePair pkcePair,
-}) =>
-    // Uri.http(
-    Uri.https(
-      athena_params.keycloakHostname,
-      '/realms/${athena_params.realmName}/protocol/openid-connect/auth',
-      {
-        'client_id': athena_params.clientId,
-        'response_type': 'code',
-        'scope': 'openid offline_access',
-        'redirect_uri': athena_params.redirectUri,
-        'state': state,
-        'code_challenge': pkcePair.codeChallenge,
-        'code_challenge_method': 'S256'
-      },
-    );
+}) {
+  return Uri.https(
+    athena_params.keycloakHostname,
+    athena_params.authPath,
+    {
+      'client_id': athena_params.clientId,
+      'response_type': 'code',
+      'scope': 'openid offline_access',
+      'redirect_uri': athena_params.redirectUri,
+      'state': state,
+      'code_challenge': pkcePair.codeChallenge,
+      'code_challenge_method': 'S256'
+    },
+  );
+}
 
 List<String>? validateOidc(Map<String, dynamic> oidc) {
   final secondsSinceEpoch = getCurrentTimestampSeconds();

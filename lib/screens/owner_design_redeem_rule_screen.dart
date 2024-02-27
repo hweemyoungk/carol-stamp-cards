@@ -214,7 +214,7 @@ class _OwnerDesignRedeemRuleScreenState
 
   void _locallyDeleteRedeemRule() {
     // widget.redeemRule must exist
-    final deletedRedeemRule = widget.redeemRule!.copyWith(blueprintId: -1);
+    final deletedRedeemRule = widget.redeemRule!.copyWith(isDeleted: true);
     Navigator.of(context).pop(deletedRedeemRule);
   }
 }

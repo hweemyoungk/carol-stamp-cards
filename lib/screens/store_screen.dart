@@ -666,6 +666,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         );
       },
     ));
+    _checkCanCreateNewBlueprint();
   }
 
   void _onPressNewBlueprintViolated() {

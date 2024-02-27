@@ -1,6 +1,8 @@
 import 'package:carol/apis/customer_apis.dart' as customer_apis;
 import 'package:carol/apis/owner_apis.dart' as owner_apis;
+import 'package:carol/apis/utils.dart';
 import 'package:carol/main.dart';
+import 'package:carol/params/backend.dart' as backend_params;
 import 'package:carol/providers/active_drawer_item_notifier.dart';
 import 'package:carol/screens/account_dialog_screen.dart';
 import 'package:carol/screens/auth_screen.dart';
@@ -110,11 +112,11 @@ class _MainDrawerState extends ConsumerState<MainDrawer> {
               ),
             ),
           ),
-          const Column(
+          Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             mainAxisSize: MainAxisSize.max,
             children: [
-              Column(
+              const Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   DrawerItem(
@@ -128,10 +130,11 @@ class _MainDrawerState extends ConsumerState<MainDrawer> {
                     text: 'Membership',
                     drawerItemEnum: DrawerItemEnum.membership,
                   ),
-                  DrawerItem(
-                    text: 'Settings',
-                    drawerItemEnum: DrawerItemEnum.settings,
-                  ),
+                  // Skip in phase 3
+                  // DrawerItem(
+                  //   text: 'Settings',
+                  //   drawerItemEnum: DrawerItemEnum.settings,
+                  // ),
                 ],
               ),
               Column(
@@ -140,10 +143,12 @@ class _MainDrawerState extends ConsumerState<MainDrawer> {
                   DrawerItem(
                     text: 'Terms of Use',
                     drawerItemEnum: DrawerItemEnum.termsOfUse,
+                    onTap: _onTapTermsOfUse,
                   ),
                   DrawerItem(
                     text: 'Privacy Policy',
                     drawerItemEnum: DrawerItemEnum.privacyPolicy,
+                    onTap: _onTapPrivacyPolicy,
                   ),
                 ],
               ),
@@ -153,6 +158,22 @@ class _MainDrawerState extends ConsumerState<MainDrawer> {
       ),
     );
   }
+
+  Future<void> _onTapPrivacyPolicy() async {
+    final url = Uri.https(
+      backend_params.appGateway,
+      backend_params.publicPrivacyPolicyPath,
+    );
+    await launchInBrowserView(url);
+  }
+
+  Future<void> _onTapTermsOfUse() async {
+    final url = Uri.https(
+      backend_params.appGateway,
+      backend_params.publicPrivacyPolicyPath,
+    );
+    await launchInBrowserView(url);
+  }
 }
 
 class DrawerItem extends ConsumerStatefulWidget {
@@ -160,9 +181,11 @@ class DrawerItem extends ConsumerStatefulWidget {
     super.key,
     required this.text,
     required this.drawerItemEnum,
+    this.onTap,
   });
   final String text;
   final DrawerItemEnum drawerItemEnum;
+  final void Function()? onTap;
 
   @override
   ConsumerState<DrawerItem> createState() => _DrawerItemState();
@@ -172,11 +195,14 @@ class _DrawerItemState extends ConsumerState<DrawerItem> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        ref.read(activeDrawerItemProvider.notifier).set(widget.drawerItemEnum);
-        _initLoadEntities();
-        Navigator.of(context).pop();
-      },
+      onTap: widget.onTap ??
+          () {
+            ref
+                .read(activeDrawerItemProvider.notifier)
+                .set(widget.drawerItemEnum);
+            _initLoadEntities();
+            Navigator.of(context).pop();
+          },
       child: Padding(
         padding: DesignUtils.basicWidgetEdgeInsets(),
         child: Text(
