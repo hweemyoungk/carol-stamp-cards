@@ -214,7 +214,7 @@ class _OwnerScanQrScreenState extends ConsumerState<ScanQrScreen> {
       }
     }
 
-    final Store fetchedStore;
+    Store fetchedStore;
     try {
       fetchedStore = await customer_apis.getStore(id: storeId);
     } on Exception catch (e) {
@@ -223,6 +223,22 @@ class _OwnerScanQrScreenState extends ConsumerState<ScanQrScreen> {
         contextMessage: 'Failed to get store information.',
       );
       return;
+    }
+
+    // Store needs blueprints
+    if (fetchedStore.blueprints == null) {
+      final Set<Blueprint> blueprints;
+      try {
+        blueprints =
+            await customer_apis.listBlueprints(storeId: fetchedStore.id);
+      } on Exception catch (e) {
+        Carol.showExceptionSnackBar(
+          e,
+          contextMessage: 'Failed to get blueprints information.',
+        );
+        return;
+      }
+      fetchedStore = fetchedStore.copyWith(blueprints: blueprints);
     }
 
     // Propagate
