@@ -550,7 +550,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     ),
                     SizedBox(
                       width: 400,
-                      height: 300,
+                      // height: 300,
                       child: Card(
                         margin: const EdgeInsets.all(20),
                         child: Padding(
@@ -564,6 +564,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                                     padding:
                                         DesignUtils.basicWidgetEdgeInsets(),
                                     child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
                                       children: [
                                         Text(
                                           'Welcome to',
@@ -578,6 +583,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                                         ),
                                         Text(
                                           'Carol Cards',
+                                          textAlign: TextAlign.center,
                                           style: Theme.of(context)
                                               .textTheme
                                               .displayMedium!

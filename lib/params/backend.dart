@@ -4,7 +4,7 @@ const appGateway = 'carol.cards';
 // (localk8s) In your host machine: ncat -k -p 8080 -l -c "ncat 192.168.49.2 443"
 const imageStorageHost = '10.0.2.2:8080';
 const imageStoragePath = '/a-image-storage';
-const locationHostname = 'http://localhost:8080';
+const locationHostname = 'https://localhost:8080';
 
 // Paths
 

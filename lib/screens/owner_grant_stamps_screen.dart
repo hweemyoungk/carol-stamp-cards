@@ -2,6 +2,7 @@ import 'package:carol/apis/owner_apis.dart';
 import 'package:carol/main.dart';
 import 'package:carol/models/stamp_card.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
+import 'package:carol/models/stamp_grant.dart';
 import 'package:carol/utils.dart';
 import 'package:carol/widgets/blueprint/blueprint_info.dart';
 import 'package:carol/widgets/common/circular_progress_indicator_in_button.dart';
@@ -195,10 +196,19 @@ class _OwnerGrantStampsScreenState
 
     // POST StampGrant
     try {
-      await grantStamp(
-        stampCardId: widget.stampCard.id,
+      // await grantStamp(
+      //   stampCardId: widget.stampCard.id,
+      //   numStamps: _numGrant,
+      // );
+      final stampGrant = StampGrant(
+        id: -1,
+        isDeleted: false,
+        displayName: 'Dummy Stamp Grant Name',
         numStamps: _numGrant,
+        card: null,
+        cardId: widget.stampCard.id,
       );
+      await postStampGrant(stampGrant: stampGrant);
     } on Exception catch (e) {
       Carol.showExceptionSnackBar(
         e,

@@ -6,6 +6,7 @@ import 'package:carol/models/redeem_request.dart';
 import 'package:carol/models/redeem_rule.dart';
 import 'package:carol/models/stamp_card.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
+import 'package:carol/models/stamp_grant.dart';
 import 'package:carol/models/store.dart';
 import 'package:carol/params/backend.dart' as backend_params;
 import 'package:carol/screens/auth_screen.dart';
@@ -419,6 +420,29 @@ Future<String> grantStamp({
   final res = await httpPost(
     url,
     body: json.encode(bodyJson, toEncodable: customToEncodable),
+  );
+  final location = res.headers['location']!;
+  final newId = backend_params.ownerStampGrantLocationPattern
+      .firstMatch(location)!
+      .group(0)!;
+  return newId;
+}
+
+Future<String> postStampGrant({
+  required StampGrant stampGrant,
+}) async {
+  // final url = Uri.http(
+  final url = Uri.https(
+    backend_params.appGateway,
+    backend_params.ownerStampGrantPath,
+  );
+
+  final stampGrantJson = stampGrant.toJson();
+  stampGrantJson['id'] = null;
+
+  final res = await httpPost(
+    url,
+    body: json.encode(stampGrantJson, toEncodable: customToEncodable),
   );
   final location = res.headers['location']!;
   final newId = backend_params.ownerStampGrantLocationPattern
