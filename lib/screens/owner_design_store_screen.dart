@@ -5,6 +5,7 @@ import 'package:carol/screens/auth_screen.dart';
 import 'package:carol/screens/store_screen.dart';
 import 'package:carol/utils.dart';
 import 'package:carol/widgets/common/proceed_alert_dialog.dart';
+import 'package:carol/widgets/common/required_field_label.dart';
 import 'package:carol/widgets/stores_explorer/stores_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -72,15 +73,17 @@ class _OwnerDesignStoreScreenState
                         initialValue: widget.store?.displayName,
                         style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                             color: Theme.of(context).colorScheme.onBackground),
-                        maxLength: 50,
+                        maxLength: 30,
                         decoration: const InputDecoration(
-                          label: Text('Display Name'),
+                          label: RequiredFieldLabel(
+                            Text('Display Name'),
+                          ),
                         ),
                         validator: (value) {
                           if (value == null ||
-                              value.trim().length <= 1 ||
-                              value.trim().length > 50) {
-                            return 'Must be between 1 and 50 characters long';
+                              value.trim().isEmpty ||
+                              value.trim().length > 30) {
+                            return 'Must be between 1 and 30 characters long';
                           }
                           return null;
                         },
@@ -99,11 +102,13 @@ class _OwnerDesignStoreScreenState
                             color: Theme.of(context).colorScheme.onBackground),
                         maxLength: 1000,
                         decoration: const InputDecoration(
-                          label: Text('Description'),
+                          label: RequiredFieldLabel(
+                            Text('Description'),
+                          ),
                         ),
                         validator: (value) {
                           if (value == null ||
-                              value.trim().length <= 1 ||
+                              value.trim().isEmpty ||
                               value.trim().length > 1000) {
                             return 'Must be between 1 and 1000 characters long';
                           }
@@ -120,7 +125,7 @@ class _OwnerDesignStoreScreenState
                         initialValue: widget.store?.zipcode,
                         style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                             color: Theme.of(context).colorScheme.onBackground),
-                        maxLength: 8,
+                        maxLength: 7,
                         decoration: const InputDecoration(
                           label: Text('Zipcode'),
                         ),
@@ -128,9 +133,8 @@ class _OwnerDesignStoreScreenState
                           if (value == null || value.trim().isEmpty) {
                             return null;
                           }
-                          if (value.trim().length <= 1 ||
-                              value.trim().length > 8) {
-                            return 'Must be between 1 and 8 characters long';
+                          if (value.trim().isEmpty || value.trim().length > 7) {
+                            return 'Must be between 1 and 7 characters long';
                           }
                           return null;
                         },
@@ -145,7 +149,7 @@ class _OwnerDesignStoreScreenState
                         initialValue: widget.store?.address,
                         style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                             color: Theme.of(context).colorScheme.onBackground),
-                        maxLength: 100,
+                        maxLength: 120,
                         decoration: const InputDecoration(
                           label: Text('Address'),
                         ),
@@ -153,9 +157,9 @@ class _OwnerDesignStoreScreenState
                           if (value == null || value.trim().isEmpty) {
                             return null;
                           }
-                          if (value.trim().length <= 1 ||
-                              value.trim().length > 100) {
-                            return 'Must be between 1 and 100 characters long';
+                          if (value.trim().isEmpty ||
+                              value.trim().length > 120) {
+                            return 'Must be between 1 and 120 characters long';
                           }
                           return null;
                         },
@@ -179,7 +183,7 @@ class _OwnerDesignStoreScreenState
                           if (value == null || value.trim().isEmpty) {
                             return null;
                           }
-                          if (value.trim().length <= 1 ||
+                          if (value.trim().isEmpty ||
                               value.trim().length > 15) {
                             return 'Must be between 1 and 15 characters long';
                           }
@@ -201,7 +205,7 @@ class _OwnerDesignStoreScreenState
                           child: SizedBox(
                             width: 150,
                             child: TextFormField(
-                              initialValue: widget.store?.lat.toString(),
+                              initialValue: widget.store?.lat?.toString(),
                               style: Theme.of(context)
                                   .textTheme
                                   .bodyLarge!
@@ -237,7 +241,7 @@ class _OwnerDesignStoreScreenState
                           child: SizedBox(
                             width: 150,
                             child: TextFormField(
-                              initialValue: widget.store?.lng.toString(),
+                              initialValue: widget.store?.lng?.toString(),
                               style: Theme.of(context)
                                   .textTheme
                                   .bodyLarge!

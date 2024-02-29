@@ -270,9 +270,10 @@ Future<int> postStampCard({
     body: json.encode(stampCardJson, toEncodable: customToEncodable),
   );
   final location = res.headers['location']!; // e.g., '/api/v1/stampCard/{uuid}'
-  final newStampCardId = backend_params.customerStampCardLocationPattern
-      .firstMatch(location)!
-      .group(0)!;
+  // final newStampCardId = backend_params.customerStampCardLocationPattern
+  //     .firstMatch(location)!
+  //     .group(0)!;
+  final newStampCardId = getIdFromLocation(location);
   return int.parse(newStampCardId);
 }
 
@@ -333,9 +334,10 @@ Future<String> postRedeemRequest({
     body: json.encode(redeemRequestJson, toEncodable: customToEncodable),
   );
   final location = res.headers['location']!;
-  final newId = backend_params.customerRedeemRequestLocationPattern
-      .firstMatch(location)!
-      .group(0)!;
+  // final newId = backend_params.customerRedeemRequestLocationPattern
+  //     .firstMatch(location)!
+  //     .group(0)!;
+  final newId = getIdFromLocation(location);
   return newId;
 }
 

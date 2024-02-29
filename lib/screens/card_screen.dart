@@ -10,10 +10,10 @@ import 'package:carol/screens/customer_design_stamp_card_screen.dart';
 import 'package:carol/screens/store_screen.dart';
 import 'package:carol/utils.dart';
 import 'package:carol/widgets/card/card_info.dart';
-import 'package:carol/widgets/card/redeem_rules_list.dart';
 import 'package:carol/widgets/cards_explorer/cards_list.dart';
 import 'package:carol/widgets/common/circular_progress_indicator_in_button.dart';
 import 'package:carol/widgets/common/loading.dart';
+import 'package:carol/widgets/redeem_rules_explorer/redeem_rules_list.dart';
 import 'package:carol/widgets/stores_explorer/stores_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -165,6 +165,7 @@ class _CardScreenState extends ConsumerState<CardScreen> {
               ],
             ),
           );
+          final redeemRules = card.blueprint?.redeemRules?.toList();
           return SingleChildScrollView(
             child: Column(
               children: [
@@ -189,12 +190,14 @@ class _CardScreenState extends ConsumerState<CardScreen> {
                         padding: DesignUtils.basicWidgetEdgeInsets(1.5),
                         child: cardInfo,
                       ),
-                      Padding(
-                        padding: DesignUtils.basicWidgetEdgeInsets(1.5),
-                        child: RedeemRulesList(
-                          card: card,
+                      if (redeemRules != null)
+                        Padding(
+                          padding: DesignUtils.basicWidgetEdgeInsets(1.5),
+                          child: RedeemRulesList(
+                            redeemRules: redeemRules,
+                            card: card,
+                          ),
                         ),
-                      ),
                       storeInfoButton,
                       if (!card.isDiscarded) deleteButton,
                     ],

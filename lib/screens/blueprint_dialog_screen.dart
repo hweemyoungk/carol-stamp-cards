@@ -56,7 +56,8 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
   Widget build(BuildContext context) {
     final currentUser = ref.watch(currentUserProvider)!;
     final blueprint = _watchBlueprint();
-    if (blueprint == null) {
+    final redeemRules = blueprint?.redeemRules;
+    if (blueprint == null || redeemRules == null) {
       return const Loading(message: 'Loading Blueprint...');
     }
 

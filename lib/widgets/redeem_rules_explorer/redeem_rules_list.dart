@@ -1,13 +1,15 @@
+import 'package:carol/models/redeem_rule.dart';
 import 'package:carol/models/stamp_card.dart';
-import 'package:carol/widgets/card/redeem_rule_list_item.dart';
-import 'package:carol/widgets/common/loading.dart';
+import 'package:carol/widgets/redeem_rules_explorer/redeem_rule_list_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class RedeemRulesList extends ConsumerStatefulWidget {
-  final StampCard card;
+  final List<RedeemRule> redeemRules;
+  final StampCard? card;
   const RedeemRulesList({
     super.key,
+    required this.redeemRules,
     required this.card,
   });
 
@@ -18,13 +20,10 @@ class RedeemRulesList extends ConsumerStatefulWidget {
 class _RedeemRulesListState extends ConsumerState<RedeemRulesList> {
   @override
   Widget build(BuildContext context) {
-    final redeemRules = widget.card.blueprint?.redeemRules?.toList();
-    if (redeemRules == null) {
-      return const Loading(message: 'Loading redeem rules...');
-    }
+    final redeemRules = widget.redeemRules;
 
     return Column(
-      // mainAxisSize: MainAxisSize.min,
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           'Rewards',
@@ -33,15 +32,6 @@ class _RedeemRulesListState extends ConsumerState<RedeemRulesList> {
               .displaySmall!
               .copyWith(color: Theme.of(context).colorScheme.onSecondary),
         ),
-        // redeemRules == null
-        //     ? Padding(
-        //         padding: DesignUtils.basicWidgetEdgeInsets(5.0),
-        //         child: CircularProgressIndicator(
-        //           semanticsLabel: 'Loading rewards...',
-        //           color: Theme.of(context).colorScheme.onSecondary,
-        //         ),
-        //       )
-        //     :
         ListView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -49,7 +39,8 @@ class _RedeemRulesListState extends ConsumerState<RedeemRulesList> {
           itemBuilder: (ctx, index) {
             final redeemRule = redeemRules[index];
             return RedeemRuleListItem(
-              key: ValueKey('${widget.card.id}:${redeemRule.id}'),
+              key: ValueKey(
+                  '${widget.card?.id.toString() ?? ''}:${redeemRule.id}'),
               card: widget.card,
               redeemRule: redeemRule,
               style: Theme.of(context).textTheme.titleLarge!,

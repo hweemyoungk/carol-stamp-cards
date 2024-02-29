@@ -67,6 +67,8 @@ class DesignUtils {
   static const dummyImage =
       AssetImage('assets/images/schnitzel-3279045_1280.jpg');
   static IconData stampIcon = Icons.star;
+  static const requiredFieldLabelSuffixText =
+      Text('*', style: TextStyle(color: Colors.red));
 
   static EdgeInsets basicWidgetEdgeInsets([double scale = 1.0]) {
     return EdgeInsets.all(8.0 * scale);

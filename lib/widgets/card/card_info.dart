@@ -32,7 +32,7 @@ class CardInfo extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
-                    'Last used',
+                    'Last modified',
                     style: Theme.of(context).textTheme.labelLarge!.copyWith(
                         color: Theme.of(context).colorScheme.onSecondary),
                   ),

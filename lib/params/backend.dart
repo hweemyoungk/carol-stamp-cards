@@ -60,11 +60,6 @@ const customerRedeemListExistsPath =
     '/customer/api/v1/redeem/list/exists'; // GET
 const customerRedeemRuleListPath = '/customer/api/v1/redeemRule/list'; // GET
 
-final customerStampCardLocationPattern =
-    RegExp('(?<=$locationHostname$customerStampCardPath/).+');
-final customerRedeemRequestLocationPattern =
-    RegExp('(?<=$locationHostname$customerRedeemRequestPath/).+');
-
 // Owner service
 const ownerBlueprintPath = '/owner/api/v1/blueprint'; // POST,GET,PUT
 const ownerBlueprintListPath = '/owner/api/v1/blueprint/list'; // GET
@@ -90,11 +85,3 @@ String ownerRedeemRequestApprovePath(String redeemRequestId) {
     redeemRequestId.toString(),
   );
 }
-
-final ownerBlueprintLocationPattern =
-    RegExp('(?<=$locationHostname$ownerBlueprintPath/).+');
-final ownerStoreLocationPattern =
-    RegExp('(?<=$locationHostname$ownerStorePath/).+');
-// final ownerRedeemLocationPattern = RegExp('(?<=$locationHostname$ownerRedeemPath/).+');
-final ownerStampGrantLocationPattern =
-    RegExp('(?<=$locationHostname$ownerStampGrantPath/).+');

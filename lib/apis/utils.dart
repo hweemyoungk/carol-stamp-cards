@@ -138,6 +138,12 @@ Future<http.Response> httpPost(
   }
 }
 
+String getIdFromLocation(String location) {
+  // Assumes id is located in the last path segment.
+  final split = location.split('/');
+  return split.last;
+}
+
 Future<Map<String, String>> getAuthHeaders() async {
   if (_refreshOidc) {
     final newOidc = await tryRefreshOidc(

@@ -16,6 +16,8 @@ import 'package:carol/widgets/stores_explorer/stores_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+bool isSavingBlueprint = false;
+
 class OwnerDesignBlueprintScreen extends ConsumerStatefulWidget {
   final BlueprintDesignMode designMode;
   final Blueprint? blueprint;
@@ -113,7 +115,7 @@ class _OwnerDesignStoreScreenState
                         initialValue: widget.blueprint?.displayName,
                         style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                             color: Theme.of(context).colorScheme.onBackground),
-                        maxLength: 50,
+                        maxLength: 30,
                         decoration: InputDecoration(
                           label: Text(
                             'Display Name',
@@ -124,9 +126,9 @@ class _OwnerDesignStoreScreenState
                         ),
                         validator: (value) {
                           if (value == null ||
-                              value.trim().length <= 1 ||
-                              value.trim().length > 50) {
-                            return 'Must be between 1 and 50 characters long';
+                              value.trim().isEmpty ||
+                              value.trim().length > 30) {
+                            return 'Must be between 1 and 30 characters long';
                           }
                           return null;
                         },
@@ -154,7 +156,7 @@ class _OwnerDesignStoreScreenState
                         ),
                         validator: (value) {
                           if (value == null ||
-                              value.trim().length <= 1 ||
+                              value.trim().isEmpty ||
                               value.trim().length > 1000) {
                             return 'Must be between 1 and 1000 characters long';
                           }
@@ -225,9 +227,7 @@ class _OwnerDesignStoreScreenState
                               ),
                               validator: (value) {
                                 if (value == null ||
-                                    int.tryParse(value) == null ||
-                                    int.parse(value) < 1 ||
-                                    100 < int.parse(value)) {
+                                    int.tryParse(value) == null) {
                                   return 'Must be integer';
                                 }
                                 final input = int.parse(value);
@@ -266,19 +266,18 @@ class _OwnerDesignStoreScreenState
                               // double _lng;
                               decoration: InputDecoration(
                                 label: Text(
-                                  'Max Redeems',
+                                  'Max Redeems per Card',
                                   style: TextStyle(
                                     color: onBackgroundTernary,
                                   ),
                                 ),
                               ),
                               validator: (value) {
-                                // 0 is infinite
                                 if (value == null ||
                                     int.tryParse(value) == null ||
-                                    int.parse(value) < 0 ||
+                                    int.parse(value) < 1 ||
                                     100 < int.parse(value)) {
-                                  return 'Must be in 0~100';
+                                  return 'Must be in 1~100';
                                 }
                                 return null;
                               },
@@ -308,7 +307,7 @@ class _OwnerDesignStoreScreenState
                               // double _lng;
                               decoration: InputDecoration(
                                 label: Text(
-                                  'Max Issues per customer',
+                                  'Max Issues per Customer',
                                   style: TextStyle(
                                     color: onBackgroundTernary,
                                   ),
@@ -704,6 +703,7 @@ class _OwnerDesignStoreScreenState
     }
 
     // Save
+    isSavingBlueprint = true;
     final storesNotifier = ref.read(ownerStoresListStoresProvider.notifier);
     final storeNotifier = ref.read(ownerStoreScreenStoreProvider.notifier);
     final blueprintNotifier =
@@ -717,6 +717,7 @@ class _OwnerDesignStoreScreenState
         text: 'Missing store data... Please refresh and start over.',
         level: SnackBarLevel.error,
       );
+      isSavingBlueprint = false;
       return;
     }
 
@@ -760,6 +761,7 @@ class _OwnerDesignStoreScreenState
             _status = BlueprintDesignStatus.userInput;
           });
         }
+        isSavingBlueprint = false;
         return;
       }
 
@@ -777,6 +779,7 @@ class _OwnerDesignStoreScreenState
             _status = BlueprintDesignStatus.userInput;
           });
         }
+        isSavingBlueprint = false;
         return;
       }
 
@@ -830,11 +833,12 @@ class _OwnerDesignStoreScreenState
             _status = BlueprintDesignStatus.userInput;
           });
         }
+        isSavingBlueprint = false;
         return;
       }
 
       // Get blueprint
-      final Blueprint modifiedBlueprint;
+      Blueprint modifiedBlueprint;
       try {
         modifiedBlueprint =
             await owner_apis.getBlueprint(id: widget.blueprint!.id);
@@ -848,7 +852,31 @@ class _OwnerDesignStoreScreenState
             _status = BlueprintDesignStatus.userInput;
           });
         }
+        isSavingBlueprint = false;
         return;
+      }
+
+      if (modifiedBlueprint.redeemRules == null) {
+        // Fetch redeem rules
+        final Set<RedeemRule> redeemRules;
+        try {
+          redeemRules = await owner_apis.listRedeemRules(
+              blueprintId: modifiedBlueprint.id);
+        } on Exception catch (e) {
+          Carol.showExceptionSnackBar(
+            e,
+            contextMessage: 'Failed to get redeem rules',
+          );
+          if (mounted) {
+            setState(() {
+              _status = BlueprintDesignStatus.userInput;
+            });
+          }
+          isSavingBlueprint = false;
+          return;
+        }
+        modifiedBlueprint =
+            modifiedBlueprint.copyWith(redeemRules: redeemRules);
       }
 
       // Propagate
@@ -868,6 +896,7 @@ class _OwnerDesignStoreScreenState
         level: SnackBarLevel.success,
       );
     }
+    isSavingBlueprint = false;
     if (!mounted) return;
     Navigator.of(context).pop();
   }

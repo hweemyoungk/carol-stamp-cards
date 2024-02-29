@@ -1,5 +1,6 @@
 import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/utils.dart';
+import 'package:carol/widgets/redeem_rules_explorer/redeem_rule_list_item.dart';
 import 'package:flutter/material.dart';
 
 class BlueprintInfo extends StatelessWidget {
@@ -46,6 +47,32 @@ class BlueprintInfo extends StatelessWidget {
         style: TextStyle(color: textColor),
       ),
     );
+    final redeemRulesListTitle = Padding(
+      padding: DesignUtils.basicWidgetEdgeInsets(),
+      child: Text(
+        'Rewards',
+        style:
+            Theme.of(context).textTheme.titleLarge!.copyWith(color: textColor),
+      ),
+    );
+    final redeemRules = blueprint.redeemRules?.toList();
+    final redeemRulesList = redeemRules == null
+        ? null
+        : redeemRules.isEmpty
+            ? Padding(
+                padding: DesignUtils.basicWidgetEdgeInsets(),
+                child: const Text('No rewards!'),
+              )
+            : Column(
+                children: redeemRules
+                    .map((e) => RedeemRuleListItem(
+                          card: null,
+                          redeemRule: e,
+                          style: Theme.of(context).textTheme.bodyMedium!,
+                          color: Theme.of(context).colorScheme.onSecondary,
+                        ))
+                    .toList(),
+              );
     final expirationDateTitle = Padding(
       padding: DesignUtils.basicWidgetEdgeInsets(),
       child: Text(
@@ -71,11 +98,14 @@ class BlueprintInfo extends StatelessWidget {
       ),
     );
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         if (image != null) image,
         blueprintDescText,
         stampGrantCondTitle,
         stampGrantCondDescText,
+        redeemRulesListTitle,
+        if (redeemRulesList != null) redeemRulesList,
         expirationDateTitle,
         expirationDateDescText,
       ],

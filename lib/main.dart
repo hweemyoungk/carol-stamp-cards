@@ -6,6 +6,7 @@ import 'package:carol/apis/exceptions/bad_request.dart';
 import 'package:carol/apis/exceptions/server_error.dart';
 import 'package:carol/apis/exceptions/unauthenticated.dart';
 import 'package:carol/apis/exceptions/unauthorized.dart';
+import 'package:carol/params/athena.dart' as athena_params;
 import 'package:carol/screens/auth_screen.dart';
 import 'package:carol/screens/blueprint_dialog_screen.dart';
 import 'package:carol/screens/card_screen.dart';
@@ -33,27 +34,26 @@ final theme = ThemeData().copyWith(
   scaffoldBackgroundColor: colorScheme.background,
   colorScheme: colorScheme,
   textTheme: GoogleFonts.ubuntuCondensedTextTheme(),
-  // textTheme: GoogleFonts.ubuntuCondensedTextTheme().copyWith(
-  //   titleSmall: GoogleFonts.ubuntuCondensed(
-  //     fontWeight: FontWeight.bold,
-  //   ),
-  //   titleMedium: GoogleFonts.ubuntuCondensed(
-  //     fontWeight: FontWeight.bold,
-  //   ),
-  //   titleLarge: GoogleFonts.ubuntuCondensed(
-  //     fontWeight: FontWeight.bold,
-  //   ),
-  // ),
 );
 
 void main() {
-  HttpOverrides.global = DevHttpOverrides();
+  // HttpOverrides.global = DevHttpOverrides();
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
   ]).then((value) async {
+    await _addTrustedCertificate(ignore: false);
     runApp(const ProviderScope(child: Carol()));
   });
+}
+
+Future<void> _addTrustedCertificate({required bool ignore}) async {
+  if (ignore) {
+    HttpOverrides.global = DevHttpOverrides();
+  }
+  final data = await rootBundle.load('assets/certs/carol.cards.pem');
+  final context = SecurityContext.defaultContext;
+  context.setTrustedCertificatesBytes(data.buffer.asUint8List());
 }
 
 class Carol extends StatefulWidget {
@@ -99,7 +99,16 @@ class Carol extends StatefulWidget {
       return;
     }
     if (e is BadRequest) {
-      sb.write('Your data looks stale. Please refresh and try again.');
+      if (e.uri?.path ==
+          Uri.https(
+            athena_params.keycloakHostname,
+            athena_params.tokenPath,
+          ).path) {
+        // Token problem: Sign in again
+        sb.write('Your data looks stale. Please sign in again.');
+      } else {
+        sb.write('Your data looks stale. Please refresh and try again.');
+      }
       showTextSnackBar(
         text: sb.toString(),
         level: SnackBarLevel.error,

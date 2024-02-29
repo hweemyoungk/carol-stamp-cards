@@ -192,9 +192,10 @@ Future<int> postBlueprint({
     body: json.encode(blueprintJson, toEncodable: customToEncodable),
   );
   final location = res.headers['location']!; // e.g., '/api/v1/stampCard/{uuid}'
-  final newId = backend_params.ownerBlueprintLocationPattern
-      .firstMatch(location)!
-      .group(0)!;
+  // final newId = backend_params.ownerBlueprintLocationPattern
+  //     .firstMatch(location)!
+  //     .group(0)!;
+  final newId = getIdFromLocation(location);
   return int.parse(newId);
 }
 
@@ -291,8 +292,9 @@ Future<int> postStore({
     body: json.encode(storeJson, toEncodable: customToEncodable),
   );
   final location = res.headers['location']!; // e.g., '/api/v1/stampCard/{uuid}'
-  final newId =
-      backend_params.ownerStoreLocationPattern.firstMatch(location)!.group(0)!;
+  // final newId =
+  //     backend_params.ownerStoreLocationPattern.firstMatch(location)!.group(0)!;
+  final newId = getIdFromLocation(location);
   return int.parse(newId);
 }
 
@@ -402,7 +404,7 @@ Future<StampCard> getStampCard({
   return StampCard.fromJson(resBody);
 }
 
-Future<String> grantStamp({
+Future<int> grantStamp({
   required int stampCardId,
   required int numStamps,
 }) async {
@@ -422,13 +424,14 @@ Future<String> grantStamp({
     body: json.encode(bodyJson, toEncodable: customToEncodable),
   );
   final location = res.headers['location']!;
-  final newId = backend_params.ownerStampGrantLocationPattern
-      .firstMatch(location)!
-      .group(0)!;
-  return newId;
+  // final newId = backend_params.ownerStampGrantLocationPattern
+  //     .firstMatch(location)!
+  //     .group(0)!;
+  final newId = getIdFromLocation(location);
+  return int.parse(newId);
 }
 
-Future<String> postStampGrant({
+Future<int> postStampGrant({
   required StampGrant stampGrant,
 }) async {
   // final url = Uri.http(
@@ -445,10 +448,11 @@ Future<String> postStampGrant({
     body: json.encode(stampGrantJson, toEncodable: customToEncodable),
   );
   final location = res.headers['location']!;
-  final newId = backend_params.ownerStampGrantLocationPattern
-      .firstMatch(location)!
-      .group(0)!;
-  return newId;
+  // final newId = backend_params.ownerStampGrantLocationPattern
+  //     .firstMatch(location)!
+  //     .group(0)!;
+  final newId = getIdFromLocation(location);
+  return int.parse(newId);
 }
 
 /* 

@@ -4,6 +4,7 @@ import 'package:carol/apis/customer_apis.dart' as customer_apis;
 import 'package:carol/apis/owner_apis.dart' as owner_apis;
 import 'package:carol/apis/utils.dart';
 import 'package:carol/main.dart';
+import 'package:carol/models/redeem_rule.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/models/store.dart';
 import 'package:carol/models/user.dart';
@@ -283,7 +284,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     //   child: const Text('Here comes google map. (Click to open external app)'),
     // );
 
-    final phone = store.phone == null
+    final phone = store.phone == null || store.phone!.trim().isEmpty
         ? null
         : Row(
             mainAxisAlignment: MainAxisAlignment.start,
@@ -302,7 +303,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
             ],
           );
 
-    final zipcode = store.zipcode == null
+    final zipcode = store.zipcode == null || store.zipcode!.trim().isEmpty
         ? null
         : Row(
             mainAxisAlignment: MainAxisAlignment.start,
@@ -321,7 +322,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
             ],
           );
 
-    final address = store.address == null
+    final address = store.address == null || store.address!.trim().isEmpty
         ? null
         : Row(
             mainAxisAlignment: MainAxisAlignment.start,
@@ -340,9 +341,31 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
             ],
           );
 
-    final Widget description = Padding(
-      padding: DesignUtils.basicWidgetEdgeInsets(),
-      child: Text(store.description),
+    final Widget description = Column(
+      children: [
+        Padding(
+          padding: DesignUtils.basicWidgetEdgeInsets(),
+          child: Text(
+            'About Store',
+            style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                  color: onSecondary,
+                ),
+          ),
+        ),
+        Padding(
+          padding: DesignUtils.basicWidgetEdgeInsets(),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: Row(
+              children: [
+                Text(
+                  store.description,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
 
     final storeName = Padding(
@@ -353,6 +376,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
             .textTheme
             .displayMedium!
             .copyWith(color: onSecondary),
+        textAlign: TextAlign.center,
       ),
     );
 
@@ -623,11 +647,13 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     );
   }
 
-  /// Notifies either <code>customerBlueprintDialogScreenBlueprintProvider</code> or <code>ownerBlueprintDialogScreenBlueprintProvider</code>.
-  void _notifyBlueprintDialogScreen(Blueprint blueprint) {
+  /// Notifies either <code>customerBlueprintDialogScreenBlueprintProvider</code> or <code>ownerBlueprintDialogScreenBlueprintProvider</code>.<br>
+  /// Provided blueprint must contain redeemRules.
+  Future<void> _notifyBlueprintDialogScreen(Blueprint blueprint) async {
     final activeDrawerItem = ref.read(activeDrawerItemProvider);
     final StateNotifierProvider<BlueprintNotifier, Blueprint?>
         blueprintProvider;
+
     if (activeDrawerItem == DrawerItemEnum.customer) {
       blueprintProvider = customerBlueprintDialogScreenBlueprintProvider;
     } else if (activeDrawerItem == DrawerItemEnum.owner) {
@@ -642,8 +668,27 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       );
       return;
     }
+
     final blueprintNotifier = ref.read(blueprintProvider.notifier);
     blueprintNotifier.set(null);
+
+    // Fetch redeemRules if not exist in blueprint
+    if (blueprint.redeemRules == null) {
+      final Set<RedeemRule> redeemRules;
+      try {
+        redeemRules = activeDrawerItem == DrawerItemEnum.customer
+            ? await customer_apis.listRedeemRules(blueprintId: blueprint.id)
+            : await owner_apis.listRedeemRules(blueprintId: blueprint.id);
+      } on Exception catch (e) {
+        Carol.showExceptionSnackBar(
+          e,
+          contextMessage: 'Failed to get redeem rules.',
+        );
+        return;
+      }
+      blueprint = blueprint.copyWith(redeemRules: redeemRules);
+    }
+
     blueprintNotifier.set(blueprint);
   }
 
@@ -661,12 +706,18 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   void _onPressNewBlueprint() {
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) {
-        return const OwnerDesignBlueprintScreen(
-          designMode: BlueprintDesignMode.create,
+        return WillPopScope(
+          onWillPop: () async {
+            return !isSavingBlueprint;
+          },
+          child: const OwnerDesignBlueprintScreen(
+            designMode: BlueprintDesignMode.create,
+          ),
         );
       },
     ));
     _checkCanCreateNewBlueprint();
+    _checkCanCloseStore();
   }
 
   void _onPressNewBlueprintViolated() {

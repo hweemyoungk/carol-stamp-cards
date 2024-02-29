@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class RedeemRuleListItem extends ConsumerStatefulWidget {
-  final StampCard card;
+  final StampCard? card;
   final RedeemRule redeemRule;
   final TextStyle style;
   final Color color;
@@ -31,24 +31,28 @@ class _RedeemRuleListItemState extends ConsumerState<RedeemRuleListItem> {
   Widget build(BuildContext context) {
     final card = widget.card;
     final redeemRule = widget.redeemRule;
-    final redeemable = redeemRule.consumes <= card.numCollectedStamps;
-    final appliedColor =
-        redeemable ? widget.color : widget.color.withOpacity(.2);
+    final redeemable =
+        card == null ? null : redeemRule.consumes <= card.numCollectedStamps;
+    final appliedColor = redeemable == null || redeemable
+        ? widget.color
+        : widget.color.withOpacity(.2);
     return ListTile(
-      onTap: () async {
-        await showDialog(
-          context: context,
-          builder: (ctx) {
-            return RedeemDialogScreen(
-              card: card,
-              redeemRule: redeemRule,
-              setRedeemRequestIdToParent:
-                  _setRedeemRequestIdToRedeemRuleListItem,
-            );
-          },
-        );
-        _tryCleanUpRedeemRequest();
-      },
+      onTap: card == null
+          ? null
+          : () async {
+              await showDialog(
+                context: context,
+                builder: (ctx) {
+                  return RedeemDialogScreen(
+                    card: card,
+                    redeemRule: redeemRule,
+                    setRedeemRequestIdToParent:
+                        _setRedeemRequestIdToRedeemRuleListItem,
+                  );
+                },
+              );
+              _tryCleanUpRedeemRequest();
+            },
       key: ValueKey(redeemRule.id),
       leading: redeemRule.consumesWidget(
         widget.style,
