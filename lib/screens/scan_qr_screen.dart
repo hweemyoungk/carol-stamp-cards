@@ -170,14 +170,23 @@ class _OwnerScanQrScreenState extends ConsumerState<ScanQrScreen> {
 
     // No need to register to providers: temporary data for redeem process.
 
-    if (mounted) {
-      Navigator.of(context).pushReplacement(MaterialPageRoute(
-        builder: (ctx) => OwnerGrantStampsScreen(
-          stampCard: stampCard,
-          blueprint: blueprint,
-        ),
-      ));
+    // Blueprint must be active
+    if (blueprint.isExpired) {
+      Carol.showTextSnackBar(
+        text: 'Card is already expired',
+        level: SnackBarLevel.error,
+      );
+      if (!mounted) return;
+      Navigator.of(context).pop();
     }
+
+    if (!mounted) return;
+    Navigator.of(context).pushReplacement(MaterialPageRoute(
+      builder: (ctx) => OwnerGrantStampsScreen(
+        stampCard: stampCard,
+        blueprint: blueprint,
+      ),
+    ));
   }
 
   void _handleStoreQr(SimpleStoreQr qr) {
