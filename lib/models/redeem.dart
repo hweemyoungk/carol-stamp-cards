@@ -30,9 +30,9 @@ class Redeem extends IntModel {
         redeemRule = json['redeemrule'] == null
             ? null
             : RedeemRule.fromJson(json['redeemrule']),
-        redeemRuleId = json['redeemRuleId'] as int,
+        redeemRuleId = json['redeemRuleId'] ?? -1,
         card = json['card'] == null ? null : StampCard.fromJson(json['card']),
-        cardId = json['cardId'] as int,
+        cardId = json['cardId'] ?? -1,
         super(
           id: json['id'] as int,
           isDeleted: json['isDeleted'] as bool,

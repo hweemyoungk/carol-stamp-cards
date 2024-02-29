@@ -93,6 +93,10 @@ class _OwnerDesignStoreScreenState
             ? 'New Blueprint'
             : 'Modify Blueprint'),
         actions: [
+          IconButton(
+            onPressed: _onPressAboutBlueprint,
+            icon: const Icon(Icons.help),
+          ),
           _status == BlueprintDesignStatus.userInput
               ? IconButton(
                   onPressed: _saveBlueprint,
@@ -956,16 +960,16 @@ class _OwnerDesignStoreScreenState
       return now;
     }
 
-    final sevenDaysAfterNow = now.add(
+    final minExpirationDate = now.add(
       const Duration(
-        days: modifyBlueprintExpDateMinRemainingFromNowInDays,
+        seconds: modifyBlueprintExpDateMinRemainingFromNowInSeconds,
       ),
     );
     var curExpirationDate = widget.blueprint!.expirationDate;
 
     // Return min(sevenDaysAfterNow, curExpirationDate)
-    return sevenDaysAfterNow.compareTo(curExpirationDate) < 0
-        ? sevenDaysAfterNow
+    return minExpirationDate.compareTo(curExpirationDate) < 0
+        ? minExpirationDate
         : curExpirationDate;
   }
 
@@ -1088,6 +1092,48 @@ class _OwnerDesignStoreScreenState
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: _addRedeemRuleAlertRows,
               ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _onPressAboutBlueprint() {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: Text('About Blueprint'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Blueprint is the source of customer\'s card.',
+                    style: Theme.of(context).textTheme.titleMedium),
+                const Text(
+                    '1. Following details can be modified without limit:'),
+                const Text('  - Display Name'),
+                const Text('  - Description'),
+                const Text('  - Stamp Grant Conditions'),
+                const Text('  - Max Issues per Customer'),
+                const Text('  - Max Total Issues'),
+                const Text('  - Publish Now'),
+                const Text('2. Following numbers cannot be decreased:'),
+                const Text('  - Max Stamps'),
+                const Text('  - Max Redeems per Card'),
+                Text(
+                    '3. Expiration Date can be modified but must always be after ${formatSeconds(modifyBlueprintExpDateMinRemainingFromNowInSeconds)} from now.'),
+                const Text(
+                    '4. Blueprint cannot be seen by customers if Publish Now is disabled but still be seen by those with already published card.'),
+                const Text(
+                  '5. Published cards so far are still active even if Publish Now is disabled',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
           ),
         );

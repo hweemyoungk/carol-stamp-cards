@@ -141,11 +141,6 @@ class _MainDrawerState extends ConsumerState<MainDrawer> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   DrawerItem(
-                    text: 'Terms of Use',
-                    drawerItemEnum: DrawerItemEnum.termsOfUse,
-                    onTap: _onTapTermsOfUse,
-                  ),
-                  DrawerItem(
                     text: 'Privacy Policy',
                     drawerItemEnum: DrawerItemEnum.privacyPolicy,
                     onTap: _onTapPrivacyPolicy,
@@ -160,14 +155,6 @@ class _MainDrawerState extends ConsumerState<MainDrawer> {
   }
 
   Future<void> _onTapPrivacyPolicy() async {
-    final url = Uri.https(
-      backend_params.appGateway,
-      backend_params.publicPrivacyPolicyPath,
-    );
-    await launchInBrowserView(url);
-  }
-
-  Future<void> _onTapTermsOfUse() async {
     final url = Uri.https(
       backend_params.appGateway,
       backend_params.publicPrivacyPolicyPath,

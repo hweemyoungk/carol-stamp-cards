@@ -53,7 +53,7 @@ class RedeemRule extends IntModel {
         description = json['description'] as String,
         consumes = json['consumes'] as int,
         imageId = json['imageId'] as String?,
-        blueprintId = json['blueprintId'] as int,
+        blueprintId = json['blueprintId'] ?? -1,
         blueprint = json['blueprint'] == null
             ? null
             : Blueprint.fromJson(json['blueprint']),

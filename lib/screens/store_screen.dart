@@ -695,9 +695,14 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   void _onPressModifyStore() {
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) {
-        return OwnerDesignStoreScreen(
-          designMode: StoreDesignMode.modify,
-          store: ref.read(ownerStoreScreenStoreProvider),
+        return WillPopScope(
+          onWillPop: () async {
+            return !isSavingStore;
+          },
+          child: OwnerDesignStoreScreen(
+            designMode: StoreDesignMode.modify,
+            store: ref.read(ownerStoreScreenStoreProvider),
+          ),
         );
       },
     ));
@@ -782,7 +787,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
               ),
             ),
             Text(
-              'Closed store will be deleted in $softDeleteClosedStoreInDays days automatically.',
+              'Closed store will be deleted in ${formatSeconds(softDeleteClosedStoreInSeconds)} automatically.',
               style: Theme.of(context).textTheme.titleMedium!.copyWith(
                     color: Theme.of(context).colorScheme.onBackground,
                   ),
@@ -946,6 +951,8 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         cardNotifier.set(modifiedCard);
         cardsNotifier.replaceOrPrepend(modifiedCard);
       }
+
+      storeNotifier.set(storeWithBlueprints);
     } else {
       // Owner mode
       setState(() {
@@ -974,11 +981,12 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       // ownerStoresListStoresProvider
       final storesNotifier = ref.read(ownerStoresListStoresProvider.notifier);
       storesNotifier.replaceOrPrepend(storeWithBlueprints);
+
+      storeNotifier.set(storeWithBlueprints);
+
+      _checkCanCreateNewBlueprint();
+      _checkCanCloseStore();
     }
-
-    storeNotifier.set(storeWithBlueprints);
-
-    _checkCanCreateNewBlueprint();
 
     Carol.showTextSnackBar(
       text: 'Refreshed store!',

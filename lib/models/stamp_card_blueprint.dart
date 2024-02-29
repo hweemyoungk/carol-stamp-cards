@@ -55,7 +55,7 @@ class Blueprint extends IntModel {
         bgImageUrl = json['bgImageUrl'] as String?,
         isPublishing = json['isPublishing'] as bool,
         store = json['store'] == null ? null : Store.fromJson(json['store']),
-        storeId = json['storeId'] as int,
+        storeId = json['storeId'] ?? -1,
         redeemRules = json['redeemRules'] == null
             ? null
             : {

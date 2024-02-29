@@ -58,7 +58,7 @@ class RedeemRequest extends StringModel {
   RedeemRequest.fromJson(Map<String, dynamic> json)
       : displayName = json['displayName'] as String,
         stampCardId = json['cardId'] as int,
-        customerId = json['customerId'] as String,
+        customerId = json['customerId'] ?? '',
         customerDisplayName = json['customerDisplayName'] as String,
         blueprintDisplayName = json['blueprintDisplayName'] as String,
         expMilliseconds = json['expMilliseconds'] as int,
@@ -66,7 +66,7 @@ class RedeemRequest extends StringModel {
         redeemRule = json['redeemRule'] == null
             ? null
             : RedeemRule.fromJson(json['redeemRule']),
-        redeemRuleId = json['redeemRuleId'] as int,
+        redeemRuleId = json['redeemRuleId'] ?? -1,
         super(
           id: json['id'] as String,
           isDeleted: json['isDeleted'] as bool,

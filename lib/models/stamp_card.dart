@@ -159,7 +159,7 @@ class StampCard extends IntModel {
 
   String get expirationDateLabel {
     final diff = expirationDate.difference(DateTime.now());
-    if (diff.inDays < 0) {
+    if (diff.inMicroseconds < 0) {
       return 'Expired';
     } else if (diff.inDays == 0) {
       return '${diff.inHours}h left';

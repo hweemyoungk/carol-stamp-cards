@@ -22,7 +22,7 @@ class CardsListItemCard extends ConsumerStatefulWidget {
 class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
   @override
   Widget build(BuildContext context) {
-    final stampCard = widget.card;
+    final card = widget.card;
     return Card(
       margin: const EdgeInsets.all(10),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -33,8 +33,8 @@ class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
         child: Stack(
           children: [
             Hero(
-              tag: stampCard.id,
-              child: stampCard.bgImageUrl == null
+              tag: card.id,
+              child: card.bgImageUrl == null
                   ? Stack(
                       children: [
                         Image.memory(
@@ -69,7 +69,7 @@ class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
                   : FadeInImage(
                       placeholder: MemoryImage(kTransparentImage),
                       // image: NetworkImage(stampCard.imageUrl!),
-                      image: AssetImage(stampCard.bgImageUrl!),
+                      image: AssetImage(card.bgImageUrl!),
                       fit: BoxFit.cover,
                       height: 300,
                       width: double.infinity,
@@ -87,7 +87,7 @@ class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
                 ),
                 child: Column(children: [
                   Text(
-                    stampCard.displayName,
+                    card.displayName,
                     maxLines: 2,
                     textAlign: TextAlign.center,
                     softWrap: true,
@@ -101,7 +101,7 @@ class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       Text(
-                        stampCard.lastModifiedDateLabel,
+                        card.lastModifiedDateLabel,
                         style: Theme.of(context)
                             .textTheme
                             .labelMedium!
@@ -112,7 +112,7 @@ class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
                       ),
                       const SizedBox(width: 12),
                       Text(
-                        stampCard.stampsRatio,
+                        card.stampsRatio,
                         style: Theme.of(context)
                             .textTheme
                             .labelMedium!
@@ -123,7 +123,7 @@ class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
                       ),
                       const SizedBox(width: 12),
                       Text(
-                        stampCard.expirationDateLabel,
+                        card.expirationDateLabel,
                         style: Theme.of(context)
                             .textTheme
                             .labelMedium!
@@ -142,14 +142,14 @@ class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
               right: 10,
               child: IconButton(
                 icon: Icon(
-                  stampCard.isFavorite ? Icons.favorite : Icons.favorite_border,
+                  card.isFavorite ? Icons.favorite : Icons.favorite_border,
                   size: 40,
                   color: Theme.of(context).colorScheme.primary,
                 ),
                 onPressed: _onPressFavoriteIcon,
               ),
             ),
-            if (stampCard.isInactive)
+            if (card.isInactive || card.blueprint?.isExpired == true)
               Positioned(
                 top: 0,
                 bottom: 0,

@@ -10,7 +10,6 @@ const locationHostname = 'https://localhost:8080';
 
 // Public service
 const publicPrivacyPolicyPath = '/public/privacy-policy.html';
-const publicTermsOfUsePath = '/public/terms-of-use.html';
 
 // App service
 const appServiceHost =

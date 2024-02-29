@@ -45,8 +45,12 @@ class _CardScreenState extends ConsumerState<CardScreen> {
 
     final card = watchedCard!;
     final blueprint = card.blueprint!;
+    final isStoreDeleted = card.blueprint?.store == null;
 
-    final hasNotices = card.isDiscarded || card.isUsedOut;
+    final hasNotices = card.isDiscarded ||
+        card.isUsedOut ||
+        blueprint.isExpired ||
+        isStoreDeleted;
     final notices = Container(
       color: Theme.of(context).colorScheme.tertiaryContainer,
       child: Padding(
@@ -60,7 +64,7 @@ class _CardScreenState extends ConsumerState<CardScreen> {
                       color: Theme.of(context).colorScheme.error),
                   const SizedBox(width: 8),
                   Text(
-                    'Card had been Used Out.',
+                    'Card had been USED OUT.',
                     textAlign: TextAlign.start,
                     style: TextStyle(
                         color:
@@ -83,14 +87,61 @@ class _CardScreenState extends ConsumerState<CardScreen> {
                   ),
                 ],
               ),
+            if (blueprint.isExpired)
+              Row(
+                children: [
+                  Icon(Icons.warning,
+                      color: Theme.of(context).colorScheme.error),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Card was already EXPIRED.',
+                    textAlign: TextAlign.start,
+                    style: TextStyle(
+                        color:
+                            Theme.of(context).colorScheme.onTertiaryContainer),
+                  ),
+                ],
+              ),
+            if (isStoreDeleted)
+              Row(
+                children: [
+                  Icon(Icons.warning,
+                      color: Theme.of(context).colorScheme.error),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Store was already DELETED.',
+                    textAlign: TextAlign.start,
+                    style: TextStyle(
+                        color:
+                            Theme.of(context).colorScheme.onTertiaryContainer),
+                  ),
+                ],
+              ),
           ],
         ),
       ),
     );
     final storeInfoButton = ElevatedButton.icon(
-      onPressed: _onPressStoreInfo,
-      icon: const Icon(Icons.store),
-      label: const Text('Store Info'),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        disabledBackgroundColor:
+            Theme.of(context).colorScheme.primary.withOpacity(0.5),
+      ),
+      onPressed: isStoreDeleted ? null : _onPressStoreInfo,
+      icon: Icon(
+        Icons.store,
+        color: Theme.of(context).colorScheme.onPrimary.withOpacity(
+              isStoreDeleted ? 0.5 : 1.0,
+            ),
+      ),
+      label: Text(
+        'Store Info',
+        style: TextStyle(
+          color: Theme.of(context).colorScheme.onPrimary.withOpacity(
+                isStoreDeleted ? 0.5 : 1.0,
+              ),
+        ),
+      ),
     );
     final deleteButton = ElevatedButton.icon(
       style: ElevatedButton.styleFrom(

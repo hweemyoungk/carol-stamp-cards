@@ -631,10 +631,15 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
     if (blueprint.redeemRules != null) {
       Navigator.of(context).push(MaterialPageRoute(
         builder: (context) {
-          return OwnerDesignBlueprintScreen(
-            key: ValueKey(blueprint.id),
-            designMode: BlueprintDesignMode.modify,
-            blueprint: blueprint,
+          return WillPopScope(
+            onWillPop: () async {
+              return !isSavingBlueprint;
+            },
+            child: OwnerDesignBlueprintScreen(
+              key: ValueKey(blueprint.id),
+              designMode: BlueprintDesignMode.modify,
+              blueprint: blueprint,
+            ),
           );
         },
       ));
@@ -676,10 +681,15 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
     if (!mounted) return;
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) {
-        return OwnerDesignBlueprintScreen(
-          key: ValueKey(blueprint.id),
-          designMode: BlueprintDesignMode.modify,
-          blueprint: blueprintToRefresh,
+        return WillPopScope(
+          onWillPop: () async {
+            return !isSavingBlueprint;
+          },
+          child: OwnerDesignBlueprintScreen(
+            key: ValueKey(blueprint.id),
+            designMode: BlueprintDesignMode.modify,
+            blueprint: blueprintToRefresh,
+          ),
         );
       },
     ));

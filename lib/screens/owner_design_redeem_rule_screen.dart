@@ -49,6 +49,10 @@ class _OwnerDesignRedeemRuleScreenState
             ? 'New Redeem Rule'
             : 'Modify Redeem Rule'),
         actions: [
+          IconButton(
+            onPressed: _onPressAboutRedeemRule,
+            icon: const Icon(Icons.help),
+          ),
           if (widget.redeemRule?.id == -1)
             IconButton(
               onPressed: _locallyDeleteRedeemRule,
@@ -65,9 +69,10 @@ class _OwnerDesignRedeemRuleScreenState
         child: LayoutBuilder(
           builder: (ctx, constraints) {
             // final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
-            final editConsumesEnabled =
-                widget.designMode == RedeemRuleDesignMode.create ||
-                    widget.redeemRule!.id == -1;
+            // final editConsumesEnabled =
+            //     widget.designMode == RedeemRuleDesignMode.create ||
+            //         widget.redeemRule!.id == -1;
+            const editConsumesEnabled = true;
             return SingleChildScrollView(
               child: Column(
                 children: [
@@ -119,7 +124,7 @@ class _OwnerDesignRedeemRuleScreenState
                       },
                     ),
                   ),
-                  // late int _consumes; // Should't be modified
+                  // late int _consumes; // Can be modified
                   Padding(
                     padding: DesignUtils.basicWidgetEdgeInsets(),
                     child: Container(
@@ -134,24 +139,29 @@ class _OwnerDesignRedeemRuleScreenState
                               .textTheme
                               .bodyLarge!
                               .copyWith(
-                                  color: editConsumesEnabled
-                                      ? Theme.of(context)
-                                          .colorScheme
-                                          .onBackground
-                                      : Theme.of(context)
-                                          .colorScheme
-                                          .onBackground
-                                          .withOpacity(0.4)),
+                                // color: editConsumesEnabled
+                                //     ? Theme.of(context)
+                                //         .colorScheme
+                                //         .onBackground
+                                //     : Theme.of(context)
+                                //         .colorScheme
+                                //         .onBackground
+                                //         .withOpacity(0.4)),
+                                color:
+                                    Theme.of(context).colorScheme.onBackground,
+                              ),
                           decoration: InputDecoration(
                             label: const Text('Consumes'),
                             suffixText: 'stamps',
                             suffixStyle: TextStyle(
-                                color: editConsumesEnabled
-                                    ? Theme.of(context).colorScheme.onBackground
-                                    : Theme.of(context)
-                                        .colorScheme
-                                        .onBackground
-                                        .withOpacity(0.4)),
+                              // color: editConsumesEnabled
+                              //     ? Theme.of(context).colorScheme.onBackground
+                              //     : Theme.of(context)
+                              //         .colorScheme
+                              //         .onBackground
+                              //         .withOpacity(0.4)),
+                              color: Theme.of(context).colorScheme.onBackground,
+                            ),
                           ),
                           validator: (value) {
                             if (value == null ||
@@ -216,6 +226,38 @@ class _OwnerDesignRedeemRuleScreenState
     // widget.redeemRule must exist
     final deletedRedeemRule = widget.redeemRule!.copyWith(isDeleted: true);
     Navigator.of(context).pop(deletedRedeemRule);
+  }
+
+  void _onPressAboutRedeemRule() {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('About Redeem Rule'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                    'Redeem rule defines one way for customers to consume collected stamps.',
+                    style: Theme.of(context).textTheme.titleMedium),
+                const Text(
+                  '1. Redeem rule is always active once created until blueprint expires.',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const Text(
+                    '2. Following details can be modified without limit:'),
+                const Text('  - Display Name'),
+                const Text('  - Description'),
+                const Text(
+                    '3. Consumes can be modified but cannot exceed blueprint\'s Max Stamps.'),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 }
 

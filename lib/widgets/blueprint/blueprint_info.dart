@@ -104,7 +104,7 @@ class BlueprintInfo extends StatelessWidget {
         blueprintDescText,
         stampGrantCondTitle,
         stampGrantCondDescText,
-        redeemRulesListTitle,
+        if (redeemRulesList != null) redeemRulesListTitle,
         if (redeemRulesList != null) redeemRulesList,
         expirationDateTitle,
         expirationDateDescText,

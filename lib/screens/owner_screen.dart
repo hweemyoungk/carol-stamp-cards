@@ -2,6 +2,7 @@ import 'package:carol/apis/owner_apis.dart' as owner_apis;
 import 'package:carol/main.dart';
 import 'package:carol/models/redeem_request.dart';
 import 'package:carol/models/user.dart';
+import 'package:carol/params/app.dart' as app_params;
 import 'package:carol/screens/auth_screen.dart';
 import 'package:carol/screens/owner_design_store_screen.dart';
 import 'package:carol/screens/scan_qr_screen.dart';
@@ -91,10 +92,16 @@ class _OwnerScreenState extends ConsumerState<OwnerScreen> {
 
   void _onPressNewStore() {
     Navigator.of(context).push(MaterialPageRoute(
-      builder: (context) => const OwnerDesignStoreScreen(
-        designMode: StoreDesignMode.create,
+      builder: (context) => WillPopScope(
+        onWillPop: () async {
+          return !isSavingStore;
+        },
+        child: const OwnerDesignStoreScreen(
+          designMode: StoreDesignMode.create,
+        ),
       ),
     ));
+    _checkCanCreateNewStore();
   }
 
   void _onPressNewStoreViolated() {
@@ -175,6 +182,10 @@ class _OwnerScreenState extends ConsumerState<OwnerScreen> {
       ];
     } else {
       return [
+        IconButton(
+          onPressed: _onPressAboutRedeemRequests,
+          icon: const Icon(Icons.help),
+        ),
         _isRefreshRedeemRequestsCooling
             ? const IconButton(
                 onPressed: null,
@@ -211,9 +222,9 @@ class _OwnerScreenState extends ConsumerState<OwnerScreen> {
     redeemRequestsNotifier.set(redeemRequests.toList());
   }
 
-  void _onPressRefreshStores() {
+  Future<void> _onPressRefreshStores() async {
     _setRefreshStoresCooling();
-    owner_apis.reloadOwnerModels(ref);
+    await owner_apis.reloadOwnerModels(ref);
 
     // Refresh _canCreateNewStore
     _checkCanCreateNewStore();
@@ -428,5 +439,39 @@ class _OwnerScreenState extends ConsumerState<OwnerScreen> {
       }
     }
     return violated;
+  }
+
+  void _onPressAboutRedeemRequests() {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('About Redeem Request'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                    'Redeem Request is instant request from your customers to consume stamps.',
+                    style: Theme.of(context).textTheme.titleMedium),
+                const Text(
+                    '1. Tap refresh button to get current redeem requests.'),
+                const Text(
+                    '2. Customers can make redeem request whenever there is any satisfied redeem rule in their cards.'),
+                Text(
+                    '3. Redeem request is short-lived, only for ${formatSeconds(app_params.watchRedeemRequestDurationSeconds)} from creation.'),
+                const Text('4. Once approved,'),
+                const Text(
+                    '  - Collected stamps will be deducted in the customer\'s card.'),
+                Text(
+                    '  - Owner is responsible for granting promised rewards to customer.',
+                    style: Theme.of(context).textTheme.titleMedium),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 }

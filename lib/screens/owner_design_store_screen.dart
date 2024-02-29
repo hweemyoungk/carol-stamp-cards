@@ -1,6 +1,7 @@
 import 'package:carol/apis/owner_apis.dart' as owner_apis;
 import 'package:carol/main.dart';
 import 'package:carol/models/store.dart';
+import 'package:carol/params/app.dart' as app_params;
 import 'package:carol/screens/auth_screen.dart';
 import 'package:carol/screens/store_screen.dart';
 import 'package:carol/utils.dart';
@@ -9,6 +10,8 @@ import 'package:carol/widgets/common/required_field_label.dart';
 import 'package:carol/widgets/stores_explorer/stores_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+bool isSavingStore = false;
 
 class OwnerDesignStoreScreen extends ConsumerStatefulWidget {
   const OwnerDesignStoreScreen({
@@ -44,6 +47,10 @@ class _OwnerDesignStoreScreenState
             ? 'New Store'
             : 'Modify Store'),
         actions: [
+          IconButton(
+            onPressed: _onPressAboutStore,
+            icon: const Icon(Icons.help),
+          ),
           _status == StoreDesignStatus.userInput
               ? IconButton(
                   onPressed: _onPressSave,
@@ -319,6 +326,7 @@ class _OwnerDesignStoreScreenState
       return;
     }
 
+    isSavingStore = true;
     final currentUser = ref.read(currentUserProvider)!;
     final storesNotifier = ref.read(ownerStoresListStoresProvider.notifier);
     final storeNotifier = ref.read(ownerStoreScreenStoreProvider.notifier);
@@ -360,6 +368,7 @@ class _OwnerDesignStoreScreenState
             _status = StoreDesignStatus.userInput;
           });
         }
+        isSavingStore = false;
         return;
       }
 
@@ -377,6 +386,7 @@ class _OwnerDesignStoreScreenState
             _status = StoreDesignStatus.userInput;
           });
         }
+        isSavingStore = false;
         return;
       }
 
@@ -418,6 +428,7 @@ class _OwnerDesignStoreScreenState
             _status = StoreDesignStatus.userInput;
           });
         }
+        isSavingStore = false;
         return;
       }
 
@@ -446,8 +457,44 @@ class _OwnerDesignStoreScreenState
       );
     }
 
+    isSavingStore = false;
     if (!mounted) return;
     Navigator.of(context).pop();
+  }
+
+  void _onPressAboutStore() {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('About Store'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                    'Store is where you design and distribute your own blueprints.',
+                    style: Theme.of(context).textTheme.titleMedium),
+                const Text('1. Newly created store is active.'),
+                const Text(
+                    '2. Store has it\'s own Store QR to share it\'s detail with customers.'),
+                const Text(
+                    '3. Active store\'s every detail can be modified without limit.'),
+                const Text('4. Active store can define blueprints.'),
+                const Text(
+                    '5. Active store can be closed if there is no active blueprint in the store.'),
+                const Text('6. Closed store cannot be activated again.'),
+                const Text('7. Closed store\'s details cannot be modified.'),
+                const Text('8. Closed store still can be seen to customers.'),
+                Text(
+                    '9. Closed store is automatically deleted in ${formatSeconds(app_params.softDeleteClosedStoreInSeconds)}.'),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 }
 

@@ -33,8 +33,16 @@ Future<void> reloadCustomerModels(WidgetRef ref) async {
 
   // Propagate: customerCardsListCardsProvider,customerStoresListStoresProvider
   cardsNotifier.set(cards.toList());
-  final blueprints = cards.map((stampCard) => stampCard.blueprint!).toSet();
-  final stores = blueprints.map((blueprint) => blueprint.store!).toSet();
+  final blueprints = cards
+      .map((stampCard) => stampCard.blueprint)
+      .where((element) => element != null)
+      .cast<Blueprint>()
+      .toSet();
+  final stores = blueprints
+      .map((blueprint) => blueprint.store)
+      .where((element) => element != null)
+      .cast<Store>()
+      .toSet();
   storesNotifier.set(stores.toList());
 }
 

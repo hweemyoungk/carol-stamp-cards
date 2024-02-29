@@ -22,45 +22,52 @@ String formatDateTime(DateTime dateTime) {
   return '${timeFormatter.format(dateTime)} ${dateFormatter.format(dateTime)} ${dateTime.timeZoneName} (UTC+${dateTime.timeZoneOffset.inHours})';
 }
 
-String formatRemaining(Duration duration) {
-  if (duration.isNegative) {
-    return 'Already passed';
-  }
-  int remaining = duration.inSeconds;
+String formatSeconds(int seconds) {
   final sb = StringBuffer();
 
   // 1y = 31536000 s
-  final year = (remaining / 31536000).floor();
+  final year = (seconds / 31536000).floor();
   if (0 < year) {
     sb.write('${year}y ');
   }
-  remaining = remaining % 3153600;
+  seconds = seconds % 3153600;
   // 1M = 2628000 s
-  final month = (remaining / 2628000).floor();
+  final month = (seconds / 2628000).floor();
   if (0 < month) {
     sb.write('${month}M ');
   }
-  remaining = remaining % 2628000;
+  seconds = seconds % 2628000;
   // 1d = 86400 s
-  final day = (remaining / 86400).floor();
+  final day = (seconds / 86400).floor();
   if (0 < day) {
     sb.write('${day}d ');
   }
-  remaining = remaining % 86400;
+  seconds = seconds % 86400;
   // 1H = 3600 s
-  final hour = (remaining / 3600).floor();
+  final hour = (seconds / 3600).floor();
   if (0 < hour) {
     sb.write('${hour}h ');
   }
-  remaining = remaining % 3600;
+  seconds = seconds % 3600;
   // 1m = 60 s
-  final minute = (remaining / 60).floor();
+  final minute = (seconds / 60).floor();
   if (0 < minute) {
     sb.write('${minute}m ');
   }
+  seconds = seconds % 60;
+  if (0 < seconds) {
+    sb.write('${seconds}s ');
+  }
 
-  sb.write('left');
-  return sb.toString();
+  return sb.toString().trim();
+}
+
+String formatRemaining(Duration duration) {
+  if (duration.isNegative || duration.inSeconds <= 0) {
+    return 'Already passed';
+  }
+  int remaining = duration.inSeconds;
+  return '${formatSeconds(remaining)} left';
 }
 
 class DesignUtils {

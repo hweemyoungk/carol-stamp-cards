@@ -9,6 +9,7 @@ import 'package:carol/widgets/cards_explorer/cards_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+bool isSavingCard = false;
 final customerDesignCardScreenBlueprintProvider =
     StateNotifierProvider<BlueprintNotifier, Blueprint?>(
         (ref) => BlueprintNotifier(null));
@@ -73,15 +74,15 @@ class _CustomerDesignStampCardScreenState
                         initialValue: widget.card?.displayName,
                         style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                             color: Theme.of(context).colorScheme.onBackground),
-                        maxLength: 50,
+                        maxLength: 30,
                         decoration: const InputDecoration(
                           label: Text('Display Name'),
                         ),
                         validator: (value) {
                           if (value == null ||
                               value.trim().isEmpty ||
-                              value.trim().length > 50) {
-                            return 'Must be between 1 and 50 characters long';
+                              value.trim().length > 30) {
+                            return 'Must be between 1 and 30 characters long';
                           }
                           return null;
                         },
@@ -149,6 +150,7 @@ class _CustomerDesignStampCardScreenState
       return;
     }
 
+    isSavingCard = true;
     final cardsNotifier = ref.read(customerCardsListCardsProvider.notifier);
     final cardNotifier = ref.read(customerCardScreenCardProvider.notifier);
 
@@ -165,6 +167,12 @@ class _CustomerDesignStampCardScreenState
         text: 'Lost card data... Go back and start over.',
         level: SnackBarLevel.error,
       );
+      if (mounted) {
+        setState(() {
+          _status = StampCardDesignStatus.userInput;
+        });
+      }
+      isSavingCard = false;
       return;
     }
 
@@ -182,6 +190,12 @@ class _CustomerDesignStampCardScreenState
         e,
         contextMessage: 'Failed to mofify card.',
       );
+      if (mounted) {
+        setState(() {
+          _status = StampCardDesignStatus.userInput;
+        });
+      }
+      isSavingCard = false;
       return;
     }
 
@@ -195,6 +209,7 @@ class _CustomerDesignStampCardScreenState
     //     e,
     //     contextMessage: 'Failed to get modified card information.',
     //   );
+    // isSavingCard = false;
     //   return;
     // }
     final modifiedCard = cardToPut;
@@ -211,10 +226,9 @@ class _CustomerDesignStampCardScreenState
       text: 'Card modified!',
       level: SnackBarLevel.success,
     );
-
-    if (mounted) {
-      Navigator.of(context).pop();
-    }
+    isSavingCard = false;
+    if (!mounted) return;
+    Navigator.of(context).pop();
   }
 }
 
