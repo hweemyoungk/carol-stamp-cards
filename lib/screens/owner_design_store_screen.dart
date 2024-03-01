@@ -478,7 +478,7 @@ class _OwnerDesignStoreScreenState
                     style: Theme.of(context).textTheme.titleMedium),
                 const Text('1. Newly created store is active.'),
                 const Text(
-                    '2. Store has it\'s own Store QR to share it\'s detail with customers.'),
+                    '2. Store has its own Store QR to share its detail with customers.'),
                 const Text(
                     '3. Active store\'s every detail can be modified without limit.'),
                 const Text('4. Active store can define blueprints.'),

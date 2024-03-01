@@ -37,6 +37,8 @@ class _RedeemRuleListItemState extends ConsumerState<RedeemRuleListItem> {
         ? widget.color
         : widget.color.withOpacity(.2);
     return ListTile(
+      // Compact form in case of BlueprintInfo
+      visualDensity: card == null ? const VisualDensity(vertical: -4.0) : null,
       onTap: card == null
           ? null
           : () async {

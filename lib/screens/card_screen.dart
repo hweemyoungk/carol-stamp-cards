@@ -217,13 +217,17 @@ class _CardScreenState extends ConsumerState<CardScreen> {
             ),
           );
           final redeemRules = card.blueprint?.redeemRules?.toList();
+          redeemRules?.sort(
+            (a, b) => a.consumes - b.consumes,
+          );
           return SingleChildScrollView(
             child: Column(
               children: [
                 if (hasNotices) notices,
                 Container(
                   alignment: Alignment.center,
-                  margin: DesignUtils.basicScreenEdgeInsets(ctx, constraints),
+                  margin:
+                      DesignUtils.basicScreenEdgeInsets(ctx, constraints, 0.5),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [

@@ -63,15 +63,18 @@ class BlueprintInfo extends StatelessWidget {
                 padding: DesignUtils.basicWidgetEdgeInsets(),
                 child: const Text('No rewards!'),
               )
-            : Column(
-                children: redeemRules
-                    .map((e) => RedeemRuleListItem(
-                          card: null,
-                          redeemRule: e,
-                          style: Theme.of(context).textTheme.bodyMedium!,
-                          color: Theme.of(context).colorScheme.onSecondary,
-                        ))
-                    .toList(),
+            : SizedBox(
+                width: 300,
+                child: Column(
+                  children: redeemRules
+                      .map((e) => RedeemRuleListItem(
+                            card: null,
+                            redeemRule: e,
+                            style: Theme.of(context).textTheme.bodyMedium!,
+                            color: Theme.of(context).colorScheme.onSecondary,
+                          ))
+                      .toList(),
+                ),
               );
     final expirationDateTitle = Padding(
       padding: DesignUtils.basicWidgetEdgeInsets(),

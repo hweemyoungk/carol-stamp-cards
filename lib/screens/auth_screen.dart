@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer' as developer;
 
 import 'package:app_links/app_links.dart';
 import 'package:carol/apis/app_apis.dart' as app_apis;
@@ -422,7 +421,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       profileImageUrl: 'assets/images/schnitzel-3279045_1280.jpg',
     );
     currentUserNotifier.set(currentUser);
-    developer.log('[+]access token: ${newOidc['access_token']}');
+    // developer.log('[+]access token: ${newOidc['access_token']}');
 
     if (!mounted) return;
     _loadInitialModels();
@@ -747,7 +746,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       return;
     }
 
-    developer.log('[+]access token: ${oidc['access_token']}');
+    // developer.log('[+]access token: ${oidc['access_token']}');
 
     currentOidc = oidc;
 

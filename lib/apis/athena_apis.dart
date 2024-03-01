@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer' as developer;
 
 import 'package:carol/apis/utils.dart';
 import 'package:carol/main.dart';
@@ -35,7 +34,7 @@ Future<Map<String, dynamic>?> tryRefreshOidc(
     },
     withAuthHeaders: false,
   );
-  developer.log('[+]oidc: ${res.body}');
+  // developer.log('[+]oidc: ${res.body}');
   final newOidc = json.decode(res.body);
 
   // Validate

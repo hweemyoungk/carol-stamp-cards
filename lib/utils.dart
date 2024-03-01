@@ -86,11 +86,12 @@ class DesignUtils {
     BoxConstraints constraints, [
     double scale = 1.0,
   ]) {
-    final left = max(constraints.maxWidth * .05, 8.0) * scale;
+    final left = max(constraints.maxWidth * .1, 8.0) * scale;
     // const left = 0.0;
-    final top = MediaQuery.of(ctx).viewInsets.top +
-        max(constraints.maxHeight * .05, 8.0) * scale;
-    final right = max(constraints.maxWidth * .05, 8.0) * scale;
+    // final top = MediaQuery.of(ctx).viewInsets.top +
+    //     max(constraints.maxHeight * .05, 8.0) * scale;
+    const top = 0.0;
+    final right = max(constraints.maxWidth * .1, 8.0) * scale;
     // const right = 0.0;
     final bottom = MediaQuery.of(ctx).viewInsets.bottom +
         max(constraints.maxHeight * .05, 8.0) * scale;

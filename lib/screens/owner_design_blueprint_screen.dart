@@ -174,12 +174,22 @@ class _OwnerDesignStoreScreenState
                     Padding(
                       padding: DesignUtils.basicWidgetEdgeInsets(),
                       child: TextFormField(
+                        enabled:
+                            widget.designMode == BlueprintDesignMode.create,
                         initialValue:
                             widget.blueprint?.stampGrantCondDescription,
                         keyboardType: TextInputType.multiline,
                         maxLines: null,
                         style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                            color: Theme.of(context).colorScheme.onBackground),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onBackground
+                                .withOpacity(
+                                  widget.designMode ==
+                                          BlueprintDesignMode.create
+                                      ? 1.0
+                                      : 0.5,
+                                )),
                         maxLength: 1000,
                         decoration: InputDecoration(
                           label: Text(
@@ -1116,19 +1126,19 @@ class _OwnerDesignStoreScreenState
                     '1. Following details can be modified without limit:'),
                 const Text('  - Display Name'),
                 const Text('  - Description'),
-                const Text('  - Stamp Grant Conditions'),
                 const Text('  - Max Issues per Customer'),
                 const Text('  - Max Total Issues'),
                 const Text('  - Publish Now'),
-                const Text('2. Following numbers cannot be decreased:'),
+                const Text('2. Stamp Grant Conditions cannot be modified.'),
+                const Text('3. Following numbers cannot be decreased:'),
                 const Text('  - Max Stamps'),
                 const Text('  - Max Redeems per Card'),
                 Text(
-                    '3. Expiration Date can be modified but must always be after ${formatSeconds(modifyBlueprintExpDateMinRemainingFromNowInSeconds)} from now.'),
+                    '4. Expiration Date can be modified but must always be after ${formatSeconds(modifyBlueprintExpDateMinRemainingFromNowInSeconds)} from now.'),
                 const Text(
-                    '4. Blueprint cannot be seen by customers if Publish Now is disabled but still be seen by those with already published card.'),
+                    '5. Blueprint cannot be seen by customers if Publish Now is disabled but still be seen by those with already published card.'),
                 const Text(
-                  '5. Published cards so far are still active even if Publish Now is disabled',
+                  '6. Published cards so far are still active even if Publish Now is disabled',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                   ),

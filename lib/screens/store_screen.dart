@@ -26,7 +26,6 @@ import 'package:carol/widgets/stores_explorer/stores_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:transparent_image/transparent_image.dart';
 
 final customerStoreScreenStoreProvider =
     StateNotifierProvider<StoreNotifier, Store?>((ref) => StoreNotifier(null));
@@ -248,36 +247,36 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
             )
             .toList();
 
-    final bgImage = store.bgImageUrl == null
-        ? Stack(
-            children: [
-              Image.memory(
-                kTransparentImage,
-                width: double.infinity,
-                fit: BoxFit.fitWidth,
-              ),
-              Positioned.fill(
-                child: Align(
-                  alignment: Alignment.center,
-                  child: Text(
-                    'No Image',
-                    style: TextStyle(
-                      fontStyle: FontStyle.italic,
-                      color: onSecondary.withOpacity(0.5),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          )
-        : FadeInImage(
-            placeholder: MemoryImage(kTransparentImage),
-            // image: NetworkImage(store.imageUrl!),
-            image: AssetImage(store.bgImageUrl!),
-            fit: BoxFit.cover,
-            height: 300,
-            width: double.infinity,
-          );
+    // final bgImage = store.bgImageUrl == null
+    //     ? Stack(
+    //         children: [
+    //           Image.memory(
+    //             kTransparentImage,
+    //             width: double.infinity,
+    //             fit: BoxFit.fitWidth,
+    //           ),
+    //           Positioned.fill(
+    //             child: Align(
+    //               alignment: Alignment.center,
+    //               child: Text(
+    //                 'No Image',
+    //                 style: TextStyle(
+    //                   fontStyle: FontStyle.italic,
+    //                   color: onSecondary.withOpacity(0.5),
+    //                 ),
+    //               ),
+    //             ),
+    //           ),
+    //         ],
+    //       )
+    //     : FadeInImage(
+    //         placeholder: MemoryImage(kTransparentImage),
+    //         // image: NetworkImage(store.imageUrl!),
+    //         image: AssetImage(store.bgImageUrl!),
+    //         fit: BoxFit.cover,
+    //         height: 300,
+    //         width: double.infinity,
+    //       );
 
     // final Widget googleMap = Padding(
     //   padding: DesignUtils.basicWidgetEdgeInsets(),
@@ -354,15 +353,9 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         ),
         Padding(
           padding: DesignUtils.basicWidgetEdgeInsets(),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-            child: Row(
-              children: [
-                Text(
-                  store.description,
-                ),
-              ],
-            ),
+          child: Text(
+            store.description,
+            textAlign: TextAlign.start,
           ),
         ),
       ],
@@ -576,12 +569,12 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           if (hasNotices) notices,
-          Image.memory(
-            kTransparentImage,
-            height: 300,
-            width: double.infinity,
-            fit: BoxFit.fill,
-          ),
+          // Image.memory(
+          //   kTransparentImage,
+          //   height: 300,
+          //   width: double.infinity,
+          //   fit: BoxFit.fill,
+          // ),
           Container(
             color: Theme.of(context).colorScheme.secondary,
             padding: DesignUtils.basicWidgetEdgeInsets(),
@@ -624,13 +617,13 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         builder: (ctx, constraints) {
           return Container(
             alignment: Alignment.center,
-            margin: DesignUtils.basicScreenEdgeInsets(ctx, constraints, 0),
+            margin: DesignUtils.basicScreenEdgeInsets(ctx, constraints, 1.0),
             child: SizedBox(
               height: double.infinity,
               width: double.infinity,
               child: Stack(
                 children: [
-                  bgImage,
+                  // bgImage,
                   Positioned(
                     top: 0,
                     bottom: 0,

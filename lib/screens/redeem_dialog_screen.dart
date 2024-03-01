@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer' as developer;
 
 import 'package:carol/apis/customer_apis.dart' as customer_apis;
 import 'package:carol/apis/utils.dart';
@@ -130,7 +129,7 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
       redeemRuleId: redeemRule.id,
     );
     if (_redeemRequestId == null) return;
-    developer.log('[+]RedeemRequestId: $_redeemRequestId');
+    // developer.log('[+]RedeemRequestId: $_redeemRequestId');
 
     // Notify to parent(RedeemRuleListItem)
     // Await a second for fade out animation (if any)

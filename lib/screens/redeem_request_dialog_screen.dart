@@ -89,25 +89,59 @@ class _RedeemRequestDialogScreenState
             if (image != null) image,
             Padding(
               padding: DesignUtils.basicWidgetEdgeInsets(),
-              child: Text('Consumes ${redeemRule.consumes} stamps by'),
+              child: Text(
+                'Consumes ${redeemRule.consumes} stamps by...',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
             ),
             Padding(
               padding: DesignUtils.basicWidgetEdgeInsets(),
-              child: Text(redeemRule.displayName),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: DesignUtils.basicWidgetEdgeInsets(),
+                    child: Text(
+                      redeemRule.displayName,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                  ),
+                  Text(
+                    redeemRule.description,
+                    textAlign: TextAlign.start,
+                  ),
+                ],
+              ),
             ),
             Padding(
               padding: DesignUtils.basicWidgetEdgeInsets(),
-              child: Text(redeemRule.description),
+              child: Text(
+                'Blueprint',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ),
+            Text(
+              blueprint.displayName,
+              textAlign: TextAlign.center,
             ),
             Padding(
               padding: DesignUtils.basicWidgetEdgeInsets(),
-              child: Text('of ${blueprint.displayName}'),
+              child: Text(
+                'Store',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ),
+            Text(
+              store.displayName,
+              textAlign: TextAlign.center,
             ),
             Padding(
               padding: DesignUtils.basicWidgetEdgeInsets(),
-              child: Text('of ${store.displayName}'),
+              child: _approveButton,
             ),
-            _approveButton,
           ],
         ),
       ),
