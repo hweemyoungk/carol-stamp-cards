@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:carol/widgets/main_drawer.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 import 'package:carol/apis/dev_http_overrides.dart';
 import 'package:carol/apis/exceptions/bad_request.dart';
 import 'package:carol/apis/exceptions/server_error.dart';
@@ -56,13 +59,13 @@ Future<void> _addTrustedCertificate({required bool ignore}) async {
   context.setTrustedCertificatesBytes(data.buffer.asUint8List());
 }
 
-class Carol extends StatefulWidget {
+class Carol extends ConsumerStatefulWidget {
   const Carol({Key? key}) : super(key: key);
 
   static GlobalKey<NavigatorState> materialKey = GlobalKey();
 
   @override
-  State<Carol> createState() => _CarolState();
+  ConsumerState<Carol> createState() => _CarolState();
 
   static void showTextSnackBar({
     required String text,
@@ -152,11 +155,15 @@ class Carol extends StatefulWidget {
   }
 }
 
-class _CarolState extends State<Carol> {
+class _CarolState extends ConsumerState<Carol> {
   @override
   Widget build(BuildContext context) {
+    final currentLocale = ref.watch(activeLocaleProvider);
     return MaterialApp(
       title: 'Carol Cards',
+      locale: currentLocale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       theme: theme,
       navigatorKey: Carol.materialKey,
       initialRoute: '/auth',

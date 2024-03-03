@@ -1,7 +1,7 @@
 // Alice
 // const appGateway = '10.0.2.2:8080'; // (local, localk8s)
-const appGateway = 'carol.cards';
 // (localk8s) In your host machine: ncat -k -p 8080 -l -c "ncat 192.168.49.2 443"
+const appGateway = 'carol.cards'; // (dev)
 const imageStorageHost = '10.0.2.2:8080';
 const imageStoragePath = '/a-image-storage';
 const locationHostname = 'https://localhost:8080';

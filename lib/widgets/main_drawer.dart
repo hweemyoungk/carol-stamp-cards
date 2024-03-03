@@ -1,9 +1,12 @@
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 import 'package:carol/apis/customer_apis.dart' as customer_apis;
 import 'package:carol/apis/owner_apis.dart' as owner_apis;
 import 'package:carol/apis/utils.dart';
 import 'package:carol/main.dart';
 import 'package:carol/params/backend.dart' as backend_params;
 import 'package:carol/providers/active_drawer_item_notifier.dart';
+import 'package:carol/providers/active_locale_notifier.dart';
 import 'package:carol/screens/account_dialog_screen.dart';
 import 'package:carol/screens/auth_screen.dart';
 import 'package:carol/screens/customer_screen.dart';
@@ -17,6 +20,9 @@ import 'package:transparent_image/transparent_image.dart';
 final activeDrawerItemProvider =
     StateNotifierProvider<ActiveDrawerItemNotifier, DrawerItemEnum>(
         (ref) => ActiveDrawerItemNotifier());
+final activeLocaleProvider =
+    StateNotifierProvider<ActiveLocaleNotifier, Locale>(
+        (ref) => ActiveLocaleNotifier());
 
 class MainDrawer extends ConsumerStatefulWidget {
   const MainDrawer({
@@ -31,6 +37,8 @@ class _MainDrawerState extends ConsumerState<MainDrawer> {
   @override
   Widget build(BuildContext context) {
     final currentUser = ref.watch(currentUserProvider);
+    final currentLocale = ref.watch(activeLocaleProvider);
+    final localizations = AppLocalizations.of(context)!;
     if (currentUser == null) {
       // Can happen when signed out
       return const Loading(
@@ -73,6 +81,7 @@ class _MainDrawerState extends ConsumerState<MainDrawer> {
       padding: DesignUtils.basicWidgetEdgeInsets(),
       child: avatar,
     );
+    const supportedLanguages = SupportedLanguage.values;
     return Drawer(
       width: 250,
       backgroundColor: Theme.of(context).colorScheme.primaryContainer,
@@ -116,18 +125,18 @@ class _MainDrawerState extends ConsumerState<MainDrawer> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             mainAxisSize: MainAxisSize.max,
             children: [
-              const Column(
+              Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   DrawerItem(
-                      text: 'Customer',
+                      text: localizations.customer,
                       drawerItemEnum: DrawerItemEnum.customer),
                   DrawerItem(
-                    text: 'Owner',
+                    text: localizations.owner,
                     drawerItemEnum: DrawerItemEnum.owner,
                   ),
                   DrawerItem(
-                    text: 'Membership',
+                    text: localizations.membership,
                     drawerItemEnum: DrawerItemEnum.membership,
                   ),
                   // Skip in phase 3
@@ -141,11 +150,44 @@ class _MainDrawerState extends ConsumerState<MainDrawer> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   DrawerItem(
-                    text: 'Privacy Policy',
+                    text: localizations.privacyPolicy,
                     drawerItemEnum: DrawerItemEnum.privacyPolicy,
                     onTap: _onTapPrivacyPolicy,
                   ),
                 ],
+              ),
+              DropdownButton(
+                value: supportedLanguages.firstWhere((element) =>
+                    element.languageCode == currentLocale.languageCode),
+                selectedItemBuilder: (context) {
+                  return supportedLanguages
+                      .map(
+                        (e) => Center(
+                          child: Text(
+                            e.language,
+                            style: TextStyle(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onPrimaryContainer,
+                            ),
+                          ),
+                        ),
+                      )
+                      .toList();
+                },
+                icon: Icon(
+                  Icons.language,
+                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                ),
+                items: supportedLanguages
+                    .map((e) => LocaleDropdownMenuItem(e))
+                    .toList(),
+                onChanged: (value) {
+                  if (value == null) {
+                    return;
+                  }
+                  ref.read(activeLocaleProvider.notifier).set(value);
+                },
               ),
             ],
           ),
@@ -161,6 +203,18 @@ class _MainDrawerState extends ConsumerState<MainDrawer> {
     );
     await launchInBrowserView(url);
   }
+}
+
+class LocaleDropdownMenuItem extends DropdownMenuItem {
+  final SupportedLanguage language;
+
+  LocaleDropdownMenuItem(this.language, {super.key})
+      : super(
+          value: language,
+          child: Text(
+            language.language,
+          ),
+        );
 }
 
 class DrawerItem extends ConsumerStatefulWidget {
@@ -242,4 +296,18 @@ enum DrawerItemEnum {
   settings,
   termsOfUse,
   privacyPolicy,
+}
+
+enum SupportedLanguage {
+  en(languageCode: 'en', language: 'English'),
+  ko(languageCode: 'ko', language: '한국어'),
+  ;
+
+  final String languageCode;
+  final String language;
+
+  const SupportedLanguage({
+    required this.languageCode,
+    required this.language,
+  });
 }

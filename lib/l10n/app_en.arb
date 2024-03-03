@@ -1,0 +1,8 @@
+{
+    "@@locale": "en",
+    "@_MainDrawer": {},
+    "customer": "Customer",
+    "owner": "Owner",
+    "membership": "Membership",
+    "privacyPolicy": "Privacy Policy"
+}
