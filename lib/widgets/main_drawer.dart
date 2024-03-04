@@ -1,3 +1,4 @@
+import 'package:carol/params/shared_preferences.dart' as prefs_params;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'package:carol/apis/customer_apis.dart' as customer_apis;
@@ -15,6 +16,7 @@ import 'package:carol/utils.dart';
 import 'package:carol/widgets/common/loading.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 final activeDrawerItemProvider =
@@ -34,15 +36,18 @@ class MainDrawer extends ConsumerStatefulWidget {
 }
 
 class _MainDrawerState extends ConsumerState<MainDrawer> {
+  late AppLocalizations _localizations;
+
   @override
   Widget build(BuildContext context) {
+    _localizations = AppLocalizations.of(context)!;
     final currentUser = ref.watch(currentUserProvider);
     final currentLocale = ref.watch(activeLocaleProvider);
     final localizations = AppLocalizations.of(context)!;
     if (currentUser == null) {
       // Can happen when signed out
-      return const Loading(
-        message: 'Loading user...',
+      return Loading(
+        message: _localizations.loadingUser,
       );
     }
 
@@ -57,12 +62,12 @@ class _MainDrawerState extends ConsumerState<MainDrawer> {
                   width: 50,
                   fit: BoxFit.cover,
                 ),
-                const Positioned.fill(
+                Positioned.fill(
                   child: Align(
                     alignment: Alignment.center,
                     child: Text(
-                      'No Image',
-                      style: TextStyle(
+                      _localizations.noImage,
+                      style: const TextStyle(
                         fontStyle: FontStyle.italic,
                       ),
                     ),
@@ -182,11 +187,18 @@ class _MainDrawerState extends ConsumerState<MainDrawer> {
                 items: supportedLanguages
                     .map((e) => LocaleDropdownMenuItem(e))
                     .toList(),
-                onChanged: (value) {
+                onChanged: (value) async {
                   if (value == null) {
                     return;
                   }
+                  if (value is! SupportedLanguage) {
+                    return;
+                  }
                   ref.read(activeLocaleProvider.notifier).set(value);
+
+                  final prefs = await SharedPreferences.getInstance();
+                  prefs.setString(
+                      prefs_params.languageCodeKey, value.languageCode);
                 },
               ),
             ],
@@ -233,8 +245,11 @@ class DrawerItem extends ConsumerStatefulWidget {
 }
 
 class _DrawerItemState extends ConsumerState<DrawerItem> {
+  late AppLocalizations _localizations;
+
   @override
   Widget build(BuildContext context) {
+    _localizations = AppLocalizations.of(context)!;
     return GestureDetector(
       onTap: widget.onTap ??
           () {
@@ -265,7 +280,8 @@ class _DrawerItemState extends ConsumerState<DrawerItem> {
           if (error is Exception) {
             Carol.showExceptionSnackBar(
               error,
-              contextMessage: 'Failed to load customer models.',
+              contextMessage: _localizations.failedToLoadCustomerModels,
+              localizations: _localizations,
             );
           }
         },
@@ -278,7 +294,8 @@ class _DrawerItemState extends ConsumerState<DrawerItem> {
           if (error is Exception) {
             Carol.showExceptionSnackBar(
               error,
-              contextMessage: 'Failed to load owner models.',
+              contextMessage: _localizations.failedToLoadOwnerModels,
+              localizations: _localizations,
             );
           }
         },

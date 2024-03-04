@@ -8,6 +8,7 @@ import 'package:carol/widgets/common/loading.dart';
 import 'package:carol/widgets/main_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 final customerMemberships = {
   'customer-alpha': CustomerMembership(
@@ -124,14 +125,16 @@ class MembershipScreen extends ConsumerStatefulWidget {
 
 class _MembershipScreenState extends ConsumerState<MembershipScreen> {
   int _activeBottomItemIndex = 0;
+  late AppLocalizations _localizations;
 
   @override
   Widget build(BuildContext context) {
+    _localizations = AppLocalizations.of(context)!;
     final currentUser = ref.watch(currentUserProvider);
     if (currentUser == null) {
       // Can happen when signed out
-      return const Loading(
-        message: 'Loading user...',
+      return Loading(
+        message: _localizations.loadingUser,
       );
     }
 
@@ -141,7 +144,10 @@ class _MembershipScreenState extends ConsumerState<MembershipScreen> {
       itemCount: memberships.length,
       itemBuilder: (ctx, index) {
         final membership = memberships[index];
-        return MembershipsListItem(membership: membership);
+        return MembershipsListItem(
+          membership: membership,
+          localizations: _localizations,
+        );
       },
     );
     final String appBarTitleText = _getAppBarTitleText();
@@ -153,14 +159,14 @@ class _MembershipScreenState extends ConsumerState<MembershipScreen> {
       bottomNavigationBar: BottomNavigationBar(
           currentIndex: _activeBottomItemIndex,
           onTap: _onTapBottomItem,
-          items: const [
+          items: [
             BottomNavigationBarItem(
-              label: 'Customer',
-              icon: Icon(Icons.emoji_people),
+              label: _localizations.customer,
+              icon: const Icon(Icons.emoji_people),
             ),
             BottomNavigationBarItem(
-              label: 'Owner',
-              icon: Icon(Icons.store),
+              label: _localizations.owner,
+              icon: const Icon(Icons.store),
             ),
           ]),
       body: Row(
@@ -195,9 +201,9 @@ class _MembershipScreenState extends ConsumerState<MembershipScreen> {
   String _getAppBarTitleText() {
     switch (_activeBottomItemIndex) {
       case 0:
-        return 'Customer Membership';
+        return _localizations.customerMembership;
       case 1:
-        return 'Owner Membership';
+        return _localizations.ownerMembership;
       default:
         return 'UNKNOWN';
     }
@@ -208,9 +214,11 @@ class MembershipsListItem extends StatelessWidget {
   const MembershipsListItem({
     super.key,
     required this.membership,
+    required this.localizations,
   });
 
   final Membership membership;
+  final AppLocalizations localizations;
 
   @override
   Widget build(BuildContext context) {
@@ -232,7 +240,7 @@ class MembershipsListItem extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        'Coming soon...',
+                        localizations.comingSoon,
                         style: Theme.of(context)
                             .textTheme
                             .bodyLarge!
@@ -244,7 +252,7 @@ class MembershipsListItem extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        'You are now',
+                        localizations.youAreNow,
                         style: Theme.of(context)
                             .textTheme
                             .titleLarge!
@@ -293,8 +301,8 @@ class MembershipsListItem extends StatelessWidget {
               children: [
                 Text(
                   membership.monthlyPrice == null
-                      ? 'Free'
-                      : '${membership.monthlyPrice}/month',
+                      ? localizations.free
+                      : localizations.pricePerMonth(membership.monthlyPrice!),
                   style: Theme.of(context).textTheme.titleLarge!.copyWith(
                         color: membership.onBgColor,
                       ),

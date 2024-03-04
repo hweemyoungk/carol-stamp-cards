@@ -11,9 +11,11 @@ import 'package:carol/params/backend.dart' as backend_params;
 import 'package:carol/screens/auth_screen.dart';
 import 'package:carol/widgets/cards_explorer/cards_list.dart';
 import 'package:carol/widgets/stores_explorer/stores_list.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 Future<void> reloadCustomerModels(WidgetRef ref) async {
+  final localizations = AppLocalizations.of(ref.context);
   final currentUser = ref.read(currentUserProvider)!;
   final cardsNotifier = ref.read(customerCardsListCardsProvider.notifier);
   final storesNotifier = ref.read(customerStoresListStoresProvider.notifier);
@@ -22,12 +24,15 @@ Future<void> reloadCustomerModels(WidgetRef ref) async {
   try {
     cards = await listStampCards(customerId: currentUser.id);
   } on Exception catch (e) {
+    if (localizations != null) {
+      Carol.showExceptionSnackBar(
+        e,
+        contextMessage: localizations.failedToLoadCustomerModels,
+        localizations: localizations,
+      );
+    }
     cardsNotifier.set([]);
     storesNotifier.set([]);
-    Carol.showExceptionSnackBar(
-      e,
-      contextMessage: 'Failed to load customer models.',
-    );
     return;
   }
 

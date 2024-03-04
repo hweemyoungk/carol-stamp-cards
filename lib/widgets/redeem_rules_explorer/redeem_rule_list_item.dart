@@ -5,6 +5,7 @@ import 'package:carol/models/stamp_card.dart';
 import 'package:carol/screens/redeem_dialog_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class RedeemRuleListItem extends ConsumerStatefulWidget {
   final StampCard? card;
@@ -25,10 +26,12 @@ class RedeemRuleListItem extends ConsumerStatefulWidget {
 }
 
 class _RedeemRuleListItemState extends ConsumerState<RedeemRuleListItem> {
+  late AppLocalizations _localizations;
   String? _redeemRequestId;
 
   @override
   Widget build(BuildContext context) {
+    _localizations = AppLocalizations.of(context)!;
     final card = widget.card;
     final redeemRule = widget.redeemRule;
     final redeemable =
@@ -84,7 +87,8 @@ class _RedeemRuleListItemState extends ConsumerState<RedeemRuleListItem> {
     } on Exception catch (e) {
       Carol.showExceptionSnackBar(
         e,
-        contextMessage: 'Failed to cancel redeem request.',
+        contextMessage: _localizations.failedToCancelRedeemRequest,
+        localizations: _localizations,
       );
       return;
     }

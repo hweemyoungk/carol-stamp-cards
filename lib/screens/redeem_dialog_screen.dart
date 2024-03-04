@@ -14,6 +14,7 @@ import 'package:carol/widgets/cards_explorer/cards_list.dart';
 import 'package:carol/widgets/common/circular_progress_indicator_in_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class RedeemDialogScreen extends ConsumerStatefulWidget {
   final StampCard card;
@@ -32,6 +33,7 @@ class RedeemDialogScreen extends ConsumerStatefulWidget {
 }
 
 class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
+  late AppLocalizations _localizations;
   late Widget redeemButton;
   String? _redeemRequestId;
   late RedeemStatus _redeemStatus;
@@ -48,6 +50,7 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _localizations = AppLocalizations.of(context)!;
     final redeemRule = widget.redeemRule;
     final stampCard = widget.card;
 
@@ -58,7 +61,7 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
             disabledBackgroundColor:
                 Theme.of(context).colorScheme.errorContainer),
         child: Text(
-          'Not enough stamps!',
+          _localizations.notEnoughStamps,
           style:
               TextStyle(color: Theme.of(context).colorScheme.onErrorContainer),
         ),
@@ -66,7 +69,7 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
     } else if (_redeemStatus == RedeemStatus.redeemable) {
       redeemButton = ElevatedButton(
         onPressed: _onPressRedeem,
-        child: Text('Consume ${redeemRule.consumes} stamps to get reward'),
+        child: Text(_localizations.consumeStamps(redeemRule.consumes)),
       );
     }
 
@@ -99,7 +102,7 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
                   backgroundColor: Theme.of(context).colorScheme.background),
               onPressed: _onPressBack,
               child: Text(
-                'Back',
+                _localizations.back,
                 textAlign: TextAlign.end,
                 style: TextStyle(
                     color: Theme.of(context).colorScheme.onBackground),
@@ -194,7 +197,7 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
       cardNotifier.set(newCard);
 
       Carol.showTextSnackBar(
-        text: 'Redeem success!',
+        text: _localizations.redeemSuccess,
         level: SnackBarLevel.success,
       );
     } else {
@@ -216,7 +219,7 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
         await Future.delayed(durationOneSecond);
       }
       Carol.showTextSnackBar(
-        text: 'Redeem failed!',
+        text: _localizations.failedToRedeem,
         level: SnackBarLevel.error,
       );
     }
@@ -249,7 +252,8 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
     } on Exception catch (e) {
       Carol.showExceptionSnackBar(
         e,
-        contextMessage: 'Failed to check redeem exists.',
+        contextMessage: _localizations.failedToCheckRedeemExists,
+        localizations: _localizations,
       );
       return null;
     }
@@ -272,7 +276,7 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
                   Theme.of(context).colorScheme.tertiaryContainer,
             ),
             child: Text(
-              'Awaiting owner\'s approval (${app_params.watchRedeemRequestDurationSeconds - i})',
+              '${_localizations.awaitingOwnersApproval} (${app_params.watchRedeemRequestDurationSeconds - i})',
               style: TextStyle(
                 color: Theme.of(context).colorScheme.onTertiaryContainer,
               ),
@@ -298,13 +302,14 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
         ).onError<Exception>((error, stackTrace) {
           Carol.showExceptionSnackBar(
             error,
-            contextMessage: 'Failed to check redeem request exists.',
+            contextMessage: _localizations.failedToCheckRedeemRequestExists,
+            localizations: _localizations,
           );
         });
       }
 
       // Wait for one second
-      await DesignUtils.delaySeconds(1);
+      await Future.delayed(durationOneSecond);
     }
   }
 
@@ -322,7 +327,7 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
                 Theme.of(context).colorScheme.tertiaryContainer,
           ),
           child: Text(
-            'Sending redeem request to owner...',
+            _localizations.sendingRedeemRequest,
             style: TextStyle(
               color: Theme.of(context).colorScheme.onTertiaryContainer,
             ),
@@ -350,7 +355,8 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
     } on Exception catch (e) {
       Carol.showExceptionSnackBar(
         e,
-        contextMessage: 'Failed to save new redeem request.',
+        contextMessage: _localizations.failedToSaveNewRedeemRequest,
+        localizations: _localizations,
       );
       return null;
     }
@@ -367,7 +373,8 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
     } on Exception catch (e) {
       Carol.showExceptionSnackBar(
         e,
-        contextMessage: 'Failed to cancel redeem request.',
+        contextMessage: _localizations.failedToCancelRedeemRequest,
+        localizations: _localizations,
       );
       return;
     }

@@ -16,6 +16,7 @@ import 'package:carol/widgets/common/alert_row.dart';
 import 'package:carol/widgets/common/loading.dart';
 import 'package:carol/widgets/stores_explorer/stores_list.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final customerBlueprintDialogScreenBlueprintProvider =
@@ -42,6 +43,7 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
   Widget? _unissuableAlerts;
   late Widget _issueButton;
   late TextFormField _cardNameTextField;
+  late AppLocalizations _localizations;
 
   _IssueStatus _issueStatus = _IssueStatus.checkingIssuability;
 
@@ -54,11 +56,12 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _localizations = AppLocalizations.of(context)!;
     final currentUser = ref.watch(currentUserProvider)!;
     final blueprint = _watchBlueprint();
     final redeemRules = blueprint?.redeemRules;
     if (blueprint == null || redeemRules == null) {
-      return const Loading(message: 'Loading Blueprint...');
+      return Loading(message: _localizations.loadingBlueprint);
     }
 
     final blueprintInfo = BlueprintInfo(
@@ -71,7 +74,7 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
           backgroundColor: Theme.of(context).colorScheme.background),
       onPressed: _onPressBack,
       child: Text(
-        'Back',
+        _localizations.back,
         textAlign: TextAlign.end,
         style: TextStyle(color: Theme.of(context).colorScheme.onBackground),
       ),
@@ -105,7 +108,7 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
         controller: TextEditingController(text: blueprint.displayName),
         enabled: _issueStatus == _IssueStatus.issuable,
         decoration: InputDecoration(
-          labelText: 'Card Name',
+          labelText: _localizations.cardName,
           labelStyle: TextStyle(
             color: Theme.of(context).colorScheme.onSecondary,
           ),
@@ -167,7 +170,7 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
       ),
       onPressed: _onPressModify,
       child: Text(
-        'Modify',
+        _localizations.modify,
         textAlign: TextAlign.end,
         style:
             TextStyle(color: Theme.of(context).colorScheme.onTertiaryContainer),
@@ -199,7 +202,7 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
             disabledBackgroundColor:
                 Theme.of(context).colorScheme.errorContainer),
         child: Text(
-          'Cannot issue this card!',
+          _localizations.cannotIssueCard,
           style:
               TextStyle(color: Theme.of(context).colorScheme.onErrorContainer),
         ),
@@ -207,7 +210,7 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
     } else if (_issueStatus == _IssueStatus.issuable) {
       _issueButton = ElevatedButton(
         onPressed: _onPressIssue,
-        child: const Text('Get this card'),
+        child: Text(_localizations.getCard),
       );
     } else if (_issueStatus == _IssueStatus.issueFailed) {
       _issueButton = ElevatedButton(
@@ -250,7 +253,7 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
         setState(() {
           _issueStatus = _IssueStatus.notIssuable;
           _alertRows.add(
-            const AlertRow(text: 'Currently not publishing'),
+            AlertRow(text: _localizations.blueprintNotPublishing),
           );
         });
       }
@@ -263,7 +266,7 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
         setState(() {
           _issueStatus = _IssueStatus.notIssuable;
           _alertRows.add(
-            const AlertRow(text: 'Blueprint is already expired'),
+            AlertRow(text: _localizations.blueprintExpired),
           );
         });
       }
@@ -317,8 +320,8 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
         setState(() {
           _issueStatus = _IssueStatus.notIssuable;
           _alertRows.add(
-            const AlertRow(
-              text: 'Failed to get number of issues per customer.',
+            AlertRow(
+              text: _localizations.failedToLoadNumIssuesPerCustomer,
             ),
           );
         });
@@ -332,7 +335,7 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
         setState(() {
           _issueStatus = _IssueStatus.notIssuable;
           _alertRows.add(
-            const AlertRow(text: 'Reached max number of issues per customer.'),
+            AlertRow(text: _localizations.reachedMaxNumIssuesPerCustomer),
           );
         });
       }
@@ -353,7 +356,7 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
         setState(() {
           _issueStatus = _IssueStatus.notIssuable;
           _alertRows.add(
-            const AlertRow(text: 'Failed to get total number of issued cards.'),
+            AlertRow(text: _localizations.failedToLoadNumTotalIssues),
           );
         });
       }
@@ -368,7 +371,7 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
         setState(() {
           _issueStatus = _IssueStatus.notIssuable;
           _alertRows.add(
-            const AlertRow(text: 'Reached max of blueprint total issues.'),
+            AlertRow(text: _localizations.reachedMaxNumTotalIssues),
           );
         });
       }
@@ -406,8 +409,8 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
         setState(() {
           _issueStatus = _IssueStatus.notIssuable;
           _alertRows.add(
-            const AlertRow(
-              text: 'Cannot find customer membership. Please sign in again.',
+            AlertRow(
+              text: _localizations.cannotFindCustomerMembership,
             ),
           );
         });
@@ -437,8 +440,9 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
         setState(() {
           _issueStatus = _IssueStatus.notIssuable;
           _alertRows.add(
-            const AlertRow(
-                text: 'Failed to get number of accumulated total cards.'),
+            AlertRow(
+              text: _localizations.failedToLoadNumAccumulatedTotalCards,
+            ),
           );
         });
       }
@@ -451,7 +455,7 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
         setState(() {
           _issueStatus = _IssueStatus.notIssuable;
           _alertRows.add(
-            const AlertRow(text: 'Reached max of accumulated total cards.'),
+            AlertRow(text: _localizations.reachedMaxNumAccumulatedTotalCards),
           );
         });
       }
@@ -476,8 +480,9 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
         setState(() {
           _issueStatus = _IssueStatus.notIssuable;
           _alertRows.add(
-            const AlertRow(
-                text: 'Failed to get number of current total cards.'),
+            AlertRow(
+              text: _localizations.failedToLoadNumCurrentTotalCards,
+            ),
           );
         });
       }
@@ -490,7 +495,9 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
         setState(() {
           _issueStatus = _IssueStatus.notIssuable;
           _alertRows.add(
-            const AlertRow(text: 'Reached max of current total cards.'),
+            AlertRow(
+              text: _localizations.reachedMaxNumCurrentTotalCards,
+            ),
           );
         });
       }
@@ -515,8 +522,7 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
         setState(() {
           _issueStatus = _IssueStatus.notIssuable;
           _alertRows.add(
-            const AlertRow(
-                text: 'Failed to get number of current active cards.'),
+            AlertRow(text: _localizations.failedToLoadNumCurrentActiveCards),
           );
         });
       }
@@ -529,7 +535,7 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
         setState(() {
           _issueStatus = _IssueStatus.notIssuable;
           _alertRows.add(
-            const AlertRow(text: 'Reached max of current active cards.'),
+            AlertRow(text: _localizations.reachedMaxNumCurrentActiveCards),
           );
         });
       }
@@ -552,12 +558,12 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
 
     if (newStampCard != null) {
       Carol.showTextSnackBar(
-        text: 'Your card is ready!',
+        text: _localizations.issueCardSuccess,
         level: SnackBarLevel.success,
       );
     } else {
       Carol.showTextSnackBar(
-        text: 'Failed to issue card.',
+        text: _localizations.failedToIssueCard,
         level: SnackBarLevel.error,
       );
     }
@@ -593,7 +599,8 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
     } on Exception catch (e) {
       Carol.showExceptionSnackBar(
         e,
-        contextMessage: 'Failed to save new card.',
+        contextMessage: _localizations.failedToSaveNewCard,
+        localizations: _localizations,
       );
       return null;
     }
@@ -605,7 +612,8 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
     } on Exception catch (e) {
       Carol.showExceptionSnackBar(
         e,
-        contextMessage: 'Failed to get newly created stamp card information.',
+        contextMessage: _localizations.failedToLoadNewlyCreatedCard,
+        localizations: _localizations,
       );
       return null;
     }
@@ -653,7 +661,8 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
     } on Exception catch (e) {
       Carol.showExceptionSnackBar(
         e,
-        contextMessage: 'Failed to get redeem rules information.',
+        contextMessage: _localizations.failedToLoadRedeemRules,
+        localizations: _localizations,
       );
       return;
     }

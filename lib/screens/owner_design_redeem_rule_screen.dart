@@ -3,6 +3,7 @@ import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class OwnerDesignRedeemRuleScreen extends ConsumerStatefulWidget {
   const OwnerDesignRedeemRuleScreen({
@@ -23,6 +24,7 @@ class OwnerDesignRedeemRuleScreen extends ConsumerStatefulWidget {
 class _OwnerDesignRedeemRuleScreenState
     extends ConsumerState<OwnerDesignRedeemRuleScreen> {
   final _formKey = GlobalKey<FormState>();
+  late AppLocalizations _localizations;
   late String _displayName;
   late String _description;
   late int _consumes;
@@ -43,11 +45,12 @@ class _OwnerDesignRedeemRuleScreenState
 
   @override
   Widget build(BuildContext context) {
+    _localizations = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.designMode == RedeemRuleDesignMode.create
-            ? 'New Redeem Rule'
-            : 'Modify Redeem Rule'),
+            ? _localizations.newRedeemRuleAppBarTitle
+            : _localizations.modifyRedeemRuleAppBarTitle),
         actions: [
           IconButton(
             onPressed: _onPressAboutRedeemRule,
@@ -83,14 +86,15 @@ class _OwnerDesignRedeemRuleScreenState
                       style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                           color: Theme.of(context).colorScheme.onBackground),
                       maxLength: 50,
-                      decoration: const InputDecoration(
-                        label: Text('Display Name'),
+                      decoration: InputDecoration(
+                        label: Text(_localizations.displayName),
                       ),
                       validator: (value) {
                         if (value == null ||
                             value.trim().isEmpty ||
-                            value.trim().length > 50) {
-                          return 'Must be between 1 and 50 characters long';
+                            value.trim().length > 30) {
+                          return _localizations.textLengthViolationMessage(
+                              1, 30);
                         }
                         return null;
                       },
@@ -108,14 +112,15 @@ class _OwnerDesignRedeemRuleScreenState
                       style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                           color: Theme.of(context).colorScheme.onBackground),
                       maxLength: 1000,
-                      decoration: const InputDecoration(
-                        label: Text('Description'),
+                      decoration: InputDecoration(
+                        label: Text(_localizations.description),
                       ),
                       validator: (value) {
                         if (value == null ||
                             value.trim().isEmpty ||
                             value.trim().length > 1000) {
-                          return 'Must be between 1 and 1000 characters long';
+                          return _localizations.textLengthViolationMessage(
+                              1, 1000);
                         }
                         return null;
                       },
@@ -151,8 +156,8 @@ class _OwnerDesignRedeemRuleScreenState
                                     Theme.of(context).colorScheme.onBackground,
                               ),
                           decoration: InputDecoration(
-                            label: const Text('Consumes'),
-                            suffixText: 'stamps',
+                            label: Text(_localizations.consumes),
+                            suffixText: _localizations.stamps,
                             suffixStyle: TextStyle(
                               // color: editConsumesEnabled
                               //     ? Theme.of(context).colorScheme.onBackground
@@ -167,7 +172,8 @@ class _OwnerDesignRedeemRuleScreenState
                             if (value == null ||
                                 int.tryParse(value) == null ||
                                 int.parse(value) < 0) {
-                              return 'Must be 0+ integer';
+                              return _localizations
+                                  .integerLowerboundViolationMessage(0);
                             }
                             return null;
                           },
@@ -239,19 +245,14 @@ class _OwnerDesignRedeemRuleScreenState
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                    'Redeem rule defines one way for customers to consume collected stamps.',
+                Text(_localizations.whatIsRedeemRule,
                     style: Theme.of(context).textTheme.titleMedium),
-                const Text(
-                  '1. Redeem rule is always active once created until blueprint expires.',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                Text(
+                  _localizations.redeemRuleExplanationItem1,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
-                const Text(
-                    '2. Following details can be modified without limit:'),
-                const Text('  - Display Name'),
-                const Text('  - Description'),
-                const Text(
-                    '3. Consumes can be modified but cannot exceed blueprint\'s Max Stamps.'),
+                Text(_localizations.redeemRuleExplanationItem2),
+                Text(_localizations.redeemRuleExplanationItem3),
               ],
             ),
           ),

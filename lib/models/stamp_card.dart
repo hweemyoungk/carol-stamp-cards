@@ -144,7 +144,7 @@ class StampCard extends IntModel {
   String get stampsRatio => '$numCollectedStamps/$numGoalStamps';
   String get lastModifiedDateLabel {
     final diff = DateTime.now().difference(lastModifiedDate);
-    if (diff.inDays < 0) {
+    if (diff.isNegative) {
       return 'Something\'s really wrong...';
     } else if (diff.inDays == 0) {
       return '${diff.inHours}h ago';

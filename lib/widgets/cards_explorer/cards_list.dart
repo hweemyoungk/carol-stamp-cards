@@ -3,6 +3,7 @@ import 'package:carol/providers/cards_notifier.dart';
 import 'package:carol/widgets/cards_explorer/cards_list_item_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 final customerCardsListCardsProvider =
     StateNotifierProvider<CardsNotifier, List<StampCard>?>(
@@ -18,17 +19,19 @@ class CardsList extends ConsumerStatefulWidget {
 }
 
 class _CardsListState extends ConsumerState<CardsList> {
+  late AppLocalizations _localizations;
+
   @override
   Widget build(BuildContext context) {
+    _localizations = AppLocalizations.of(context)!;
     final cards = ref.watch(customerCardsListCardsProvider);
-    // final cardsLoaded = cards == null;
 
     return cards == null
         ? const CircularProgressIndicator()
         : cards.isEmpty
             ? Center(
                 child: Text(
-                  'No data found!',
+                  _localizations.noDataFound,
                   style: Theme.of(context).textTheme.headlineSmall!.copyWith(
                         color: Theme.of(context).colorScheme.onBackground,
                       ),
@@ -50,12 +53,6 @@ class _CardsListState extends ConsumerState<CardsList> {
                 ),
               );
   }
-
-  // void loadFromEntityProviders() {
-  //   final loadedStampCards =
-  //       stampCardProviders.providers.entries.map((e) => ref.read(e.value));
-  //   ref.read(stampCardsProvider.notifier).appendAll(loadedStampCards);
-  // }
 
   // bool _handleScrollNotification(ScrollNotification notification) {
   //   if (notification is ScrollEndNotification) {
@@ -82,15 +79,6 @@ class _CardsListState extends ConsumerState<CardsList> {
   //       ),
   //     );
   //   }
-  // }
-
-  // Future<List<StampCard>> loadStampCards() async {
-  //   final currentUser = ref.read(currentUserProvider)!;
-  //   await Future.delayed(const Duration(seconds: 2));
-  //   return genDummyStampCards(
-  //     numCards: 10,
-  //     customerId: currentUser.id,
-  //   );
   // }
 
   // Future<void> _onPressLoadMore() async {

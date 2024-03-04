@@ -18,6 +18,7 @@ import 'package:carol/widgets/main_drawer.dart';
 import 'package:carol/widgets/redeem_requests_explorer/redeem_requests_list.dart';
 import 'package:carol/widgets/stores_explorer/stores_list.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -32,6 +33,7 @@ class AccountDialogScreen extends ConsumerStatefulWidget {
 }
 
 class _AccountDialogScreenState extends ConsumerState<AccountDialogScreen> {
+  late AppLocalizations _localizations;
   final List<Widget> _deleteAccountAlertRows = [];
   bool? _canDeleteAccount;
 
@@ -43,6 +45,7 @@ class _AccountDialogScreenState extends ConsumerState<AccountDialogScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _localizations = AppLocalizations.of(context)!;
     return AlertDialog(
       backgroundColor: Theme.of(context).colorScheme.background,
       content: SingleChildScrollView(
@@ -50,11 +53,11 @@ class _AccountDialogScreenState extends ConsumerState<AccountDialogScreen> {
           children: [
             ElevatedButton(
               onPressed: _signOut,
-              child: const Text('Sign out'),
+              child: Text(_localizations.signOut),
             ),
             ElevatedButton(
               onPressed: _onPressEditAccount,
-              child: const Text('Edit account'),
+              child: Text(_localizations.editAccount),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -73,7 +76,7 @@ class _AccountDialogScreenState extends ConsumerState<AccountDialogScreen> {
                       ? _onPressDeleteAccount
                       : _onPressDeleteAccountViolated,
               child: Text(
-                'Delete account',
+                _localizations.deleteAccount,
                 style: TextStyle(
                   color: _canDeleteAccount != null && !_canDeleteAccount!
                       ? Theme.of(context)
@@ -102,9 +105,9 @@ class _AccountDialogScreenState extends ConsumerState<AccountDialogScreen> {
     final proceed = await showAdaptiveDialog<bool>(
       context: context,
       builder: (ctx) => ProceedAlertDialog(
-        title: const Text('Delete Account?'),
-        content: const Text('This cannot be undo.'),
-        proceedButtonString: 'Delete',
+        title: Text(_localizations.deleteAccountAlertTitle),
+        content: Text(_localizations.alertContentCannotUndo),
+        proceedButtonString: _localizations.delete,
         proceedButtonStringColor: Theme.of(context).colorScheme.onError,
         proceedButtonColor: Theme.of(context).colorScheme.error,
       ),
@@ -118,14 +121,15 @@ class _AccountDialogScreenState extends ConsumerState<AccountDialogScreen> {
     } on Exception catch (e) {
       Carol.showExceptionSnackBar(
         e,
-        contextMessage: 'Failed to delete account.',
+        contextMessage: _localizations.failedToDeleteAccount,
+        localizations: _localizations,
       );
       return;
     }
     // Propagate
 
     Carol.showTextSnackBar(
-      text: 'Deleted account!',
+      text: _localizations.deleteAccountSuccess,
       level: SnackBarLevel.success,
     );
 
@@ -167,10 +171,11 @@ class _AccountDialogScreenState extends ConsumerState<AccountDialogScreen> {
     } on Exception catch (e) {
       Carol.showExceptionSnackBar(
         e,
-        contextMessage: 'Failed to load owner models.',
+        contextMessage: _localizations.failedToLoadOwnerModels,
+        localizations: _localizations,
       );
-      _deleteAccountAlertRows.add(const AlertRow(
-        text: 'Failed to load owner models.',
+      _deleteAccountAlertRows.add(AlertRow(
+        text: _localizations.failedToLoadOwnerModels,
       ));
       if (mounted) {
         setState(() {
@@ -183,7 +188,7 @@ class _AccountDialogScreenState extends ConsumerState<AccountDialogScreen> {
     final activeStores = stores.where((element) => !element.isInactive);
     if (activeStores.isNotEmpty) {
       _deleteAccountAlertRows.add(AlertRow(
-        text: 'Following stores still exist.${activeStores.fold(
+        text: '${_localizations.followingStoresStillExist}${activeStores.fold(
           '',
           (previousValue, element) =>
               '$previousValue\n- ${element.displayName}',
@@ -205,7 +210,7 @@ class _AccountDialogScreenState extends ConsumerState<AccountDialogScreen> {
       context: context,
       builder: (ctx) {
         return AlertDialog(
-          title: const Text('Cannot delete account'),
+          title: Text(_localizations.cannotDeleteAccount),
           content: SingleChildScrollView(
             child: Center(
               child: Column(

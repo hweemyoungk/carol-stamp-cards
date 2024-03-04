@@ -4,6 +4,7 @@ import 'package:carol/screens/redeem_request_dialog_screen.dart';
 import 'package:carol/widgets/common/circular_progress_indicator_in_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class RedeemRequestsListItem extends ConsumerStatefulWidget {
   final RedeemRequest redeemRequest;
@@ -19,7 +20,9 @@ class RedeemRequestsListItem extends ConsumerStatefulWidget {
 
 class _RedeemRequestsListItemState
     extends ConsumerState<RedeemRequestsListItem> {
+  late AppLocalizations _localizations;
   late RedeemRequest _redeemRequest;
+
   @override
   void initState() {
     super.initState();
@@ -29,12 +32,13 @@ class _RedeemRequestsListItemState
 
   @override
   Widget build(BuildContext context) {
-    // final redeemRequest = widget.redeemRequest;
+    _localizations = AppLocalizations.of(context)!;
+
     if (_redeemRequest.redeemRule?.blueprint?.store == null) {
-      return const ListTile(
+      return ListTile(
         onTap: null,
-        leading: CircularProgressIndicatorInButton(),
-        title: Text('Loading redeem request...'),
+        leading: const CircularProgressIndicatorInButton(),
+        title: Text(_localizations.loadingRedeemRequest),
       );
     }
 

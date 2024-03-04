@@ -84,7 +84,11 @@ class Carol extends ConsumerStatefulWidget {
     );
   }
 
-  static void showExceptionSnackBar(Exception e, {String? contextMessage}) {
+  static void showExceptionSnackBar(
+    Exception e, {
+    String? contextMessage,
+    required AppLocalizations localizations,
+  }) {
     final sb = StringBuffer();
     if (contextMessage != null) {
       sb
@@ -92,8 +96,7 @@ class Carol extends ConsumerStatefulWidget {
         ..write('\n');
     }
     if (e is ServerError) {
-      sb.write(
-          'Server failed to process your data. Please contact administrator if this problem persists.');
+      sb.write(localizations.serverError);
       showTextSnackBar(
         text: sb.toString(),
         level: SnackBarLevel.error,
@@ -108,9 +111,9 @@ class Carol extends ConsumerStatefulWidget {
             athena_params.tokenPath,
           ).path) {
         // Token problem: Sign in again
-        sb.write('Your data looks stale. Please sign in again.');
+        sb.write(localizations.dataStaleSignInAgain);
       } else {
-        sb.write('Your data looks stale. Please refresh and try again.');
+        sb.write(localizations.dataStaleRefresh);
       }
       showTextSnackBar(
         text: sb.toString(),
@@ -120,7 +123,7 @@ class Carol extends ConsumerStatefulWidget {
       return;
     }
     if (e is Unauthenticated || e is Unauthorized) {
-      sb.write('Your credential looks stale. Please sign in again.');
+      sb.write(localizations.credentialStaleSignInAgain);
       showTextSnackBar(
         text: sb.toString(),
         level: SnackBarLevel.error,
@@ -129,7 +132,7 @@ class Carol extends ConsumerStatefulWidget {
       return;
     }
     if (e is TimeoutException) {
-      sb.write('Server looks busy. Please wait a while and try again.');
+      sb.write(localizations.serverBusy);
       showTextSnackBar(
         text: sb.toString(),
         level: SnackBarLevel.warn,
@@ -138,7 +141,7 @@ class Carol extends ConsumerStatefulWidget {
       return;
     }
     if (e is SocketException) {
-      sb.write('Server is under maintenance. Please wait a while try again.');
+      sb.write(localizations.serverMaintenance);
       showTextSnackBar(
         text: sb.toString(),
         level: SnackBarLevel.warn,
@@ -146,7 +149,7 @@ class Carol extends ConsumerStatefulWidget {
       );
       return;
     }
-    sb.write('Unexpected error occured: ${e.toString()}');
+    sb.write('${localizations.unexpectedError}: ${e.toString()}');
     showTextSnackBar(
       text: sb.toString(),
       level: SnackBarLevel.error,

@@ -1,8 +1,461 @@
 {
     "@@locale": "en",
-    "@_MainDrawer": {},
+    "@_Utils": {},
+    "alreadyPassed": "Already passed",
+    "dayInitial": "d",
+    "hourInitial": "H",
+    "minuteInitial": "m",
+    "monthInitial": "M",
+    "secondInitial": "s",
+    "yearInitial": "y",
+
+    "@_AccountDialogScreen": {},
+    "cannotDeleteAccount": "Cannot delete account",
+    "deleteAccount": "Delete account",
+    "alertContentCannotUndo": "This cannot be undone.",
+    "deleteAccountAlertTitle": "Delete Account?",
+    "deleteAccountSuccess": "Deleted account!",
+    "editAccount": "Edit account",
+    "signOut": "Sign out",
+
+    "@_AuthScreen": {},
+    "abortSignInUp": "Abort Sign In / Up",
+    "carolCards": "Carol Cards",
+    "exit": "Exit",
+    "pleaseWait": "Please wait...",
+    "rememberMe": "Remember me",
+    "signInUp": "Sign In / Up",
+    "versionCompareFailureDialogContent": "Failed to compare current version name and required minimum version name.\nExiting Application.",
+    "welcomeTo": "Welcome to",
+    "youAreSignedIn": "You are signed in",
+
+    "@_AppNoticeDialogScreen": {},
+    "readDetail": "Read detail",
+    "close": "Close",
+    "doNotShowAgain": "Do not show again",
+
+    "@_BlueprintDialogScreen": {},
+    "cardName": "Card Name",
+    "cannotIssueCard": "Cannot issue this card!",
+    "getCard": "Get this card",
+    "issueCardSuccess": "Issued card!",
+    "blueprintNotPublishing": "Blueprint is not publishing",
+    "blueprintExpired": "Blueprint is already expired",
+    "failedToLoadNumIssuesPerCustomer": "Failed to load number of issues per customer",
+    "reachedMaxNumIssuesPerCustomer": "Reached max number of issues per customer",
+    "failedToLoadNumTotalIssues": "Failed to load total number of issued cards",
+    "reachedMaxNumTotalIssues": "Reached max number of blueprint total issues",
+    "cannotFindCustomerMembership": "Cannot find customer membership. Please sign in again.",
+    "failedToLoadNumAccumulatedTotalCards": "Failed to load number of accumulated total cards",
+    "reachedMaxNumAccumulatedTotalCards": "Reached max number of accumulated total cards",
+    "failedToLoadNumCurrentTotalCards": "Failed to load number of current total cards",
+    "reachedMaxNumCurrentTotalCards": "Reached max number of current total cards",
+    "failedToLoadNumCurrentActiveCards": "Failed to load number of current active cards",
+    "reachedMaxNumCurrentActiveCards": "Reached max number of current active cards",
+    
+    "@_CardScreen": {},
+    "reachedMaxNumRedeems": "Reached max number of redeems",
+    "alreadyDeletedCard": "Card was already deleted",
+    "alreadyExpiredCard": "Card was already expired",
+    "alreadyDeletedStore": "Store was already deleted",
+    "max": "Max",
+    "deleteCardAlertTitle": "Delete this card?",
+    "deleteCardSuccess": "Deleted card!",
+
+    "@_CustomerDesignStampCardScreen": {},
+    "modifyCardAppBarTitle": "Modify Card",
+    "modifyCardSuccess": "Modified card!",
+    
+    "@_CustomerScreen": {},
+    "customersScreenAppBarTitle": "Customer's Screen",
+    
+    "@_MembershipScreen": {},
+    "customerMembership":"Customer Membership",
+    "ownerMembership":"Owner Membership",
+    "comingSoon": "Coming soon...",
+    "youAreNow": "You are now",
+    "free": "Free",
+    "pricePerMonth": "{monthlyPrice}/month}",
+    "@pricePerMonth": {
+        "placeholders": {
+            "monthlyPrice": {
+                "type": "String",
+                "example": "$1"
+            }
+        }
+    },
+
+    "@_OwnerDesignBlueprintScreen": {},
+    "newBlueprintAppBarTitle": "New Blueprint",
+    "modifyBlueprintAppBarTitle": "Modify Blueprint",
+    "aboutBlueprintDialogTitle": "About Blueprint",
+    "whatIsBlueprint": "Blueprint is the source of customer's card.",
+    "blueprintExplanationItem1": "1. Following details can be modified without limit:\n  - Display Name\n  - Description\n  - Max Issues per Customer\n  - Max Total Issues\n  - Publish Now",
+    "blueprintExplanationItem2": "2. Stamp Grant Conditions cannot be modified.",
+    "blueprintExplanationItem3": "3. Following numbers cannot be decreased:\n  - Max Stamps\n  - Max Redeems per Card",
+    "blueprintExplanationItem4": "4. Expiration Date can be modified but must always be after {modifyBlueprintExpDateMinRemainingFromNowFormatted} from now.",
+    "@blueprintExplanationItem4": {
+        "placeholders": {
+            "modifyBlueprintExpDateMinRemainingFromNowFormatted": {
+                "type": "String",
+                "example": "1d"
+            }
+        }
+    },
+    "blueprintExplanationItem5": "5. Blueprint cannot be seen by customers if Publish Now is disabled but still be seen by those with already issued card.",
+    "blueprintExplanationItem6": "6. Issued cards so far are still active even if Publish Now is disabled.",
+    "blueprintExplanationItem7": "7. Blueprint cannot be deleted. You must wait for expiration for deactivating blueprint.",
+    "cannotReduceMaxStamps": "Cannot reduce max stamps",
+    "failedToLoadNumPublishingBlueprintsOfStore": "Failed to load number of publishing blueprints of current store",
+    "reachedMaxNumPublishingBlueprintsOfStore": "Reached max number of publishing blueprints of store",
+    "createBlueprintAlertTitle": "Create Blueprint?",
+    "modifyBlueprintAlertTitle": "Modify Blueprint?",
+    "createPublishingBlueprintAlertContent": "This will take up 1 publishing blueprint of current store.",
+    "createBlueprintAlertContent": "This will take up 1 blueprint of current store.",
+    "createBlueprintSuccess": "Blueprint created!",
+    "modifyBlueprintSuccess": "Blueprint modified!",
+    "addRedeemRuleAlertContent": "This will take up 1 redeem rule of current blueprint.",
+    "reachedMaxNumCurrentTotalRedeemRulesPerBlueprint": "Reached max number of current total redeem rules per blueprint.",
+    "cannotAddRedeemRule": "Cannot add redeem rule",
+
+    "@_OwnerDesignRedeemRuleScreen": {},
+    "newRedeemRuleAppBarTitle": "New Redeem Rule",
+    "modifyRedeemRuleAppBarTitle": "Modify Redeem Rule",
+    "aboutRedeemRuleDialogTitle": "About Redeem Rule",
+    "whatIsRedeemRule": "Redeem rule defines one way for customers to consume collected stamps.",
+    "redeemRuleExplanationItem1": "1. Redeem rule is always active once created, until blueprint expires.",
+    "redeemRuleExplanationItem2": "2. Following details can be modified without limit:\n  - Display Name\n  - Description",
+    "redeemRuleExplanationItem3": "3. Consumes can be modified but cannot exceed blueprint's Max Stamps.",
+
+    "@_OwnerDesignStoreScreen": {},
+    "newStoreAppBarTitle": "New Store",
+    "modifyStoreAppBarTitle": "Modify Store",
+    "createStoreAlertTitle": "Create Store?",
+    "modifyStoreAlertTitle": "Modify Store?",
+    "createStoreAlertContent": "This will take up 1 active store.",
+    "createStoreSuccess": "Store created!",
+    "modifyStoreSuccess": "Store modified!",
+    "aboutStoreDialogTitle": "About Store",
+    "whatIsStore": "Store is where you design and publish your own blueprints.",
+    "storeExplanationItem1": "1. Newly created store is active.",
+    "storeExplanationItem2": "2. Store has its own Store QR to share its detail with customers.",
+    "storeExplanationItem3": "3. Active store's every detail can be modified without limit.",
+    "storeExplanationItem4": "4. Active store can define blueprints.",
+    "storeExplanationItem5": "5. Active store can be closed if there is no active blueprint in the store.",
+    "storeExplanationItem6": "6. Closed store cannot be activated again.",
+    "storeExplanationItem7": "7. Closed store's details cannot be modified.",
+    "storeExplanationItem8": "8. Closed store still can be seen to customers.",
+    "storeExplanationItem9": "9. Closed store is automatically deleted in {softDeleteClosedStoreFormatted}.",
+    "@storeExplanationItem9": {
+        "placeholders": {
+            "softDeleteClosedStoreFormatted": {
+                "type": "String"
+            }
+        }
+    },
+
+    "@_OwnerGrantStampsScreen": {},
+    "grantStampsAppBarTitle": "Grant Stamps",
+    "upToMaxStampsAllowed": "Up to {maxGrant} stamps allowed",
+    "@upToMaxStampsAllowed": {
+        "placeholders": {
+            "maxGrant": {
+                "type": "int"
+            }
+        }
+    },
+    "grantStampsSuccess": "Grant successful!",
+
+    "@_OwnerScreen": {},
+    "ownersScreenAppBarTitle": "Owner's Screen",
+    "cannotCreateStore": "Cannot create store",
+    "cannotFindOwnerMembership": "Cannot find owner membership. Please sign in again.",
+    "failedToLoadNumAccumulatedTotalStores": "Failed to load number of accumulated total stores",
+    "reachedMaxNumAccumulatedTotalStores": "Reached max number of accumulated total stores",
+    "failedToLoadNumCurrentTotalStores": "Failed to load number of current total stores",
+    "reachedMaxNumCurrentTotalStores": "Reached max number of current total stores",
+    "failedToLoadNumCurrentActiveStores": "Failed to load number of current active stores",
+    "reachedMaxNumCurrentActiveStores": "Reached max number of current active stores",
+    "aboutRedeemRequestDialogTitle": "About Redeem Request",
+    "whatIsRedeemRequest": "Redeem request is instant request from your customers to consume stamps.",
+    "redeemRequestExplanationItem1": "1. Tap refresh button to get current redeem requests.",
+    "redeemRequestExplanationItem2": "2. Customers can make redeem request whenever there is any satisfied redeem rule in their cards.",
+    "redeemRequestExplanationItem3": "3. Redeem request is short-lived, only for {watchRedeemRequestDurationFormatted} from creation.",
+    "@redeemRequestExplanationItem3": {
+        "placeholders": {
+            "watchRedeemRequestDurationFormatted": {
+                "type": "String"
+            }
+        }
+    },
+    "redeemRequestExplanationItem4": "4. Once approved, redeem rule's Consumes will be deducted in the card's collected stamps.",
+    "redeemRequestExplanationItem5": "5. Owner is responsible for granting promised rewards to customer after approval.",
+
+    "@_RedeemDialogScreen": {},
+    "notEnoughStamps": "Not enough stamps!",
+    "consumeStamps": "Consume {consumes} stamps to get reward",
+    "@consumeStamps": {
+        "placeholders": {
+            "consumes": {
+                "type": "int"
+            }
+        }
+    },
+    "redeemSuccess": "Redeem successful!",
+    "awaitingOwnersApproval": "Awaiting owner's approval",
+    "sendingRedeemRequest": "Sending redeem request to owner...",
+    
+    "@_RedeemRequestDialogScreen": {},
+    "requestAlreadyExpired": "Request already expired",
+    "alreadyRedeemed": "Already redeemed",
+    "customerDisplayNamesRedeemRequest": "{customerDisplayName}'s Redeem Request",
+    "@customerDisplayNamesRedeemRequest": {
+        "placeholders": {
+            "customerDisplayName": {
+                "type": "String"
+            }
+        }
+    },
+    "consumesStampsBy": "Consumes {consumes} stamps by...",
+    "@consumesStampsBy": {
+        "placeholders": {
+            "consumes": {
+                "type": "int"
+            }
+        }
+    },
+    "cannotApprove": "Cannot approve",
+    "approving": "Approving",
+    "approveSuccess": "Approved redeem request!",
+    
+    "@_ScanQrScreen": {},
+    "scanStoreQrAppBarTitle": "Scan Store QR",
+    "scanCardQrAppBarTitle": "Scan Card QR",
+    "toggleFlash": "Toggle Flash",
+    "flipCamera": "Flip Camera",
+    "loading": "Loading...",
+    "inactiveCard": "Inactive card",
+    "inactiveStore": "Inactive store",
+    "needsPermission": "Needs permission",
+
+    "@_StoreScreen": {},
+    "failedToLoadNumCurrentTotalBlueprintsOfStore": "Failed to load number of current total blueprints of store",
+    "reachedMaxNumCurrentTotalBlueprintsOfStore": "Reached max number of current total blueprints of store",
+    "storeClosed": "Store was already closed",
+    "blueprintsBeingPublished": "Blueprints being Published",
+    "noPublishingBlueprints": "No publishing blueprints!",
+    "cannotCloseStore": "Cannot close store",
+
+    "@_LoadingMessages": {},
+    "loadingBlueprint": "Loading Blueprint...",
+    "loadingBlueprints": "Loading Blueprints...",
+    "loadingCard": "Loading Card...",
+    "loadingUser": "Loading User...",
+    "loadingStore": "Loading Store...",
+    "loadingRedeemRequest": "Loading Redeem Request...",
+
+    "@_ButtonTexts": {},
+    "approve": "Approve",
+    "back": "Back",
+    "delete": "Delete",
+    "modify": "Modify",
+    "create": "Create",
+    "storeInfo": "Store Info",
+    "deleteCard": "Delete Card",
+    "cards": "Cards",
+    "store": "Store",
+    "stores": "Stores",
     "customer": "Customer",
-    "owner": "Owner",
     "membership": "Membership",
-    "privacyPolicy": "Privacy Policy"
+    "owner": "Owner",
+    "proceed": "Proceed",
+    "privacyPolicy": "Privacy Policy",
+    "grantStamps": "Grant Stamps",
+    "redeemRequests": "Redeem Requests",
+    "blueprint": "Blueprint",
+    "showStoreQr": "Show Store QR",
+    "closeStore": "Close Store",
+    "cannotCreateBlueprint": "Cannot create blueprint",
+    "closeStoreAlertTitle": "Close this store?",
+    "closedStoreWillBeDeletedAutomatically": "Closed store will be deleted in {softDeleteClosedStoreFormatted} automatically.",
+    "@closedStoreWillBeDeletedAutomatically": {
+        "placeholders": {
+            "softDeleteClosedStoreFormatted": {
+                "type": "String"
+            }
+        }
+    },
+    "closeStoreSuccess": "Closed store!",
+    "refreshStoreSuccess": "Refreshed store!",
+    "storeQrTitle": "Store QR",
+    "letCustomersScan": "Let customers scan!",
+    
+    "@_BlueprintInfo": {},
+    "rewards": "Rewards",
+    "noRewards": "No rewards!",
+    
+    "@_CardInfo": {},
+    "hasntComeYet": "Hasn't come yet",
+    "lastModified": "Last modified",
+    "expiredIn": "Expires in",
+    "ago": "{durationFormatted} ago",
+    "@ago": {
+        "placeholders": {
+            "durationFormatted": {
+                "type": "String"
+            }
+        }
+    },
+    "left": "{durationFormatted} left",
+    "@left": {
+        "placeholders": {
+            "durationFormatted": {
+                "type": "String"
+            }
+        }
+    },
+    
+    "@_CardsListItemCard": {},
+    "noImage": "No Image",
+    
+    "@_CardsList": {},
+    "noDataFound": "No data found!",
+    
+    "@_Carol": {},
+    "serverError": "Server failed to process your data. Please contact administrator if this problem persists.",
+    "dataStaleSignInAgain": "Your data looks stale. Please sign in again.",
+    "dataStaleRefresh": "Your data looks stale. Please refresh and try again.",
+    "credentialStaleSignInAgain": "Your credential looks stale. Please sign in again.",
+    "serverBusy": "Server looks busy. Please wait a while and try again.",
+    "serverMaintenance": "Server is under maintenance. Please wait a while try again.",
+    "unexpectedError": "Unexpected error occured",
+    
+    "@_FormFields": {},
+    "displayName": "Display Name",
+    "textLengthViolationMessage": "Must be {min}~{max} characters long",
+    "@textLengthViolationMessage": {
+        "placeholders": {
+            "min": {
+                "type": "int",
+                "example": "1"
+            },
+            "max": {
+                "type": "int",
+                "example": "30"
+            }
+        }
+    },
+    "description": "Description",
+    "stampGrantConditions": "Stamp Grant Conditions",
+    "maxStamps": "Max Stamps",
+    "maxRedeemsPerCard": "Max Redeems per Card",
+    "maxIssuesPerCustomer": "Max Issues per Customer",
+    "maxTotalIssues": "Max Total Issues",
+    "noLimit": "No limit",
+    "redeemRules": "Redeem Rules",
+    "expirationDate": "Expiration Date",
+    "expirationDateFirstDateViolationMessage": "Expiration date must be after {firstDateFormatted}.\nChoose date again.",
+    "@expirationDateFirstDateViolationMessage": {
+        "placeholders": {
+            "firstDateFormatted": {
+                "type": "String"
+            }
+        }
+    },
+    "publishNow": "Publish Now",
+    "noDateSelected": "No date selected",
+    "consumes": "Consumes",
+    "zipcode": "Zipcode",
+    "address": "Address",
+    "phone": "Phone",
+    "latitude": "Latitude",
+    "longitude": "Longitude",
+    "grant": "Grant",
+    "yourGoal": "Your Goal",
+    "stamps": "stamps",
+    "lostBlueprintData": "Lost blueprint data... Refresh and try again.",
+    "integerViolationMessage": "Must be integer",
+    "integerLowerboundViolationMessage": "Must be {lowerbound}+ integer",
+    "@integerLowerboundViolationMessage": {
+        "placeholders": {
+            "lowerbound": {
+                "type": "int",
+                "example": "1"
+            }
+        }
+    },
+    "integerRangeViolationMessage": "Must be {min}~{max} integer",
+    "@integerRangeViolationMessage": {
+        "placeholders": {
+            "min": {
+                "type": "int",
+                "example": "1"
+            },
+            "max": {
+                "type": "int",
+                "example": "30"
+            }
+        }
+    },
+    "floatRangeViolationMessage": "Must be {min}~{max} float",
+    "@floatRangeViolationMessage": {
+        "placeholders": {
+            "min": {
+                "type": "double",
+                "format": "decimalPattern",
+                "example": "1.0"
+            },
+            "max": {
+                "type": "double",
+                "format": "decimalPattern",
+                "example": "30.0"
+            }
+        }
+    },
+    
+    "@_ErrorMessages": {},
+    "failedToAuthenticate": "Failed to authenticate. Please contact admin.",
+    "failedToAutoSignIn": "Failed to auto-sign-in. Please sign in manually.",
+    "failedToCloseStore": "Failed to close store",
+    "failedToDeleteAccount": "Failed to delete account",
+    "failedToDeleteCard": "Failed to delete card",
+    "failedToGrantStamps": "Failed to grant stamps",
+    "failedToLoadAppNotices": "Failed to load application notices",
+    "failedToLoadCustomerModels": "Failed to load customer models",
+    "failedToLoadCustomersCardAndBlueprint": "Failed to load customer's card and blueprint",
+    "failedToLoadOwnerModels": "Failed to load owner models",
+    "failedToLoadCard": "Failed to load card",
+    "failedToLoadNewlyCreatedCard": "Failed to load newly created card",
+    "failedToLoadNewlyCreatedBlueprint": "Failed to load newly created blueprint",
+    "failedToLoadNewlyCreatedStore": "Failed to load newly created store",
+    "failedToLoadModifiedBlueprint": "Failed to load modified blueprint",
+    "failedToLoadRedeemRules": "Failed to load redeem rules",
+    "failedToLoadBlueprint": "Failed to load blueprint",
+    "failedToLoadBlueprints": "Failed to load blueprints",
+    "failedToLoadRedeemRequests": "Failed to load redeem requests.",
+    "failedToLoadStore": "Failed to load store",
+    "failedToModifyCard": "Failed to modify card",
+    "failedToModifyBlueprint": "Failed to modify blueprint",
+    "failedToModifyStore": "Failed to modify store",
+    "failedToSignIn": "Failed to sign in",
+    "failedToIssueCard": "Failed to issue card",
+    "failedToSaveNewCard": "Failed to save new card",
+    "failedToSaveNewBlueprint": "Failed to save new blueprint",
+    "failedToSaveNewStore": "Failed to save new store",
+    "failedToSaveNewRedeemRequest": "Failed to save new redeem request",
+    "failedToRedeem": "Failed to redeem",
+    "failedToCheckRedeemExists": "Failed to check redeem exists",
+    "failedToCheckRedeemRequestExists": "Failed to check redeem request exists",
+    "failedToCancelRedeemRequest": "Failed to cancel redeem request",
+    "failedToApproveRedeemRequest": "Failed to approve redeem request",
+    "failedToToggleFavorite": "Failed to toggle favorite",
+    "followingStoresStillExist": "Following stores still exist",
+    "followingBlueprintsAreStillPublishing": "Following blueprints are still publishing",
+    "invalidStateToken": "Invalid state token",
+    "lostData": "Lost data... Refresh and try again.",
+    "lostCardData": "Lost card data... Refresh and try again.",
+    "lostStoreData": "Lost store data... Refresh and try again.",
+    "lostPkceData": "Lost PKCE data",
+    "receivedInvalidOidcToken": "Received invalid OIDC token",
+    "signInAgain": "Sign in again"
 }

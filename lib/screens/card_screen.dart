@@ -16,6 +16,7 @@ import 'package:carol/widgets/common/loading.dart';
 import 'package:carol/widgets/redeem_rules_explorer/redeem_rules_list.dart';
 import 'package:carol/widgets/stores_explorer/stores_list.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
@@ -33,14 +34,16 @@ class CardScreen extends ConsumerStatefulWidget {
 }
 
 class _CardScreenState extends ConsumerState<CardScreen> {
+  late AppLocalizations _localizations;
   var _isDeleting = false;
   var _isRefreshCooling = false;
 
   @override
   Widget build(BuildContext context) {
+    _localizations = AppLocalizations.of(context)!;
     final watchedCard = ref.watch(customerCardScreenCardProvider);
     if (watchedCard?.blueprint?.redeemRules == null) {
-      return const Loading(message: 'Loading Card...');
+      return Loading(message: _localizations.loadingCard);
     }
 
     final card = watchedCard!;
@@ -64,7 +67,7 @@ class _CardScreenState extends ConsumerState<CardScreen> {
                       color: Theme.of(context).colorScheme.error),
                   const SizedBox(width: 8),
                   Text(
-                    'Card had been USED OUT.',
+                    _localizations.reachedMaxNumRedeems,
                     textAlign: TextAlign.start,
                     style: TextStyle(
                         color:
@@ -79,7 +82,7 @@ class _CardScreenState extends ConsumerState<CardScreen> {
                       color: Theme.of(context).colorScheme.error),
                   const SizedBox(width: 8),
                   Text(
-                    'Card was already DELETED.',
+                    _localizations.alreadyDeletedCard,
                     textAlign: TextAlign.start,
                     style: TextStyle(
                         color:
@@ -94,7 +97,7 @@ class _CardScreenState extends ConsumerState<CardScreen> {
                       color: Theme.of(context).colorScheme.error),
                   const SizedBox(width: 8),
                   Text(
-                    'Card was already EXPIRED.',
+                    _localizations.alreadyExpiredCard,
                     textAlign: TextAlign.start,
                     style: TextStyle(
                         color:
@@ -109,7 +112,7 @@ class _CardScreenState extends ConsumerState<CardScreen> {
                       color: Theme.of(context).colorScheme.error),
                   const SizedBox(width: 8),
                   Text(
-                    'Store was already DELETED.',
+                    _localizations.alreadyDeletedStore,
                     textAlign: TextAlign.start,
                     style: TextStyle(
                         color:
@@ -135,7 +138,7 @@ class _CardScreenState extends ConsumerState<CardScreen> {
             ),
       ),
       label: Text(
-        'Store Info',
+        _localizations.storeInfo,
         style: TextStyle(
           color: Theme.of(context).colorScheme.onPrimary.withOpacity(
                 isStoreDeleted ? 0.5 : 1.0,
@@ -157,7 +160,7 @@ class _CardScreenState extends ConsumerState<CardScreen> {
           ? CircularProgressIndicatorInButton(
               color: Theme.of(context).colorScheme.onErrorContainer)
           : Text(
-              'Delete Card',
+              _localizations.deleteCard,
               style: TextStyle(
                 color: Theme.of(context).colorScheme.onErrorContainer,
               ),
@@ -207,7 +210,7 @@ class _CardScreenState extends ConsumerState<CardScreen> {
                 Padding(
                   padding: DesignUtils.basicWidgetEdgeInsets(.5),
                   child: Text(
-                    'Max: ${blueprint.numMaxStamps}',
+                    '${_localizations.max}: ${blueprint.numMaxStamps}',
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.onSecondary,
                     ),
@@ -288,7 +291,7 @@ class _CardScreenState extends ConsumerState<CardScreen> {
       // Ignore store == null scenario: many-to-one
       // Ignore blueprint == null scenario: many-to-one
       Carol.showTextSnackBar(
-        text: 'Lost data... Refresh and try again.',
+        text: _localizations.lostData,
         level: SnackBarLevel.warn,
       );
       return;
@@ -307,7 +310,8 @@ class _CardScreenState extends ConsumerState<CardScreen> {
     } on Exception catch (e) {
       Carol.showExceptionSnackBar(
         e,
-        contextMessage: 'Failed to get blueprints information.',
+        contextMessage: _localizations.failedToLoadBlueprints,
+        localizations: _localizations,
       );
       return;
     }
@@ -340,7 +344,7 @@ class _CardScreenState extends ConsumerState<CardScreen> {
                   Column(
                     children: [
                       Text(
-                        'Delete this card?',
+                        _localizations.deleteCardAlertTitle,
                         style: Theme.of(context)
                             .textTheme
                             .headlineSmall!
@@ -349,7 +353,7 @@ class _CardScreenState extends ConsumerState<CardScreen> {
                             ),
                       ),
                       Text(
-                        '(cannot undo)',
+                        _localizations.alertContentCannotUndo,
                         style: Theme.of(context)
                             .textTheme
                             .titleMedium!
@@ -375,7 +379,7 @@ class _CardScreenState extends ConsumerState<CardScreen> {
                       Navigator.of(ctx).pop();
                     },
                     child: Text(
-                      'Back',
+                      _localizations.back,
                       style: TextStyle(
                           color: Theme.of(context).colorScheme.onBackground),
                     ),
@@ -387,7 +391,7 @@ class _CardScreenState extends ConsumerState<CardScreen> {
                       ),
                       onPressed: _deleteCard,
                       child: Text(
-                        'Delete',
+                        _localizations.delete,
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.onErrorContainer,
                         ),
@@ -427,7 +431,7 @@ class _CardScreenState extends ConsumerState<CardScreen> {
     if (card.blueprint == null) {
       // Ignore blueprint == null scenario: many-to-one
       Carol.showTextSnackBar(
-        text: 'Lost data... Refresh and try again.',
+        text: _localizations.lostData,
         level: SnackBarLevel.warn,
       );
       return;
@@ -456,7 +460,8 @@ class _CardScreenState extends ConsumerState<CardScreen> {
     } on Exception catch (e) {
       Carol.showExceptionSnackBar(
         e,
-        contextMessage: 'Failed to delete card.',
+        contextMessage: _localizations.failedToDeleteCard,
+        localizations: _localizations,
       );
       return;
     }
@@ -474,7 +479,7 @@ class _CardScreenState extends ConsumerState<CardScreen> {
     cardNotifier.set(deletedCard);
 
     Carol.showTextSnackBar(
-      text: 'Deleted card!',
+      text: _localizations.deleteCardSuccess,
       level: SnackBarLevel.success,
     );
 
@@ -501,7 +506,8 @@ class _CardScreenState extends ConsumerState<CardScreen> {
     } on Exception catch (e) {
       Carol.showExceptionSnackBar(
         e,
-        contextMessage: 'Failed to get card information.',
+        contextMessage: _localizations.failedToLoadCard,
+        localizations: _localizations,
       );
       return;
     }
@@ -509,7 +515,7 @@ class _CardScreenState extends ConsumerState<CardScreen> {
     var fetchedBlueprint = fetchedCard.blueprint;
     if (fetchedBlueprint == null) {
       Carol.showTextSnackBar(
-        text: 'Failed to get blueprint information.',
+        text: _localizations.failedToLoadBlueprint,
         level: SnackBarLevel.error,
       );
       return;

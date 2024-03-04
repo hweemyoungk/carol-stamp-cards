@@ -1,5 +1,6 @@
 import 'package:carol/utils.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 /// Has following behavior.
 /// <ul>Pressing <code>Back</code> button will pop dialog and yield <code>false</code>.</ul>
@@ -24,6 +25,7 @@ class ProceedAlertDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     return AlertDialog(
       title: title,
       content: SingleChildScrollView(
@@ -45,7 +47,7 @@ class ProceedAlertDialog extends StatelessWidget {
                         Navigator.of(context).pop(false);
                       },
                       child: Text(
-                        'Back',
+                        localizations.back,
                         textAlign: TextAlign.end,
                         style: TextStyle(
                             color: Theme.of(context).colorScheme.onBackground),
@@ -63,7 +65,7 @@ class ProceedAlertDialog extends StatelessWidget {
                         Navigator.of(context).pop(true);
                       },
                       child: Text(
-                        proceedButtonString ?? 'Proceed',
+                        proceedButtonString ?? localizations.proceed,
                         textAlign: TextAlign.end,
                         style: TextStyle(
                             color: proceedButtonStringColor ??

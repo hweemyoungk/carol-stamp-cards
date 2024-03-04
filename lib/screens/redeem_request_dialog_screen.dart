@@ -7,6 +7,7 @@ import 'package:carol/utils.dart';
 import 'package:carol/widgets/common/loading.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 final ownerRedeemRequestDialogRedeemRequestProvider =
     StateNotifierProvider<RedeemRequestNotifier, RedeemRequest?>(
@@ -26,25 +27,26 @@ class RedeemRequestDialogScreen extends ConsumerStatefulWidget {
 
 class _RedeemRequestDialogScreenState
     extends ConsumerState<RedeemRequestDialogScreen> {
+  late AppLocalizations _localizations;
   ApprovalStatus _status = ApprovalStatus.notApprovable;
   String? _notApprovableReason;
 
   void _checkApprovable(RedeemRequest redeemRequest) {
     // redeem request expired?
     if (redeemRequest.expired) {
-      _notApprovableReason = 'Request already expired';
+      _notApprovableReason = _localizations.requestAlreadyExpired;
       return;
     }
 
     // redeem request already redeemed?
     if (redeemRequest.isRedeemed) {
-      _notApprovableReason = 'Already redeemed';
+      _notApprovableReason = _localizations.alreadyRedeemed;
       return;
     }
 
     // blueprint expired?
     if (redeemRequest.redeemRule!.blueprint!.isExpired) {
-      _notApprovableReason = 'Blueprint already expired';
+      _notApprovableReason = _localizations.blueprintExpired;
       return;
     }
 
@@ -53,12 +55,13 @@ class _RedeemRequestDialogScreenState
 
   @override
   Widget build(BuildContext context) {
+    _localizations = AppLocalizations.of(context)!;
     var redeemRequest =
         ref.watch(ownerRedeemRequestDialogRedeemRequestProvider);
 
     if (redeemRequest?.redeemRule?.blueprint?.store == null) {
-      return const Loading(
-        message: 'Loading redeem request...',
+      return Loading(
+        message: _localizations.loadingRedeemRequest,
       );
     }
 
@@ -80,7 +83,8 @@ class _RedeemRequestDialogScreenState
           );
 
     return AlertDialog(
-      title: Text('${redeemRequest.customerDisplayName}\'s Redeem Request'),
+      title: Text(_localizations.customerDisplayNamesRedeemRequest(
+          redeemRequest.customerDisplayName)),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -90,7 +94,7 @@ class _RedeemRequestDialogScreenState
             Padding(
               padding: DesignUtils.basicWidgetEdgeInsets(),
               child: Text(
-                'Consumes ${redeemRule.consumes} stamps by...',
+                _localizations.consumesStampsBy(redeemRule.consumes),
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.titleLarge,
               ),
@@ -117,7 +121,7 @@ class _RedeemRequestDialogScreenState
             Padding(
               padding: DesignUtils.basicWidgetEdgeInsets(),
               child: Text(
-                'Blueprint',
+                _localizations.blueprint,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.titleLarge,
               ),
@@ -129,7 +133,7 @@ class _RedeemRequestDialogScreenState
             Padding(
               padding: DesignUtils.basicWidgetEdgeInsets(),
               child: Text(
-                'Store',
+                _localizations.store,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.titleLarge,
               ),
@@ -155,12 +159,12 @@ class _RedeemRequestDialogScreenState
         style: ElevatedButton.styleFrom(
             disabledBackgroundColor:
                 Theme.of(context).colorScheme.errorContainer),
-        child: Text(_notApprovableReason ?? 'Cannot approve'),
+        child: Text(_notApprovableReason ?? _localizations.cannotApprove),
       );
     } else if (_status == ApprovalStatus.approvable) {
       return ElevatedButton(
         onPressed: _onPressApprove,
-        child: const Text('Approve'),
+        child: Text(_localizations.approve),
       );
     } else if (_status == ApprovalStatus.approving) {
       return ElevatedButton(
@@ -170,7 +174,7 @@ class _RedeemRequestDialogScreenState
               Theme.of(context).colorScheme.tertiaryContainer,
         ),
         child: Text(
-          'Approving',
+          _localizations.approving,
           style: TextStyle(
             color: Theme.of(context).colorScheme.onTertiaryContainer,
           ),
@@ -220,7 +224,8 @@ class _RedeemRequestDialogScreenState
       await Future.delayed(durationOneSecond);
       Carol.showExceptionSnackBar(
         e,
-        contextMessage: 'Failed to approve redeem request.',
+        contextMessage: _localizations.failedToApproveRedeemRequest,
+        localizations: _localizations,
       );
       if (!mounted) return;
       Navigator.of(context).pop();
@@ -237,7 +242,7 @@ class _RedeemRequestDialogScreenState
     }
     await Future.delayed(durationOneSecond);
     Carol.showTextSnackBar(
-      text: 'Approved redeem request!',
+      text: _localizations.approveSuccess,
       level: SnackBarLevel.success,
     );
 

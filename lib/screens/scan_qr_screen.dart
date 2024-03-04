@@ -15,18 +15,20 @@ import 'package:carol/widgets/stores_explorer/stores_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ScanQrScreen extends ConsumerStatefulWidget {
   const ScanQrScreen({Key? key}) : super(key: key);
 
   @override
-  ConsumerState<ScanQrScreen> createState() => _OwnerScanQrScreenState();
+  ConsumerState<ScanQrScreen> createState() => _ScanQrScreenState();
 }
 
-class _OwnerScanQrScreenState extends ConsumerState<ScanQrScreen> {
+class _ScanQrScreenState extends ConsumerState<ScanQrScreen> {
+  final GlobalKey _qrKey = GlobalKey();
+  late AppLocalizations _localizations;
   dynamic _qr;
   QRViewController? _controller;
-  final GlobalKey _qrKey = GlobalKey();
 
   // In order to get hot reload to work we need to pause the camera if the platform
   // is android, or resume the camera if the platform is iOS.
@@ -41,10 +43,11 @@ class _OwnerScanQrScreenState extends ConsumerState<ScanQrScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _localizations = AppLocalizations.of(context)!;
     final activeDrawerItem = ref.read(activeDrawerItemProvider);
     final title = activeDrawerItem == DrawerItemEnum.customer
-        ? 'Scan Store QR'
-        : 'Scan Card QR';
+        ? _localizations.scanStoreQrAppBarTitle
+        : _localizations.scanCardQrAppBarTitle;
     return Scaffold(
       appBar: AppBar(title: Text(title)),
       body: Column(
@@ -74,7 +77,7 @@ class _OwnerScanQrScreenState extends ConsumerState<ScanQrScreen> {
                           child: FutureBuilder(
                             future: _controller?.getFlashStatus(),
                             builder: (context, snapshot) {
-                              return const Text('Toggle Flash');
+                              return Text(_localizations.toggleFlash);
                             },
                           ),
                         ),
@@ -90,9 +93,9 @@ class _OwnerScanQrScreenState extends ConsumerState<ScanQrScreen> {
                             future: _controller?.getCameraInfo(),
                             builder: (context, snapshot) {
                               if (snapshot.data != null) {
-                                return const Text('Flip camera');
+                                return Text(_localizations.flipCamera);
                               } else {
-                                return const Text('Loading...');
+                                return Text(_localizations.loading);
                               }
                             },
                           ),
@@ -134,7 +137,7 @@ class _OwnerScanQrScreenState extends ConsumerState<ScanQrScreen> {
   Future<void> _handleCardQr(SimpleCardQr qr) async {
     if (qr.isInactive) {
       if (mounted) {
-        Carol.showTextSnackBar(text: 'Inactive card');
+        Carol.showTextSnackBar(text: _localizations.inactiveCard);
         Navigator.of(context).pop();
       }
       return;
@@ -159,8 +162,8 @@ class _OwnerScanQrScreenState extends ConsumerState<ScanQrScreen> {
     } on Exception catch (e) {
       Carol.showExceptionSnackBar(
         e,
-        contextMessage:
-            'Failed to get customer\'s stamp card and blueprint information.',
+        contextMessage: _localizations.failedToLoadCustomersCardAndBlueprint,
+        localizations: _localizations,
       );
       if (mounted) {
         Navigator.of(context).pop();
@@ -173,7 +176,7 @@ class _OwnerScanQrScreenState extends ConsumerState<ScanQrScreen> {
     // Blueprint must be active
     if (blueprint.isExpired) {
       Carol.showTextSnackBar(
-        text: 'Card is already expired',
+        text: _localizations.blueprintExpired,
         level: SnackBarLevel.error,
       );
       if (!mounted) return;
@@ -192,7 +195,7 @@ class _OwnerScanQrScreenState extends ConsumerState<ScanQrScreen> {
   void _handleStoreQr(SimpleStoreQr qr) {
     if (qr.isInactive) {
       Carol.showTextSnackBar(
-        text: 'Invalid store',
+        text: _localizations.inactiveStore,
         level: SnackBarLevel.info,
       );
       if (mounted) {
@@ -229,7 +232,8 @@ class _OwnerScanQrScreenState extends ConsumerState<ScanQrScreen> {
     } on Exception catch (e) {
       Carol.showExceptionSnackBar(
         e,
-        contextMessage: 'Failed to get store information.',
+        contextMessage: _localizations.failedToLoadStore,
+        localizations: _localizations,
       );
       return;
     }
@@ -243,7 +247,8 @@ class _OwnerScanQrScreenState extends ConsumerState<ScanQrScreen> {
       } on Exception catch (e) {
         Carol.showExceptionSnackBar(
           e,
-          contextMessage: 'Failed to get blueprints information.',
+          contextMessage: _localizations.failedToLoadBlueprints,
+          localizations: _localizations,
         );
         return;
       }
@@ -302,7 +307,7 @@ class _OwnerScanQrScreenState extends ConsumerState<ScanQrScreen> {
   void _onPermissionSet(BuildContext context, QRViewController ctrl, bool p) {
     // log('${DateTime.now().toIso8601String()}_onPermissionSet $p');
     if (!p) {
-      Carol.showTextSnackBar(text: 'Needs permission');
+      Carol.showTextSnackBar(text: _localizations.needsPermission);
     }
   }
 

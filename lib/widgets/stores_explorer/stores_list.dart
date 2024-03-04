@@ -4,6 +4,7 @@ import 'package:carol/widgets/main_drawer.dart';
 import 'package:carol/widgets/stores_explorer/stores_list_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 final ownerStoresListStoresProvider =
     StateNotifierProvider<StoresNotifier, List<Store>?>(
@@ -20,7 +21,9 @@ class StoresList extends ConsumerStatefulWidget {
 }
 
 class _StoresListState extends ConsumerState<StoresList> {
+  late AppLocalizations _localizations;
   late StateNotifierProvider<StoresNotifier, List<Store>?> _storesProvider;
+
   @override
   void initState() {
     super.initState();
@@ -38,6 +41,7 @@ class _StoresListState extends ConsumerState<StoresList> {
 
   @override
   Widget build(BuildContext context) {
+    _localizations = AppLocalizations.of(context)!;
     final stores = ref.watch(_storesProvider);
 
     return stores == null
@@ -45,7 +49,7 @@ class _StoresListState extends ConsumerState<StoresList> {
         : stores.isEmpty
             ? Center(
                 child: Text(
-                  'No data found!',
+                  _localizations.noDataFound,
                   style: Theme.of(context).textTheme.headlineSmall!.copyWith(
                         color: Theme.of(context).colorScheme.onBackground,
                       ),

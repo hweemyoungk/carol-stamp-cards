@@ -26,6 +26,7 @@ import 'package:carol/widgets/stores_explorer/stores_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 final customerStoreScreenStoreProvider =
     StateNotifierProvider<StoreNotifier, Store?>((ref) => StoreNotifier(null));
@@ -45,6 +46,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   final List<Widget> _newBlueprintAlertRows = [];
   final List<Widget> _closeStoreAlertRows = [];
 
+  late AppLocalizations _localizations;
   late StoreScreenMode _mode;
   late StateNotifierProvider<StoreNotifier, Store?> _storeProvider;
 
@@ -108,7 +110,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
           _canCloseStore = false;
           _closeStoreAlertRows.add(AlertRow(
             text:
-                'Following blueprints are still active:${activeBlueprints.fold('', (previousValue, element) => '$previousValue\n- ${element.displayName}')}',
+                '${_localizations.followingBlueprintsAreStillPublishing}:${activeBlueprints.fold('', (previousValue, element) => '$previousValue\n- ${element.displayName}')}',
           ));
         });
       }
@@ -147,14 +149,14 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   bool _violatedMembershipExists(User user) {
     if (user.customerMembership == null) {
       Carol.showTextSnackBar(
-        text: 'Cannot find owner membership. Please sign in again.',
+        text: _localizations.cannotFindOwnerMembership,
         level: SnackBarLevel.error,
       );
       if (mounted) {
         setState(() {
           _canCreateNewBlueprint = false;
-          _newBlueprintAlertRows.add(const AlertRow(
-            text: 'Cannot find owner membership. Please sign in again.',
+          _newBlueprintAlertRows.add(AlertRow(
+            text: _localizations.cannotFindOwnerMembership,
           ));
         });
       }
@@ -175,8 +177,8 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     final blueprints = ref.read(_storeProvider)?.blueprints;
     if (blueprints == null) {
       _canCreateNewBlueprint = false;
-      _newBlueprintAlertRows.add(const AlertRow(
-        text: 'Failed to get number of current total blueprints per store.',
+      _newBlueprintAlertRows.add(AlertRow(
+        text: _localizations.failedToLoadNumCurrentTotalBlueprintsOfStore,
       ));
       return true;
     }
@@ -188,8 +190,8 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       if (mounted) {
         setState(() {
           _canCreateNewBlueprint = false;
-          _newBlueprintAlertRows.add(const AlertRow(
-            text: 'Reached max of current total blueprints per store.',
+          _newBlueprintAlertRows.add(AlertRow(
+            text: _localizations.reachedMaxNumCurrentTotalBlueprintsOfStore,
           ));
         });
       }
@@ -199,14 +201,15 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _localizations = AppLocalizations.of(context)!;
     final store = ref.watch(_storeProvider);
     if (store == null) {
-      return const Loading(message: 'Loading Store...');
+      return Loading(message: _localizations.loadingStore);
     }
 
     final blueprints = store.blueprints?.toList();
     if (blueprints == null) {
-      return const Loading(message: 'Loading Blueprints...');
+      return Loading(message: _localizations.loadingBlueprints);
     }
 
     final onSecondary = Theme.of(context).colorScheme.onSecondary;
@@ -225,7 +228,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                       color: Theme.of(context).colorScheme.error),
                   const SizedBox(width: 8),
                   Text(
-                    'Store was already CLOSED.',
+                    _localizations.storeClosed,
                     textAlign: TextAlign.start,
                     style: TextStyle(
                         color:
@@ -345,7 +348,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         Padding(
           padding: DesignUtils.basicWidgetEdgeInsets(),
           child: Text(
-            'About Store',
+            _localizations.aboutStoreDialogTitle,
             style: Theme.of(context).textTheme.titleLarge!.copyWith(
                   color: onSecondary,
                 ),
@@ -377,7 +380,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
-          'Blueprints being Published',
+          _localizations.blueprintsBeingPublished,
           style: Theme.of(context).textTheme.titleLarge!.copyWith(
                 color: onSecondary,
               ),
@@ -413,7 +416,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         blueprintsToDisplay.isEmpty
             ? Padding(
                 padding: DesignUtils.basicWidgetEdgeInsets(),
-                child: const Text('No publishing blueprints!'),
+                child: Text(_localizations.noPublishingBlueprints),
               )
             : ListView.builder(
                 shrinkWrap: true,
@@ -518,7 +521,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         color: Theme.of(context).colorScheme.onPrimary,
       ),
       label: Text(
-        'Show Store QR',
+        _localizations.showStoreQr,
         style: TextStyle(
           color: Theme.of(context).colorScheme.onPrimary,
         ),
@@ -543,7 +546,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
           ? CircularProgressIndicatorInButton(
               color: Theme.of(context).colorScheme.onErrorContainer)
           : Text(
-              'Close Store',
+              _localizations.closeStore,
               style: TextStyle(
                 color: Theme.of(context).colorScheme.onErrorContainer,
               ),
@@ -675,7 +678,8 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       } on Exception catch (e) {
         Carol.showExceptionSnackBar(
           e,
-          contextMessage: 'Failed to get redeem rules.',
+          contextMessage: _localizations.failedToLoadRedeemRules,
+          localizations: _localizations,
         );
         return;
       }
@@ -723,7 +727,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       context: context,
       builder: (ctx) {
         return AlertDialog(
-          title: const Text('Cannot create blueprint'),
+          title: Text(_localizations.cannotCreateBlueprint),
           content: SingleChildScrollView(
             child: Center(
               child: Column(
@@ -757,7 +761,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                   Column(
                     children: [
                       Text(
-                        'Close this store?',
+                        _localizations.closeStoreAlertTitle,
                         style: Theme.of(context)
                             .textTheme
                             .headlineSmall!
@@ -766,7 +770,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                             ),
                       ),
                       Text(
-                        '(cannot undo)',
+                        _localizations.alertContentCannotUndo,
                         style: Theme.of(context)
                             .textTheme
                             .titleMedium!
@@ -780,7 +784,11 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
               ),
             ),
             Text(
-              'Closed store will be deleted in ${formatSeconds(softDeleteClosedStoreInSeconds)} automatically.',
+              _localizations
+                  .closedStoreWillBeDeletedAutomatically(formatSeconds(
+                softDeleteClosedStoreInSeconds,
+                localizations: _localizations,
+              )),
               style: Theme.of(context).textTheme.titleMedium!.copyWith(
                     color: Theme.of(context).colorScheme.onBackground,
                   ),
@@ -798,7 +806,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                       Navigator.of(ctx).pop();
                     },
                     child: Text(
-                      'Back',
+                      _localizations.back,
                       style: TextStyle(
                           color: Theme.of(context).colorScheme.onBackground),
                     ),
@@ -810,7 +818,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                       ),
                       onPressed: _closeStore,
                       child: Text(
-                        'Proceed',
+                        _localizations.proceed,
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.onErrorContainer,
                         ),
@@ -830,7 +838,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       context: context,
       builder: (ctx) {
         return AlertDialog(
-          title: const Text('Cannot close store'),
+          title: Text(_localizations.cannotCloseStore),
           content: SingleChildScrollView(
             child: Center(
               child: Column(
@@ -864,7 +872,8 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     } on Exception catch (e) {
       Carol.showExceptionSnackBar(
         e,
-        contextMessage: 'Failed to delete card.',
+        contextMessage: _localizations.failedToCloseStore,
+        localizations: _localizations,
       );
       return;
     }
@@ -882,7 +891,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     storeNotifier.set(closedStore);
 
     Carol.showTextSnackBar(
-      text: 'Closed store!',
+      text: _localizations.closeStoreSuccess,
       level: SnackBarLevel.success,
     );
 
@@ -919,7 +928,8 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       } on Exception catch (e) {
         Carol.showExceptionSnackBar(
           e,
-          contextMessage: 'Failed to get store information.',
+          contextMessage: _localizations.failedToLoadStore,
+          localizations: _localizations,
         );
         return;
       }
@@ -964,7 +974,8 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       } on Exception catch (e) {
         Carol.showExceptionSnackBar(
           e,
-          contextMessage: 'Failed to get store information.',
+          contextMessage: _localizations.failedToLoadStore,
+          localizations: _localizations,
         );
         return;
       }
@@ -982,7 +993,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     }
 
     Carol.showTextSnackBar(
-      text: 'Refreshed store!',
+      text: _localizations.refreshStoreSuccess,
       level: SnackBarLevel.info,
     );
   }
@@ -1014,7 +1025,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       context: context,
       builder: (ctx) {
         return AlertDialog(
-          title: const Text('Store QR'),
+          title: Text(_localizations.storeQrTitle),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -1023,7 +1034,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                 height: 150,
                 child: qrImageView,
               ),
-              const Text('Let customers scan!')
+              Text(_localizations.letCustomersScan)
             ],
           ),
         );

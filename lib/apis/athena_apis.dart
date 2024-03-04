@@ -4,11 +4,13 @@ import 'package:carol/apis/utils.dart';
 import 'package:carol/main.dart';
 import 'package:carol/params/athena.dart' as athena_params;
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:pkce/pkce.dart';
 
 Future<Map<String, dynamic>?> tryRefreshOidc(
   Map<String, dynamic> oidc, {
   int expMarginSeconds = 0,
+  AppLocalizations? localizations,
 }) async {
   // Refresh
   final refreshToken = oidc['refresh_token'] as String;
@@ -40,11 +42,13 @@ Future<Map<String, dynamic>?> tryRefreshOidc(
   // Validate
   final invalidOidcMsgs = validateOidc(newOidc);
   if (invalidOidcMsgs != null) {
-    Carol.showTextSnackBar(
-      text:
-          'Received invalid OIDC token${invalidOidcMsgs.fold('\n- ', (prev, cur) => '$prev\n- $cur')}',
-      level: SnackBarLevel.debug,
-    );
+    if (localizations != null) {
+      Carol.showTextSnackBar(
+        text:
+            '${localizations.receivedInvalidOidcToken}${invalidOidcMsgs.fold('\n- ', (prev, cur) => '$prev\n- $cur')}',
+        level: SnackBarLevel.debug,
+      );
+    }
     return null;
   }
 

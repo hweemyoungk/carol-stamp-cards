@@ -15,6 +15,7 @@ import 'package:carol/widgets/stores_explorer/stores_explorer.dart';
 import 'package:carol/widgets/stores_explorer/stores_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 bool isOwnerModelsInitLoaded(WidgetRef ref) {
   return ref.read(ownerStoresListStoresProvider) != null;
@@ -35,6 +36,7 @@ class OwnerScreen extends ConsumerStatefulWidget {
 class _OwnerScreenState extends ConsumerState<OwnerScreen> {
   final List<Widget> _newStoreAlertRows = [];
 
+  late AppLocalizations _localizations;
   int _activeBottomItemIndex = 0;
   bool _isRefreshStoresCooling = false;
   bool _isRefreshRedeemRequestsCooling = false;
@@ -51,6 +53,7 @@ class _OwnerScreenState extends ConsumerState<OwnerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _localizations = AppLocalizations.of(context)!;
     return Scaffold(
       body: Stack(
         children: [
@@ -69,21 +72,21 @@ class _OwnerScreenState extends ConsumerState<OwnerScreen> {
         ],
       ),
       appBar: AppBar(
-        title: const Text('Owner\'s Screen'),
+        title: Text(_localizations.ownersScreenAppBarTitle),
         actions: _getAppBarActions(),
       ),
       drawer: const MainDrawer(),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _activeBottomItemIndex,
         onTap: _onTapBottomItem,
-        items: const [
+        items: [
           BottomNavigationBarItem(
-            label: 'Stores',
-            icon: Icon(Icons.store),
+            label: _localizations.stores,
+            icon: const Icon(Icons.store),
           ),
           BottomNavigationBarItem(
-            label: 'Redeem Requests',
-            icon: Icon(Icons.approval),
+            label: _localizations.redeemRequests,
+            icon: const Icon(Icons.approval),
           ),
         ],
       ),
@@ -109,7 +112,7 @@ class _OwnerScreenState extends ConsumerState<OwnerScreen> {
       context: context,
       builder: (ctx) {
         return AlertDialog(
-          title: const Text('Cannot create store'),
+          title: Text(_localizations.cannotCreateStore),
           content: SingleChildScrollView(
             child: Center(
               child: Column(
@@ -213,7 +216,8 @@ class _OwnerScreenState extends ConsumerState<OwnerScreen> {
       redeemRequestsNotifier.set([]);
       Carol.showExceptionSnackBar(
         e,
-        contextMessage: 'Failed to reload redeem requests.',
+        contextMessage: _localizations.failedToLoadRedeemRequests,
+        localizations: _localizations,
       );
       return;
     }
@@ -296,14 +300,14 @@ class _OwnerScreenState extends ConsumerState<OwnerScreen> {
   bool _violatedMembershipExists(User user) {
     if (user.customerMembership == null) {
       Carol.showTextSnackBar(
-        text: 'Cannot find owner membership. Please sign in again.',
+        text: _localizations.cannotFindOwnerMembership,
         level: SnackBarLevel.error,
       );
       if (mounted) {
         setState(() {
           _canCreateNewStore = false;
-          _newStoreAlertRows.add(const AlertRow(
-            text: 'Cannot find owner membership. Please sign in again.',
+          _newStoreAlertRows.add(AlertRow(
+            text: _localizations.cannotFindOwnerMembership,
           ));
         });
       }
@@ -328,13 +332,14 @@ class _OwnerScreenState extends ConsumerState<OwnerScreen> {
     } on Exception catch (e) {
       Carol.showExceptionSnackBar(
         e,
-        contextMessage: 'Failed to get number of accumulated total stores.',
+        contextMessage: _localizations.failedToLoadNumAccumulatedTotalStores,
+        localizations: _localizations,
       );
       if (mounted) {
         setState(() {
           _canCreateNewStore = false;
-          _newStoreAlertRows.add(const AlertRow(
-            text: 'Failed to get number of accumulated total stores.',
+          _newStoreAlertRows.add(AlertRow(
+            text: _localizations.failedToLoadNumAccumulatedTotalStores,
           ));
         });
       }
@@ -346,8 +351,8 @@ class _OwnerScreenState extends ConsumerState<OwnerScreen> {
       if (mounted) {
         setState(() {
           _canCreateNewStore = false;
-          _newStoreAlertRows.add(const AlertRow(
-            text: 'Reached max of accumulated total stores.',
+          _newStoreAlertRows.add(AlertRow(
+            text: _localizations.reachedMaxNumAccumulatedTotalStores,
           ));
         });
       }
@@ -371,13 +376,14 @@ class _OwnerScreenState extends ConsumerState<OwnerScreen> {
     } on Exception catch (e) {
       Carol.showExceptionSnackBar(
         e,
-        contextMessage: 'Failed to get number of current total stores.',
+        contextMessage: _localizations.failedToLoadNumCurrentTotalStores,
+        localizations: _localizations,
       );
       if (mounted) {
         setState(() {
           _canCreateNewStore = false;
-          _newStoreAlertRows.add(const AlertRow(
-            text: 'Failed to get number of current total stores.',
+          _newStoreAlertRows.add(AlertRow(
+            text: _localizations.failedToLoadNumCurrentTotalStores,
           ));
         });
       }
@@ -389,8 +395,8 @@ class _OwnerScreenState extends ConsumerState<OwnerScreen> {
       if (mounted) {
         setState(() {
           _canCreateNewStore = false;
-          _newStoreAlertRows.add(const AlertRow(
-            text: 'Reached max of current total stores.',
+          _newStoreAlertRows.add(AlertRow(
+            text: _localizations.reachedMaxNumCurrentTotalStores,
           ));
         });
       }
@@ -414,13 +420,14 @@ class _OwnerScreenState extends ConsumerState<OwnerScreen> {
     } on Exception catch (e) {
       Carol.showExceptionSnackBar(
         e,
-        contextMessage: 'Failed to get number of current active stores.',
+        contextMessage: _localizations.failedToLoadNumCurrentActiveStores,
+        localizations: _localizations,
       );
       if (mounted) {
         setState(() {
           _canCreateNewStore = false;
-          _newStoreAlertRows.add(const AlertRow(
-            text: 'Failed to get number of current active stores.',
+          _newStoreAlertRows.add(AlertRow(
+            text: _localizations.failedToLoadNumCurrentActiveStores,
           ));
         });
       }
@@ -432,8 +439,8 @@ class _OwnerScreenState extends ConsumerState<OwnerScreen> {
       if (mounted) {
         setState(() {
           _canCreateNewStore = false;
-          _newStoreAlertRows.add(const AlertRow(
-            text: 'Reached max of current active stores.',
+          _newStoreAlertRows.add(AlertRow(
+            text: _localizations.reachedMaxNumCurrentActiveStores,
           ));
         });
       }
@@ -446,26 +453,22 @@ class _OwnerScreenState extends ConsumerState<OwnerScreen> {
       context: context,
       builder: (ctx) {
         return AlertDialog(
-          title: const Text('About Redeem Request'),
+          title: Text(_localizations.aboutRedeemRequestDialogTitle),
           content: SingleChildScrollView(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                    'Redeem Request is instant request from your customers to consume stamps.',
+                Text(_localizations.whatIsRedeemRequest,
                     style: Theme.of(context).textTheme.titleMedium),
-                const Text(
-                    '1. Tap refresh button to get current redeem requests.'),
-                const Text(
-                    '2. Customers can make redeem request whenever there is any satisfied redeem rule in their cards.'),
-                Text(
-                    '3. Redeem request is short-lived, only for ${formatSeconds(app_params.watchRedeemRequestDurationSeconds)} from creation.'),
-                const Text('4. Once approved,'),
-                const Text(
-                    '  - Collected stamps will be deducted in the customer\'s card.'),
-                Text(
-                    '  - Owner is responsible for granting promised rewards to customer.',
+                Text(_localizations.redeemRequestExplanationItem1),
+                Text(_localizations.redeemRequestExplanationItem2),
+                Text(_localizations.redeemRequestExplanationItem3(formatSeconds(
+                  app_params.watchRedeemRequestDurationSeconds,
+                  localizations: _localizations,
+                ))),
+                Text(_localizations.redeemRequestExplanationItem4),
+                Text(_localizations.redeemRequestExplanationItem5,
                     style: Theme.of(context).textTheme.titleMedium),
               ],
             ),

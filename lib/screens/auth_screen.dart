@@ -13,10 +13,13 @@ import 'package:carol/params/athena.dart' as auth_params;
 import 'package:carol/params/shared_preferences.dart' as prefs_params;
 import 'package:carol/providers/auth_status_notifier.dart';
 import 'package:carol/providers/current_user_notifier.dart';
+import 'package:carol/screens/app_notice_dialog_screen.dart';
 import 'package:carol/screens/dashboard_screen.dart';
 import 'package:carol/utils.dart';
+import 'package:carol/widgets/main_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:pkce/pkce.dart';
@@ -33,6 +36,7 @@ class AuthScreen extends ConsumerStatefulWidget {
 }
 
 class _AuthScreenState extends ConsumerState<AuthScreen> {
+  late AppLocalizations _localizations;
   AuthStatus _authStatus = AuthStatus.authenticating;
   bool _waiting = true;
   bool _isAutoSignInEnabled = false;
@@ -49,22 +53,66 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _checkRequirements(ignore: false).then(
-      (_) async {
+
+    _localizations = AppLocalizations.of(context)!;
+    _initFromDevice().then(
+      (proceed) async {
+        if (!proceed) {
+          return false;
+        }
+        await _checkRequirements(ignore: false);
+        return true;
+      },
+    ).then(
+      (proceed) async {
+        if (!proceed) {
+          return false;
+        }
+
         try {
           await _showAppNotices();
         } on Exception catch (e) {
           Carol.showExceptionSnackBar(
             e,
-            contextMessage: 'Failed to get app notices.',
+            contextMessage: _localizations.failedToLoadAppNotices,
+            localizations: _localizations,
           );
         }
+        return true;
       },
     ).then(
-      (_) async {
+      (proceed) async {
+        if (!proceed) {
+          return false;
+        }
         await _tryAutoSignIn(ignore: false);
+        return true;
       },
     );
+  }
+
+  /// Proceed chain with true, stop chain with false.
+  Future<bool> _initFromDevice() async {
+    // locale
+    final currentLocale = ref.read(activeLocaleProvider);
+    final activeLocaleNotifier = ref.read(activeLocaleProvider.notifier);
+
+    final prefs = await SharedPreferences.getInstance();
+    final languageCode = prefs.getString(prefs_params.languageCodeKey);
+    if (languageCode == null) {
+      return true;
+    }
+
+    if (currentLocale.languageCode == languageCode) {
+      return true;
+    }
+
+    final targetSupportedLanguage = SupportedLanguage.values.firstWhere(
+      (element) => element.languageCode == languageCode,
+      orElse: () => SupportedLanguage.en,
+    );
+    activeLocaleNotifier.set(targetSupportedLanguage);
+    return false;
   }
 
   /// Currently, checks only version name (x.y.z).
@@ -93,7 +141,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     color: errorTextColor,
                   ),
                   label: Text(
-                    'Exit',
+                    _localizations.exit,
                     style: TextStyle(
                       color: errorTextColor,
                     ),
@@ -103,9 +151,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   },
                 ),
               ],
-              content: const SingleChildScrollView(
+              content: SingleChildScrollView(
                 child: Text(
-                  'Failed to compare current version name and required minimum version name.\nExiting Application.',
+                  _localizations.versionCompareFailureDialogContent,
                 ),
               ),
             );
@@ -148,7 +196,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     color: errorTextColor,
                   ),
                   label: Text(
-                    'Exit',
+                    _localizations.exit,
                     style: TextStyle(
                       color: errorTextColor,
                     ),
@@ -158,9 +206,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   },
                 ),
               ],
-              content: const SingleChildScrollView(
+              content: SingleChildScrollView(
                 child: Text(
-                  'Failed to compare current version name and required minimum version name.\nExiting Application.',
+                  _localizations.versionCompareFailureDialogContent,
                 ),
               ),
             );
@@ -188,7 +236,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     color: errorTextColor,
                   ),
                   label: Text(
-                    'Exit',
+                    _localizations.exit,
                     style: TextStyle(
                       color: errorTextColor,
                     ),
@@ -198,9 +246,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   },
                 ),
               ],
-              content: const SingleChildScrollView(
+              content: SingleChildScrollView(
                 child: Text(
-                  'Failed to compare current version name and required minimum version name.\nExiting Application.',
+                  _localizations.versionCompareFailureDialogContent,
                 ),
               ),
             );
@@ -351,7 +399,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     );
     if (refreshTokenMsg != null) {
       Carol.showTextSnackBar(
-        text: 'Sign in again: $refreshTokenMsg',
+        text: '${_localizations.signInAgain}: $refreshTokenMsg',
         level: SnackBarLevel.warn,
       );
       if (mounted) {
@@ -370,7 +418,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     } on Exception catch (e) {
       Carol.showExceptionSnackBar(
         e,
-        contextMessage: 'Failed to auto-sign-in.',
+        contextMessage: _localizations.failedToAutoSignIn,
+        localizations: _localizations,
       );
       if (mounted) {
         setState(() {
@@ -385,7 +434,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       // Got invalid OIDC
       prefs.remove(prefs_params.oidcKey);
       Carol.showTextSnackBar(
-        text: 'Failed to auto sign in. Please sign in manually.',
+        text: _localizations.failedToAutoSignIn,
         level: SnackBarLevel.error,
       );
       // Pop all
@@ -418,7 +467,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     // Set User
     final currentUser = User(
       oidc: newOidc,
-      profileImageUrl: 'assets/images/schnitzel-3279045_1280.jpg',
+      profileImageUrl: null,
     );
     currentUserNotifier.set(currentUser);
     // developer.log('[+]access token: ${newOidc['access_token']}');
@@ -437,16 +486,16 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // final authStatus = ref.watch(authStatusProvider);
-    // final isAutoSignInEnabled = ref.watch(autoSignInEnabledProvider);
+    _localizations = AppLocalizations.of(context)!;
     final currentUser = ref.watch(currentUserProvider);
+
     final autoSignInSection = Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Padding(
           padding: DesignUtils.basicWidgetEdgeInsets(),
           child: Text(
-            'Remember me',
+            _localizations.rememberMe,
             style: Theme.of(context).textTheme.labelLarge!.copyWith(
                   color: Theme.of(context).colorScheme.onSurface,
                 ),
@@ -475,7 +524,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         onPressed: null,
         style: authButtonStyle,
         child: Text(
-          'Please wait...',
+          _localizations.pleaseWait,
           style: TextStyle(
             color: Theme.of(context).colorScheme.onBackground,
           ),
@@ -486,7 +535,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         onPressed: _onPressSignIn,
         style: authButtonStyle,
         child: Text(
-          'Sign In / Up',
+          _localizations.signInUp,
           style: TextStyle(
             color: Theme.of(context).colorScheme.onPrimaryContainer,
           ),
@@ -499,7 +548,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           backgroundColor: Theme.of(context).colorScheme.errorContainer,
         ),
         child: Text(
-          'Abort Sign In / Up',
+          _localizations.abortSignInUp,
           style: TextStyle(
             color: Theme.of(context).colorScheme.onErrorContainer,
           ),
@@ -517,7 +566,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         },
         style: authButtonStyle,
         child: Text(
-          'You are signed in, ${currentUser!.displayName}!',
+          '${_localizations.youAreSignedIn}, ${currentUser!.displayName}!',
           style: TextStyle(
             color: Theme.of(context).colorScheme.onPrimaryContainer,
           ),
@@ -570,7 +619,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                                           CrossAxisAlignment.center,
                                       children: [
                                         Text(
-                                          'Welcome to',
+                                          _localizations.welcomeTo,
                                           style: Theme.of(context)
                                               .textTheme
                                               .titleLarge!
@@ -581,7 +630,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                                               ),
                                         ),
                                         Text(
-                                          'Carol Cards',
+                                          _localizations.carolCards,
                                           textAlign: TextAlign.center,
                                           style: Theme.of(context)
                                               .textTheme
@@ -658,7 +707,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
     if (_pkcePair == null) {
       Carol.showTextSnackBar(
-        text: 'Lost PKCE data',
+        text: _localizations.lostPkceData,
         level: SnackBarLevel.error,
       );
       if (mounted) {
@@ -673,7 +722,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     final state = uri.queryParameters['state'];
     if (state != _stateToken) {
       Carol.showTextSnackBar(
-        text: 'Invalid state token',
+        text: _localizations.invalidStateToken,
         level: SnackBarLevel.error,
       );
       if (mounted) {
@@ -708,7 +757,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         // Invalid OIDC token
         Carol.showTextSnackBar(
           text:
-              'Failed to authenticate. Please contact admin.${invalidOidcMsgs.fold('\n- ', (prev, cur) => '$prev\n- $cur')}',
+              '${_localizations.failedToAuthenticate}${invalidOidcMsgs.fold('\n- ', (prev, cur) => '$prev\n- $cur')}',
           level: SnackBarLevel.error,
         );
         if (mounted) {
@@ -736,7 +785,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     } on Exception catch (e) {
       Carol.showExceptionSnackBar(
         e,
-        contextMessage: 'Failed to sign in.',
+        contextMessage: _localizations.failedToSignIn,
+        localizations: _localizations,
       );
       if (mounted) {
         setState(() {
@@ -753,7 +803,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     // Set User
     final currentUser = User(
       oidc: oidc,
-      profileImageUrl: 'assets/images/schnitzel-3279045_1280.jpg',
+      profileImageUrl: null,
     );
     currentUserNotifier.set(currentUser);
 
@@ -783,69 +833,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     } on Exception catch (e) {
       Carol.showExceptionSnackBar(
         e,
-        contextMessage: 'Failed to load customer entities.',
+        contextMessage: _localizations.failedToLoadCustomerModels,
+        localizations: _localizations,
       );
     }
-  }
-}
-
-class AppNoticeDialogScreen extends StatefulWidget {
-  const AppNoticeDialogScreen({
-    super.key,
-    required this.notice,
-  });
-
-  final AppNotice notice;
-
-  @override
-  State<AppNoticeDialogScreen> createState() => _AppNoticeDialogScreenState();
-}
-
-class _AppNoticeDialogScreenState extends State<AppNoticeDialogScreen> {
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(widget.notice.displayName),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Padding(
-              padding: DesignUtils.basicWidgetEdgeInsets(),
-              child: Text(widget.notice.description),
-            ),
-            if (widget.notice.url != null)
-              ElevatedButton(
-                onPressed: _onPressDetail,
-                child: const Text('Read detail'),
-              ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Close'),
-            ),
-            if (widget.notice.canSuppress)
-              ElevatedButton(
-                onPressed: _onPressSuppress,
-                child: const Text('Do not show again'),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _onPressDetail() async {
-    if (widget.notice.url == null) {
-      return;
-    }
-    await launchInBrowserView(widget.notice.url!);
-  }
-
-  void _onPressSuppress() {
-    Navigator.of(context).pop(true);
   }
 }

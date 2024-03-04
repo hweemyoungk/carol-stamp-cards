@@ -3,10 +3,12 @@ import 'package:carol/main.dart';
 import 'package:carol/models/stamp_card.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/screens/card_screen.dart';
+import 'package:carol/utils.dart';
 import 'package:carol/widgets/cards_explorer/cards_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:transparent_image/transparent_image.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class CardsListItemCard extends ConsumerStatefulWidget {
   final StampCard card;
@@ -20,9 +22,20 @@ class CardsListItemCard extends ConsumerStatefulWidget {
 }
 
 class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
+  late AppLocalizations _localizations;
+
   @override
   Widget build(BuildContext context) {
+    _localizations = AppLocalizations.of(context)!;
     final card = widget.card;
+    final formattedDurationModifiedAgo = formatDurationCompact(
+      DateTime.now().difference(card.lastModifiedDate),
+      localizations: _localizations,
+    );
+    final formattedDurationExpLeft = formatDurationCompact(
+      card.expirationDate.difference(DateTime.now()),
+      localizations: _localizations,
+    );
     return Card(
       margin: const EdgeInsets.all(10),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -47,7 +60,7 @@ class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
                           child: Align(
                             alignment: Alignment.center,
                             child: Text(
-                              'No Image',
+                              _localizations.noImage,
                               style: TextStyle(
                                 fontStyle: FontStyle.italic,
                                 color: Theme.of(context)
@@ -101,7 +114,7 @@ class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       Text(
-                        card.lastModifiedDateLabel,
+                        _localizations.ago(formattedDurationModifiedAgo),
                         style: Theme.of(context)
                             .textTheme
                             .labelMedium!
@@ -123,7 +136,7 @@ class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
                       ),
                       const SizedBox(width: 12),
                       Text(
-                        card.expirationDateLabel,
+                        _localizations.left(formattedDurationExpLeft),
                         style: Theme.of(context)
                             .textTheme
                             .labelMedium!
@@ -186,7 +199,7 @@ class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
     if (card.blueprint == null) {
       // Ignore blueprint == null scenario: many-to-one
       Carol.showTextSnackBar(
-        text: 'Lost data... Refresh and try again.',
+        text: _localizations.lostData,
         level: SnackBarLevel.warn,
       );
       return;
@@ -200,7 +213,8 @@ class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
       } on Exception catch (e) {
         Carol.showExceptionSnackBar(
           e,
-          contextMessage: 'Failed to get redeem rules information.',
+          contextMessage: _localizations.failedToLoadRedeemRules,
+          localizations: _localizations,
         );
         return;
       }
@@ -233,7 +247,8 @@ class _CardsListItemCardState extends ConsumerState<CardsListItemCard> {
     } on Exception catch (e) {
       Carol.showExceptionSnackBar(
         e,
-        contextMessage: 'Failed to toggle favorite.',
+        contextMessage: _localizations.failedToToggleFavorite,
+        localizations: _localizations,
       );
       // Restore
       cardsNotifier.replaceIfIdMatch(originalCard);

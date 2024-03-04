@@ -3,6 +3,7 @@ import 'package:carol/models/stamp_card.dart';
 import 'package:carol/widgets/redeem_rules_explorer/redeem_rule_list_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class RedeemRulesList extends ConsumerStatefulWidget {
   final List<RedeemRule> redeemRules;
@@ -18,15 +19,18 @@ class RedeemRulesList extends ConsumerStatefulWidget {
 }
 
 class _RedeemRulesListState extends ConsumerState<RedeemRulesList> {
+  late AppLocalizations _localizations;
+
   @override
   Widget build(BuildContext context) {
+    _localizations = AppLocalizations.of(context)!;
     final redeemRules = widget.redeemRules;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          'Rewards',
+          _localizations.rewards,
           style: Theme.of(context)
               .textTheme
               .displaySmall!

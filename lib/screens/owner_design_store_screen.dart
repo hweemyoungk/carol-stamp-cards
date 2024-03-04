@@ -10,6 +10,7 @@ import 'package:carol/widgets/common/required_field_label.dart';
 import 'package:carol/widgets/stores_explorer/stores_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 bool isSavingStore = false;
 
@@ -29,6 +30,7 @@ class OwnerDesignStoreScreen extends ConsumerStatefulWidget {
 
 class _OwnerDesignStoreScreenState
     extends ConsumerState<OwnerDesignStoreScreen> {
+  late AppLocalizations _localizations;
   var _status = StoreDesignStatus.userInput;
   final _formKey = GlobalKey<FormState>();
   late String _displayName;
@@ -41,11 +43,12 @@ class _OwnerDesignStoreScreenState
 
   @override
   Widget build(BuildContext context) {
+    _localizations = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.designMode == StoreDesignMode.create
-            ? 'New Store'
-            : 'Modify Store'),
+            ? _localizations.newStoreAppBarTitle
+            : _localizations.modifyStoreAppBarTitle),
         actions: [
           IconButton(
             onPressed: _onPressAboutStore,
@@ -81,16 +84,17 @@ class _OwnerDesignStoreScreenState
                         style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                             color: Theme.of(context).colorScheme.onBackground),
                         maxLength: 30,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           label: RequiredFieldLabel(
-                            Text('Display Name'),
+                            Text(_localizations.displayName),
                           ),
                         ),
                         validator: (value) {
                           if (value == null ||
                               value.trim().isEmpty ||
                               value.trim().length > 30) {
-                            return 'Must be between 1 and 30 characters long';
+                            return _localizations.textLengthViolationMessage(
+                                1, 30);
                           }
                           return null;
                         },
@@ -108,16 +112,17 @@ class _OwnerDesignStoreScreenState
                         style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                             color: Theme.of(context).colorScheme.onBackground),
                         maxLength: 1000,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           label: RequiredFieldLabel(
-                            Text('Description'),
+                            Text(_localizations.description),
                           ),
                         ),
                         validator: (value) {
                           if (value == null ||
                               value.trim().isEmpty ||
                               value.trim().length > 1000) {
-                            return 'Must be between 1 and 1000 characters long';
+                            return _localizations.textLengthViolationMessage(
+                                1, 1000);
                           }
                           return null;
                         },
@@ -133,15 +138,16 @@ class _OwnerDesignStoreScreenState
                         style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                             color: Theme.of(context).colorScheme.onBackground),
                         maxLength: 7,
-                        decoration: const InputDecoration(
-                          label: Text('Zipcode'),
+                        decoration: InputDecoration(
+                          label: Text(_localizations.zipcode),
                         ),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
                             return null;
                           }
-                          if (value.trim().isEmpty || value.trim().length > 7) {
-                            return 'Must be between 1 and 7 characters long';
+                          if (value.trim().length > 7) {
+                            return _localizations.textLengthViolationMessage(
+                                0, 7);
                           }
                           return null;
                         },
@@ -157,16 +163,16 @@ class _OwnerDesignStoreScreenState
                         style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                             color: Theme.of(context).colorScheme.onBackground),
                         maxLength: 120,
-                        decoration: const InputDecoration(
-                          label: Text('Address'),
+                        decoration: InputDecoration(
+                          label: Text(_localizations.address),
                         ),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
                             return null;
                           }
-                          if (value.trim().isEmpty ||
-                              value.trim().length > 120) {
-                            return 'Must be between 1 and 120 characters long';
+                          if (value.trim().length > 120) {
+                            return _localizations.textLengthViolationMessage(
+                                0, 120);
                           }
                           return null;
                         },
@@ -183,16 +189,16 @@ class _OwnerDesignStoreScreenState
                         style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                             color: Theme.of(context).colorScheme.onBackground),
                         maxLength: 15,
-                        decoration: const InputDecoration(
-                          label: Text('Phone'),
+                        decoration: InputDecoration(
+                          label: Text(_localizations.phone),
                         ),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
                             return null;
                           }
-                          if (value.trim().isEmpty ||
-                              value.trim().length > 15) {
-                            return 'Must be between 1 and 15 characters long';
+                          if (value.trim().length > 15) {
+                            return _localizations.textLengthViolationMessage(
+                                0, 15);
                           }
                           return null;
                         },
@@ -220,8 +226,8 @@ class _OwnerDesignStoreScreenState
                                       color: Theme.of(context)
                                           .colorScheme
                                           .onBackground),
-                              decoration: const InputDecoration(
-                                label: Text('Latitude'),
+                              decoration: InputDecoration(
+                                label: Text(_localizations.latitude),
                               ),
                               validator: (value) {
                                 if (value == null || value.trim().isEmpty) {
@@ -230,7 +236,8 @@ class _OwnerDesignStoreScreenState
                                 if (double.tryParse(value) == null ||
                                     90 < double.parse(value) ||
                                     double.parse(value) < -90) {
-                                  return 'Must be valid float between -90 and 90';
+                                  return _localizations
+                                      .floatRangeViolationMessage(-90.0, 90.0);
                                 }
                                 return null;
                               },
@@ -257,8 +264,8 @@ class _OwnerDesignStoreScreenState
                                           .colorScheme
                                           .onBackground),
                               // double _lng;
-                              decoration: const InputDecoration(
-                                label: Text('Longitude'),
+                              decoration: InputDecoration(
+                                label: Text(_localizations.longitude),
                               ),
                               validator: (value) {
                                 if (value == null || value.trim().isEmpty) {
@@ -267,7 +274,9 @@ class _OwnerDesignStoreScreenState
                                 if (double.tryParse(value) == null ||
                                     180 < double.parse(value) ||
                                     double.parse(value) < -180) {
-                                  return 'Must be valid float between -180 and 180';
+                                  return _localizations
+                                      .floatRangeViolationMessage(
+                                          -180.0, 180.0);
                                 }
                                 return null;
                               },
@@ -305,13 +314,14 @@ class _OwnerDesignStoreScreenState
 
     // Proceed alert
     final title = widget.designMode == StoreDesignMode.create
-        ? const Text('Create Store?')
-        : const Text('Modify Store?');
+        ? Text(_localizations.createStoreAlertTitle)
+        : Text(_localizations.modifyStoreAlertTitle);
     final content = widget.designMode == StoreDesignMode.create
-        ? const Text('This will take up 1 active store.')
+        ? Text(_localizations.createStoreAlertContent)
         : null;
-    final proceedButtonString =
-        widget.designMode == StoreDesignMode.create ? 'Create' : 'Modify';
+    final proceedButtonString = widget.designMode == StoreDesignMode.create
+        ? _localizations.create
+        : _localizations.modify;
     final proceed = await showAdaptiveDialog<bool>(
       context: context,
       builder: (ctx) {
@@ -361,7 +371,8 @@ class _OwnerDesignStoreScreenState
       } on Exception catch (e) {
         Carol.showExceptionSnackBar(
           e,
-          contextMessage: 'Failed to save new store.',
+          contextMessage: _localizations.failedToSaveNewStore,
+          localizations: _localizations,
         );
         if (mounted) {
           setState(() {
@@ -379,7 +390,8 @@ class _OwnerDesignStoreScreenState
       } on Exception catch (e) {
         Carol.showExceptionSnackBar(
           e,
-          contextMessage: 'Failed to get newly create store information.',
+          contextMessage: _localizations.failedToLoadNewlyCreatedStore,
+          localizations: _localizations,
         );
         if (mounted) {
           setState(() {
@@ -395,7 +407,7 @@ class _OwnerDesignStoreScreenState
       storesNotifier.replaceOrPrepend(newStore);
 
       Carol.showTextSnackBar(
-        text: 'New store created!',
+        text: _localizations.createStoreSuccess,
         level: SnackBarLevel.success,
       );
     } else {
@@ -421,7 +433,8 @@ class _OwnerDesignStoreScreenState
       } on Exception catch (e) {
         Carol.showExceptionSnackBar(
           e,
-          contextMessage: 'Failed to modify store.',
+          contextMessage: _localizations.failedToModifyStore,
+          localizations: _localizations,
         );
         if (mounted) {
           setState(() {
@@ -452,7 +465,7 @@ class _OwnerDesignStoreScreenState
       storeNotifier.set(modifiedStore);
 
       Carol.showTextSnackBar(
-        text: 'Store modified!',
+        text: _localizations.modifyStoreSuccess,
         level: SnackBarLevel.success,
       );
     }
@@ -467,28 +480,26 @@ class _OwnerDesignStoreScreenState
       context: context,
       builder: (ctx) {
         return AlertDialog(
-          title: const Text('About Store'),
+          title: Text(_localizations.aboutStoreDialogTitle),
           content: SingleChildScrollView(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                    'Store is where you design and distribute your own blueprints.',
+                Text(_localizations.whatIsStore,
                     style: Theme.of(context).textTheme.titleMedium),
-                const Text('1. Newly created store is active.'),
-                const Text(
-                    '2. Store has its own Store QR to share its detail with customers.'),
-                const Text(
-                    '3. Active store\'s every detail can be modified without limit.'),
-                const Text('4. Active store can define blueprints.'),
-                const Text(
-                    '5. Active store can be closed if there is no active blueprint in the store.'),
-                const Text('6. Closed store cannot be activated again.'),
-                const Text('7. Closed store\'s details cannot be modified.'),
-                const Text('8. Closed store still can be seen to customers.'),
-                Text(
-                    '9. Closed store is automatically deleted in ${formatSeconds(app_params.softDeleteClosedStoreInSeconds)}.'),
+                Text(_localizations.storeExplanationItem1),
+                Text(_localizations.storeExplanationItem2),
+                Text(_localizations.storeExplanationItem3),
+                Text(_localizations.storeExplanationItem4),
+                Text(_localizations.storeExplanationItem5),
+                Text(_localizations.storeExplanationItem6),
+                Text(_localizations.storeExplanationItem7),
+                Text(_localizations.storeExplanationItem8),
+                Text(_localizations.storeExplanationItem9(formatSeconds(
+                  app_params.softDeleteClosedStoreInSeconds,
+                  localizations: _localizations,
+                ))),
               ],
             ),
           ),

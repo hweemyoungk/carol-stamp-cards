@@ -8,6 +8,7 @@ import 'package:carol/widgets/main_drawer.dart';
 import 'package:carol/widgets/stores_explorer/stores_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class StoresListItem extends ConsumerStatefulWidget {
   final Store store;
@@ -21,8 +22,11 @@ class StoresListItem extends ConsumerStatefulWidget {
 }
 
 class _StoresListItemState extends ConsumerState<StoresListItem> {
+  late AppLocalizations _localizations;
+
   @override
   Widget build(BuildContext context) {
+    _localizations = AppLocalizations.of(context)!;
     final store = widget.store;
     final inactiveColor =
         Theme.of(context).colorScheme.onBackground.withOpacity(0.5);
@@ -82,7 +86,8 @@ class _StoresListItemState extends ConsumerState<StoresListItem> {
     } on Exception catch (e) {
       Carol.showExceptionSnackBar(
         e,
-        contextMessage: 'Failed to get blueprints information.',
+        contextMessage: _localizations.failedToLoadBlueprints,
+        localizations: _localizations,
       );
       return;
     }

@@ -84,7 +84,7 @@ class RedeemRule extends IntModel {
       };
 
   Widget consumesWidget(TextStyle style, Color color) => SizedBox(
-        width: 50,
+        width: 60,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

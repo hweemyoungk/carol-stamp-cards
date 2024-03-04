@@ -11,9 +11,11 @@ import 'package:carol/models/store.dart';
 import 'package:carol/params/backend.dart' as backend_params;
 import 'package:carol/screens/auth_screen.dart';
 import 'package:carol/widgets/stores_explorer/stores_list.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 Future<void> reloadOwnerModels(WidgetRef ref) async {
+  final localizations = AppLocalizations.of(ref.context);
   final currentUser = ref.read(currentUserProvider)!;
   final storesNotifier = ref.read(ownerStoresListStoresProvider.notifier);
 
@@ -24,10 +26,13 @@ Future<void> reloadOwnerModels(WidgetRef ref) async {
   try {
     stores = await listStores(ownerId: currentUser.id);
   } on Exception catch (e) {
-    Carol.showExceptionSnackBar(
-      e,
-      contextMessage: 'Failed to load owner models.',
-    );
+    if (localizations != null) {
+      Carol.showExceptionSnackBar(
+        e,
+        contextMessage: localizations.failedToLoadOwnerModels,
+        localizations: localizations,
+      );
+    }
     storesNotifier.set([]);
     return;
   }

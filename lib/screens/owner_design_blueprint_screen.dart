@@ -15,6 +15,7 @@ import 'package:carol/widgets/common/proceed_alert_dialog.dart';
 import 'package:carol/widgets/stores_explorer/stores_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 bool isSavingBlueprint = false;
 
@@ -36,6 +37,7 @@ class OwnerDesignBlueprintScreen extends ConsumerStatefulWidget {
 class _OwnerDesignStoreScreenState
     extends ConsumerState<OwnerDesignBlueprintScreen> {
   final List<Widget> _addRedeemRuleAlertRows = [];
+  late AppLocalizations _localizations;
   var _status = BlueprintDesignStatus.userInput;
   bool? _canAddRedeemRule;
   bool _isSetInfiniteNumMaxIssues = false;
@@ -83,6 +85,7 @@ class _OwnerDesignStoreScreenState
 
   @override
   Widget build(BuildContext context) {
+    _localizations = AppLocalizations.of(context)!;
     final onBackgroundTernary = Theme.of(context).colorScheme.onBackground;
     // final onBackgroundTernary = widget.designMode == BlueprintDesignMode.modify
     //     ? Theme.of(context).colorScheme.onBackground.withOpacity(0.4)
@@ -90,8 +93,8 @@ class _OwnerDesignStoreScreenState
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.designMode == BlueprintDesignMode.create
-            ? 'New Blueprint'
-            : 'Modify Blueprint'),
+            ? _localizations.newBlueprintAppBarTitle
+            : _localizations.modifyBlueprintAppBarTitle),
         actions: [
           IconButton(
             onPressed: _onPressAboutBlueprint,
@@ -122,7 +125,7 @@ class _OwnerDesignStoreScreenState
                         maxLength: 30,
                         decoration: InputDecoration(
                           label: Text(
-                            'Display Name',
+                            _localizations.displayName,
                             style: TextStyle(
                               color: onBackgroundTernary,
                             ),
@@ -132,7 +135,8 @@ class _OwnerDesignStoreScreenState
                           if (value == null ||
                               value.trim().isEmpty ||
                               value.trim().length > 30) {
-                            return 'Must be between 1 and 30 characters long';
+                            return _localizations.textLengthViolationMessage(
+                                1, 30);
                           }
                           return null;
                         },
@@ -152,7 +156,7 @@ class _OwnerDesignStoreScreenState
                         maxLength: 1000,
                         decoration: InputDecoration(
                           label: Text(
-                            'Description',
+                            _localizations.description,
                             style: TextStyle(
                               color: onBackgroundTernary,
                             ),
@@ -162,7 +166,8 @@ class _OwnerDesignStoreScreenState
                           if (value == null ||
                               value.trim().isEmpty ||
                               value.trim().length > 1000) {
-                            return 'Must be between 1 and 1000 characters long';
+                            return _localizations.textLengthViolationMessage(
+                                1, 1000);
                           }
                           return null;
                         },
@@ -193,7 +198,7 @@ class _OwnerDesignStoreScreenState
                         maxLength: 1000,
                         decoration: InputDecoration(
                           label: Text(
-                            'Stamp Grant Conditions',
+                            _localizations.stampGrantConditions,
                             style: TextStyle(
                               color: onBackgroundTernary,
                             ),
@@ -203,7 +208,8 @@ class _OwnerDesignStoreScreenState
                           if (value == null ||
                               value.trim().isEmpty ||
                               value.trim().length > 1000) {
-                            return 'Must be between 1 and 1000 characters long';
+                            return _localizations.textLengthViolationMessage(
+                                1, 1000);
                           }
                           return null;
                         },
@@ -233,7 +239,7 @@ class _OwnerDesignStoreScreenState
                               // double _lng;
                               decoration: InputDecoration(
                                 label: Text(
-                                  'Max Stamps',
+                                  _localizations.maxStamps,
                                   style: TextStyle(
                                     color: onBackgroundTernary,
                                   ),
@@ -242,15 +248,16 @@ class _OwnerDesignStoreScreenState
                               validator: (value) {
                                 if (value == null ||
                                     int.tryParse(value) == null) {
-                                  return 'Must be integer';
+                                  return _localizations.integerViolationMessage;
                                 }
                                 final input = int.parse(value);
                                 if (widget.blueprint != null &&
                                     input < widget.blueprint!.numMaxStamps) {
-                                  return 'Cannot reduce max stamps';
+                                  return _localizations.cannotReduceMaxStamps;
                                 }
                                 if (input < 1 || 100 < input) {
-                                  return 'Must be in 1~100';
+                                  return _localizations
+                                      .integerRangeViolationMessage(1, 100);
                                 }
                                 return null;
                               },
@@ -280,7 +287,7 @@ class _OwnerDesignStoreScreenState
                               // double _lng;
                               decoration: InputDecoration(
                                 label: Text(
-                                  'Max Redeems per Card',
+                                  _localizations.maxRedeemsPerCard,
                                   style: TextStyle(
                                     color: onBackgroundTernary,
                                   ),
@@ -291,7 +298,8 @@ class _OwnerDesignStoreScreenState
                                     int.tryParse(value) == null ||
                                     int.parse(value) < 1 ||
                                     100 < int.parse(value)) {
-                                  return 'Must be in 1~100';
+                                  return _localizations
+                                      .integerRangeViolationMessage(1, 100);
                                 }
                                 return null;
                               },
@@ -321,7 +329,7 @@ class _OwnerDesignStoreScreenState
                               // double _lng;
                               decoration: InputDecoration(
                                 label: Text(
-                                  'Max Issues per Customer',
+                                  _localizations.maxIssuesPerCustomer,
                                   style: TextStyle(
                                     color: onBackgroundTernary,
                                   ),
@@ -333,7 +341,8 @@ class _OwnerDesignStoreScreenState
                                     int.tryParse(value) == null ||
                                     int.parse(value) < 1 ||
                                     100 < int.parse(value)) {
-                                  return 'Must be in 1~100';
+                                  return _localizations
+                                      .integerRangeViolationMessage(1, 100);
                                 }
                                 return null;
                               },
@@ -374,7 +383,7 @@ class _OwnerDesignStoreScreenState
                                                       : 1.0)),
                                   decoration: InputDecoration(
                                     label: Text(
-                                      'Max Total Issues',
+                                      _localizations.maxTotalIssues,
                                       style: TextStyle(
                                         color: onBackgroundTernary,
                                       ),
@@ -388,7 +397,8 @@ class _OwnerDesignStoreScreenState
                                     if (value == null ||
                                         int.tryParse(value) == null ||
                                         int.parse(value) < 1) {
-                                      return 'Must be 1+ integer';
+                                      return _localizations
+                                          .integerLowerboundViolationMessage(1);
                                     }
                                     return null;
                                   },
@@ -414,7 +424,7 @@ class _OwnerDesignStoreScreenState
                                     },
                                   ),
                                   Text(
-                                    'Infinite',
+                                    _localizations.noLimit,
                                     style: TextStyle(
                                       color: onBackgroundTernary,
                                     ),
@@ -431,7 +441,7 @@ class _OwnerDesignStoreScreenState
                         Padding(
                           padding: DesignUtils.basicWidgetEdgeInsets(),
                           child: Text(
-                            'Redeem Rules',
+                            _localizations.redeemRules,
                             style: Theme.of(context)
                                 .textTheme
                                 .labelLarge!
@@ -549,7 +559,7 @@ class _OwnerDesignStoreScreenState
                         Padding(
                           padding: DesignUtils.basicWidgetEdgeInsets(),
                           child: Text(
-                            'Expiration Date',
+                            _localizations.expirationDate,
                             style: Theme.of(context)
                                 .textTheme
                                 .labelLarge!
@@ -560,7 +570,7 @@ class _OwnerDesignStoreScreenState
                           padding: DesignUtils.basicWidgetEdgeInsets(),
                           child: _expirationDate == null
                               ? Text(
-                                  'No date selected',
+                                  _localizations.noDateSelected,
                                   style: Theme.of(context)
                                       .textTheme
                                       .bodyLarge!
@@ -580,7 +590,11 @@ class _OwnerDesignStoreScreenState
                                           .copyWith(color: onBackgroundTernary),
                                     ),
                                     Text(
-                                      '(${formatRemaining(_expirationDate!.difference(DateTime.now()))})',
+                                      '(${formatRemaining(
+                                        _expirationDate!
+                                            .difference(DateTime.now()),
+                                        localizations: _localizations,
+                                      )})',
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodyLarge!
@@ -604,7 +618,7 @@ class _OwnerDesignStoreScreenState
                         Padding(
                           padding: DesignUtils.basicWidgetEdgeInsets(),
                           child: Text(
-                            'Publish Now',
+                            _localizations.publishNow,
                             style: Theme.of(context)
                                 .textTheme
                                 .labelLarge!
@@ -654,8 +668,7 @@ class _OwnerDesignStoreScreenState
     final blueprints = ref.read(ownerStoreScreenStoreProvider)?.blueprints;
     if (blueprints == null) {
       Carol.showTextSnackBar(
-        text:
-            'Failed to get number of current active(i.e. publishing) blueprints per store.',
+        text: _localizations.failedToLoadNumPublishingBlueprintsOfStore,
         level: SnackBarLevel.error,
       );
       return true;
@@ -675,8 +688,7 @@ class _OwnerDesignStoreScreenState
     }
     if (violated) {
       Carol.showTextSnackBar(
-        text:
-            'Reachedmax of current active(i.e. publishing) blueprints per store.',
+        text: _localizations.reachedMaxNumPublishingBlueprintsOfStore,
         level: SnackBarLevel.error,
       );
     }
@@ -690,16 +702,16 @@ class _OwnerDesignStoreScreenState
 
     // Proceed alert
     final title = widget.designMode == BlueprintDesignMode.create
-        ? const Text('Create Blueprint?')
-        : const Text('Modify Blueprint?');
+        ? Text(_localizations.createBlueprintAlertTitle)
+        : Text(_localizations.modifyBlueprintAlertTitle);
     final content = widget.designMode == BlueprintDesignMode.create
         ? _isPublishing
-            ? const Text(
-                'This will take up 1 active blueprint of current store.')
-            : const Text('This will take up 1 blueprint of current store.')
+            ? Text(_localizations.createPublishingBlueprintAlertContent)
+            : Text(_localizations.createBlueprintAlertContent)
         : null;
-    final proceedButtonString =
-        widget.designMode == BlueprintDesignMode.create ? 'Create' : 'Modify';
+    final proceedButtonString = widget.designMode == BlueprintDesignMode.create
+        ? _localizations.create
+        : _localizations.modify;
 
     if (!mounted) return;
     final proceed = await showAdaptiveDialog<bool>(
@@ -728,7 +740,7 @@ class _OwnerDesignStoreScreenState
     final watchedStore = ref.read(ownerStoreScreenStoreProvider);
     if (watchedStore?.blueprints == null) {
       Carol.showTextSnackBar(
-        text: 'Missing store data... Please refresh and start over.',
+        text: _localizations.lostStoreData,
         level: SnackBarLevel.error,
       );
       isSavingBlueprint = false;
@@ -768,7 +780,8 @@ class _OwnerDesignStoreScreenState
       } on Exception catch (e) {
         Carol.showExceptionSnackBar(
           e,
-          contextMessage: 'Failed to save new blueprint.',
+          contextMessage: _localizations.failedToSaveNewBlueprint,
+          localizations: _localizations,
         );
         if (mounted) {
           setState(() {
@@ -786,7 +799,8 @@ class _OwnerDesignStoreScreenState
       } on Exception catch (e) {
         Carol.showExceptionSnackBar(
           e,
-          contextMessage: 'Failed to get newly created blueprint information.',
+          contextMessage: _localizations.failedToLoadNewlyCreatedBlueprint,
+          localizations: _localizations,
         );
         if (mounted) {
           setState(() {
@@ -808,7 +822,7 @@ class _OwnerDesignStoreScreenState
       storeNotifier.set(storeToRefresh);
 
       Carol.showTextSnackBar(
-        text: 'Blueprint created!',
+        text: _localizations.createBlueprintSuccess,
         level: SnackBarLevel.success,
       );
     } else {
@@ -840,7 +854,8 @@ class _OwnerDesignStoreScreenState
       } on Exception catch (e) {
         Carol.showExceptionSnackBar(
           e,
-          contextMessage: 'Failed to modify blueprint.',
+          contextMessage: _localizations.failedToModifyBlueprint,
+          localizations: _localizations,
         );
         if (mounted) {
           setState(() {
@@ -859,7 +874,8 @@ class _OwnerDesignStoreScreenState
       } on Exception catch (e) {
         Carol.showExceptionSnackBar(
           e,
-          contextMessage: 'Failed to get modified blueprint information.',
+          contextMessage: _localizations.failedToLoadModifiedBlueprint,
+          localizations: _localizations,
         );
         if (mounted) {
           setState(() {
@@ -879,7 +895,8 @@ class _OwnerDesignStoreScreenState
         } on Exception catch (e) {
           Carol.showExceptionSnackBar(
             e,
-            contextMessage: 'Failed to get redeem rules',
+            contextMessage: _localizations.failedToLoadRedeemRules,
+            localizations: _localizations,
           );
           if (mounted) {
             setState(() {
@@ -906,7 +923,7 @@ class _OwnerDesignStoreScreenState
       blueprintNotifier.set(modifiedBlueprint);
 
       Carol.showTextSnackBar(
-        text: 'Blueprint Modified!',
+        text: _localizations.modifyBlueprintSuccess,
         level: SnackBarLevel.success,
       );
     }
@@ -953,8 +970,8 @@ class _OwnerDesignStoreScreenState
     );
     if (target.isBefore(firstDate)) {
       Carol.showTextSnackBar(
-        text:
-            'Expiration date must be after ${formatDateTime(firstDate)}.\nChoose date again.',
+        text: _localizations
+            .expirationDateFirstDateViolationMessage(formatDateTime(firstDate)),
         level: SnackBarLevel.error,
         seconds: 10,
       );
@@ -1018,7 +1035,7 @@ class _OwnerDesignStoreScreenState
       return;
     }
     Carol.showTextSnackBar(
-      text: 'This will take up 1 redeem rule of current blueprint.',
+      text: _localizations.addRedeemRuleAlertContent,
       level: SnackBarLevel.info,
     );
 
@@ -1071,8 +1088,9 @@ class _OwnerDesignStoreScreenState
       if (mounted) {
         setState(() {
           _canAddRedeemRule = false;
-          _addRedeemRuleAlertRows.add(const AlertRow(
-            text: 'Reached max of current total redeem rules per blueprint.',
+          _addRedeemRuleAlertRows.add(AlertRow(
+            text:
+                _localizations.reachedMaxNumCurrentTotalRedeemRulesPerBlueprint,
           ));
         });
       }
@@ -1093,7 +1111,7 @@ class _OwnerDesignStoreScreenState
       context: context,
       builder: (ctx) {
         return AlertDialog(
-          title: const Text('Cannot add redeem rule'),
+          title: Text(_localizations.cannotAddRedeemRule),
           content: SingleChildScrollView(
             child: Center(
               child: Column(
@@ -1114,32 +1132,31 @@ class _OwnerDesignStoreScreenState
       context: context,
       builder: (ctx) {
         return AlertDialog(
-          title: Text('About Blueprint'),
+          title: Text(_localizations.aboutBlueprintDialogTitle),
           content: SingleChildScrollView(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Blueprint is the source of customer\'s card.',
+                Text(_localizations.whatIsBlueprint,
                     style: Theme.of(context).textTheme.titleMedium),
-                const Text(
-                    '1. Following details can be modified without limit:'),
-                const Text('  - Display Name'),
-                const Text('  - Description'),
-                const Text('  - Max Issues per Customer'),
-                const Text('  - Max Total Issues'),
-                const Text('  - Publish Now'),
-                const Text('2. Stamp Grant Conditions cannot be modified.'),
-                const Text('3. Following numbers cannot be decreased:'),
-                const Text('  - Max Stamps'),
-                const Text('  - Max Redeems per Card'),
+                Text(_localizations.blueprintExplanationItem1),
+                Text(_localizations.blueprintExplanationItem2),
+                Text(_localizations.blueprintExplanationItem3),
+                Text(_localizations.blueprintExplanationItem4(formatSeconds(
+                  modifyBlueprintExpDateMinRemainingFromNowInSeconds,
+                  localizations: _localizations,
+                ))),
+                Text(_localizations.blueprintExplanationItem5),
                 Text(
-                    '4. Expiration Date can be modified but must always be after ${formatSeconds(modifyBlueprintExpDateMinRemainingFromNowInSeconds)} from now.'),
-                const Text(
-                    '5. Blueprint cannot be seen by customers if Publish Now is disabled but still be seen by those with already published card.'),
-                const Text(
-                  '6. Published cards so far are still active even if Publish Now is disabled',
-                  style: TextStyle(
+                  _localizations.blueprintExplanationItem6,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  _localizations.blueprintExplanationItem7,
+                  style: const TextStyle(
                     fontWeight: FontWeight.bold,
                   ),
                 ),

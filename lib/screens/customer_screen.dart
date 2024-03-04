@@ -9,6 +9,7 @@ import 'package:carol/widgets/stores_explorer/stores_explorer.dart';
 import 'package:carol/widgets/stores_explorer/stores_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 bool isCustomerModelsInitLoaded(WidgetRef ref) {
   final cardsLoaded = ref.read(customerCardsListCardsProvider) != null;
@@ -35,16 +36,18 @@ class CustomerScreen extends ConsumerStatefulWidget {
 }
 
 class _CustomerScreenState extends ConsumerState<CustomerScreen> {
+  late AppLocalizations _localizations;
   int _activeBottomItemIndex = 0;
   bool _isRefreshCooling = false;
 
   @override
   Widget build(BuildContext context) {
+    _localizations = AppLocalizations.of(context)!;
     final isLoaded = watchCustomerModelsInitLoaded(ref);
     return Scaffold(
       body: widget.customerScreenBodies[_activeBottomItemIndex],
       appBar: AppBar(
-        title: const Text('Customer\'s Screen'),
+        title: Text(_localizations.customersScreenAppBarTitle),
         actions: [
           if (_activeBottomItemIndex == 1)
             IconButton(
@@ -67,14 +70,14 @@ class _CustomerScreenState extends ConsumerState<CustomerScreen> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _activeBottomItemIndex,
         onTap: _onTapBottomItem,
-        items: const [
+        items: [
           BottomNavigationBarItem(
-            label: 'Cards',
-            icon: Icon(Icons.card_giftcard),
+            label: _localizations.cards,
+            icon: const Icon(Icons.card_giftcard),
           ),
           BottomNavigationBarItem(
-            label: 'Stores',
-            icon: Icon(Icons.store),
+            label: _localizations.stores,
+            icon: const Icon(Icons.store),
           ),
         ],
       ),

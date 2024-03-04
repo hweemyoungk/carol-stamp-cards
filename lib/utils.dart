@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:carol/params/app.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:uuid/uuid.dart';
@@ -22,57 +23,77 @@ String formatDateTime(DateTime dateTime) {
   return '${timeFormatter.format(dateTime)} ${dateFormatter.format(dateTime)} ${dateTime.timeZoneName} (UTC+${dateTime.timeZoneOffset.inHours})';
 }
 
-String formatSeconds(int seconds) {
+String formatSeconds(int seconds, {required AppLocalizations localizations}) {
   final sb = StringBuffer();
 
   // 1y = 31536000 s
   final year = (seconds / 31536000).floor();
   if (0 < year) {
-    sb.write('${year}y ');
+    sb.write('$year${localizations.yearInitial} ');
   }
   seconds = seconds % 3153600;
   // 1M = 2628000 s
   final month = (seconds / 2628000).floor();
   if (0 < month) {
-    sb.write('${month}M ');
+    sb.write('$month${localizations.monthInitial} ');
   }
   seconds = seconds % 2628000;
   // 1d = 86400 s
   final day = (seconds / 86400).floor();
   if (0 < day) {
-    sb.write('${day}d ');
+    sb.write('$day${localizations.dayInitial} ');
   }
   seconds = seconds % 86400;
   // 1H = 3600 s
   final hour = (seconds / 3600).floor();
   if (0 < hour) {
-    sb.write('${hour}h ');
+    sb.write('$hour${localizations.hourInitial} ');
   }
   seconds = seconds % 3600;
   // 1m = 60 s
   final minute = (seconds / 60).floor();
   if (0 < minute) {
-    sb.write('${minute}m ');
+    sb.write('$minute${localizations.minuteInitial} ');
   }
   seconds = seconds % 60;
   if (0 < seconds) {
-    sb.write('${seconds}s ');
+    sb.write('$seconds${localizations.secondInitial} ');
   }
 
   return sb.toString().trim();
 }
 
-String formatRemaining(Duration duration) {
+String formatRemaining(Duration duration,
+    {required AppLocalizations localizations}) {
   if (duration.isNegative || duration.inSeconds <= 0) {
-    return 'Already passed';
+    return localizations.alreadyPassed;
   }
   int remaining = duration.inSeconds;
-  return '${formatSeconds(remaining)} left';
+  return localizations
+      .left(formatSeconds(remaining, localizations: localizations));
+}
+
+String formatDurationCompact(Duration duration,
+    {required AppLocalizations localizations}) {
+  if (duration.isNegative || duration.inSeconds <= 0) {
+    return localizations.alreadyPassed;
+  }
+  final String durationFormatted;
+  if (duration.inDays == 0) {
+    durationFormatted = '${duration.inHours}${localizations.hourInitial}';
+  } else if (duration.inDays < 30) {
+    durationFormatted = '${duration.inDays}${localizations.dayInitial}';
+  } else if (duration.inDays < 365) {
+    durationFormatted =
+        '${(duration.inDays / 30).floor()}${localizations.monthInitial}';
+  } else {
+    durationFormatted =
+        '${(duration.inDays % 365).floor()}${localizations.yearInitial}';
+  }
+  return durationFormatted;
 }
 
 class DesignUtils {
-  static const dummyImage =
-      AssetImage('assets/images/schnitzel-3279045_1280.jpg');
   static IconData stampIcon = Icons.star;
   static const requiredFieldLabelSuffixText =
       Text('*', style: TextStyle(color: Colors.red));

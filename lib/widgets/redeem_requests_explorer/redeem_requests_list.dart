@@ -3,6 +3,7 @@ import 'package:carol/providers/redeem_requests_notifier.dart';
 import 'package:carol/widgets/redeem_requests_explorer/redeem_requests_list_item.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 final ownerRedeemRequestsListRedeemRequestsProvider =
     StateNotifierProvider<RedeemRequestsNotifier, List<RedeemRequest>?>(
@@ -16,8 +17,11 @@ class RedeemRequestsList extends ConsumerStatefulWidget {
 }
 
 class _RedeemRequestsListState extends ConsumerState<RedeemRequestsList> {
+  late AppLocalizations _localizations;
+
   @override
   Widget build(BuildContext context) {
+    _localizations = AppLocalizations.of(context)!;
     final redeemRequests =
         ref.watch(ownerRedeemRequestsListRedeemRequestsProvider);
 
@@ -26,7 +30,7 @@ class _RedeemRequestsListState extends ConsumerState<RedeemRequestsList> {
         : redeemRequests.isEmpty
             ? Center(
                 child: Text(
-                  'No data found!',
+                  _localizations.noDataFound,
                   style: Theme.of(context).textTheme.headlineSmall!.copyWith(
                         color: Theme.of(context).colorScheme.onBackground,
                       ),

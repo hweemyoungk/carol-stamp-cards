@@ -2,6 +2,7 @@ import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/utils.dart';
 import 'package:carol/widgets/redeem_rules_explorer/redeem_rule_list_item.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class BlueprintInfo extends StatelessWidget {
   const BlueprintInfo({
@@ -15,6 +16,7 @@ class BlueprintInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
     Widget? image = blueprint.bgImageUrl == null
         // ? Image.memory(
         //     kTransparentImage,
@@ -35,7 +37,7 @@ class BlueprintInfo extends StatelessWidget {
     final stampGrantCondTitle = Padding(
       padding: DesignUtils.basicWidgetEdgeInsets(),
       child: Text(
-        'Stamp Grant Conditions',
+        localizations.stampGrantConditions,
         style:
             Theme.of(context).textTheme.titleLarge!.copyWith(color: textColor),
       ),
@@ -50,7 +52,7 @@ class BlueprintInfo extends StatelessWidget {
     final redeemRulesListTitle = Padding(
       padding: DesignUtils.basicWidgetEdgeInsets(),
       child: Text(
-        'Rewards',
+        localizations.rewards,
         style:
             Theme.of(context).textTheme.titleLarge!.copyWith(color: textColor),
       ),
@@ -61,7 +63,7 @@ class BlueprintInfo extends StatelessWidget {
         : redeemRules.isEmpty
             ? Padding(
                 padding: DesignUtils.basicWidgetEdgeInsets(),
-                child: const Text('No rewards!'),
+                child: Text(localizations.noRewards),
               )
             : SizedBox(
                 width: 300,
@@ -79,7 +81,7 @@ class BlueprintInfo extends StatelessWidget {
     final expirationDateTitle = Padding(
       padding: DesignUtils.basicWidgetEdgeInsets(),
       child: Text(
-        'Expiriration Date',
+        localizations.expirationDate,
         style:
             Theme.of(context).textTheme.titleLarge!.copyWith(color: textColor),
       ),
@@ -94,7 +96,10 @@ class BlueprintInfo extends StatelessWidget {
             style: TextStyle(color: textColor),
           ),
           Text(
-            '(${formatRemaining(blueprint.expirationDate.difference(DateTime.now()))})',
+            '(${formatRemaining(
+              blueprint.expirationDate.difference(DateTime.now()),
+              localizations: localizations,
+            )})',
             style: TextStyle(color: textColor),
           ),
         ],

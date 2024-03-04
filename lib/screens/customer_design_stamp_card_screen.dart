@@ -8,6 +8,7 @@ import 'package:carol/utils.dart';
 import 'package:carol/widgets/cards_explorer/cards_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 bool isSavingCard = false;
 final customerDesignCardScreenBlueprintProvider =
@@ -28,8 +29,9 @@ class CustomerDesignStampCardScreen extends ConsumerStatefulWidget {
 
 class _CustomerDesignStampCardScreenState
     extends ConsumerState<CustomerDesignStampCardScreen> {
-  var _status = StampCardDesignStatus.userInput;
   final _formKey = GlobalKey<FormState>();
+  var _status = StampCardDesignStatus.userInput;
+  late AppLocalizations _localizations;
   String? _displayName;
   int? _numGoalStamps;
 
@@ -42,9 +44,10 @@ class _CustomerDesignStampCardScreenState
 
   @override
   Widget build(BuildContext context) {
+    _localizations = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Modify Card'),
+        title: Text(_localizations.modifyCardAppBarTitle),
         actions: [
           _status == StampCardDesignStatus.userInput
               ? IconButton(
@@ -75,14 +78,15 @@ class _CustomerDesignStampCardScreenState
                         style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                             color: Theme.of(context).colorScheme.onBackground),
                         maxLength: 30,
-                        decoration: const InputDecoration(
-                          label: Text('Display Name'),
+                        decoration: InputDecoration(
+                          label: Text(_localizations.displayName),
                         ),
                         validator: (value) {
                           if (value == null ||
                               value.trim().isEmpty ||
                               value.trim().length > 30) {
-                            return 'Must be between 1 and 30 characters long';
+                            return _localizations.textLengthViolationMessage(
+                                1, 30);
                           }
                           return null;
                         },
@@ -108,8 +112,8 @@ class _CustomerDesignStampCardScreenState
                                         .colorScheme
                                         .onBackground),
                             decoration: InputDecoration(
-                              label: const Text('Your Goal'),
-                              suffixText: 'stamps',
+                              label: Text(_localizations.yourGoal),
+                              suffixText: _localizations.stamps,
                               suffixStyle: TextStyle(
                                   color: Theme.of(context)
                                       .colorScheme
@@ -119,13 +123,15 @@ class _CustomerDesignStampCardScreenState
                               final blueprint = ref.read(
                                   customerDesignCardScreenBlueprintProvider);
                               if (blueprint == null) {
-                                return 'Lost blueprint data... Go back and start over.';
+                                return _localizations.lostBlueprintData;
                               }
                               if (value == null ||
                                   int.tryParse(value) == null ||
                                   int.parse(value) < 1 ||
                                   int.parse(value) > blueprint.numMaxStamps) {
-                                return 'Must be integer between 1~${blueprint.numMaxStamps}';
+                                return _localizations
+                                    .integerRangeViolationMessage(
+                                        1, blueprint.numMaxStamps);
                               }
                               return null;
                             },
@@ -164,7 +170,7 @@ class _CustomerDesignStampCardScreenState
     final card = widget.card;
     if (card == null) {
       Carol.showTextSnackBar(
-        text: 'Lost card data... Go back and start over.',
+        text: _localizations.lostCardData,
         level: SnackBarLevel.error,
       );
       if (mounted) {
@@ -188,7 +194,8 @@ class _CustomerDesignStampCardScreenState
     } on Exception catch (e) {
       Carol.showExceptionSnackBar(
         e,
-        contextMessage: 'Failed to mofify card.',
+        contextMessage: _localizations.failedToModifyCard,
+        localizations: _localizations,
       );
       if (mounted) {
         setState(() {
@@ -223,7 +230,7 @@ class _CustomerDesignStampCardScreenState
     // customerDesignCardScreenBlueprintProvider: Not relavent
 
     Carol.showTextSnackBar(
-      text: 'Card modified!',
+      text: _localizations.modifyCardSuccess,
       level: SnackBarLevel.success,
     );
     isSavingCard = false;

@@ -8,6 +8,7 @@ import 'package:carol/widgets/blueprint/blueprint_info.dart';
 import 'package:carol/widgets/common/circular_progress_indicator_in_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class OwnerGrantStampsScreen extends ConsumerStatefulWidget {
   final StampCard stampCard;
@@ -28,15 +29,17 @@ class _OwnerGrantStampsScreenState
     extends ConsumerState<OwnerGrantStampsScreen> {
   var _status = GrantStatus.userInput;
   final _formKey = GlobalKey<FormState>();
+  late AppLocalizations _localizations;
   late int _numGrant;
 
   @override
   Widget build(BuildContext context) {
+    _localizations = AppLocalizations.of(context)!;
     final maxGrant =
         widget.blueprint.numMaxStamps - widget.stampCard.numCollectedStamps;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Grant Stamps'),
+        title: Text(_localizations.grantStampsAppBarTitle),
       ),
       body: Form(
         key: _formKey,
@@ -92,7 +95,7 @@ class _OwnerGrantStampsScreenState
                                       .colorScheme
                                       .onBackground),
                           decoration: InputDecoration(
-                            labelText: 'Grant',
+                            labelText: _localizations.grant,
                             labelStyle: Theme.of(context)
                                 .textTheme
                                 .displaySmall!
@@ -100,7 +103,7 @@ class _OwnerGrantStampsScreenState
                                     color: Theme.of(context)
                                         .colorScheme
                                         .onBackground),
-                            suffixText: 'stamps',
+                            suffixText: _localizations.stamps,
                             suffixStyle: Theme.of(context)
                                 .textTheme
                                 .headlineSmall!
@@ -114,7 +117,8 @@ class _OwnerGrantStampsScreenState
                                 int.tryParse(value) == null ||
                                 int.parse(value) < 1 ||
                                 int.parse(value) > maxGrant) {
-                              return 'Must be in 1~$maxGrant';
+                              return _localizations
+                                  .integerRangeViolationMessage(1, maxGrant);
                             }
                             return null;
                           },
@@ -125,7 +129,7 @@ class _OwnerGrantStampsScreenState
                         ),
                       ),
                       Text(
-                        'Up to $maxGrant stamps allowed',
+                        _localizations.upToMaxStampsAllowed(maxGrant),
                         style: TextStyle(
                             color: Theme.of(context).colorScheme.onBackground),
                       ),
@@ -146,7 +150,7 @@ class _OwnerGrantStampsScreenState
                           color: Theme.of(context).colorScheme.onBackground,
                         ),
                         label: Text(
-                          'Back',
+                          _localizations.back,
                           style: TextStyle(
                               color:
                                   Theme.of(context).colorScheme.onBackground),
@@ -169,7 +173,7 @@ class _OwnerGrantStampsScreenState
                           color: Theme.of(context).colorScheme.primary,
                         ),
                         label: _status == GrantStatus.userInput
-                            ? const Text('Grant stamps')
+                            ? Text(_localizations.grantStamps)
                             : CircularProgressIndicatorInButton(
                                 color: Theme.of(context).colorScheme.primary),
                       ),
@@ -212,7 +216,8 @@ class _OwnerGrantStampsScreenState
     } on Exception catch (e) {
       Carol.showExceptionSnackBar(
         e,
-        contextMessage: 'Failed to grant stamp(s).',
+        contextMessage: _localizations.failedToGrantStamps,
+        localizations: _localizations,
       );
       if (mounted) {
         setState(() {
@@ -223,7 +228,7 @@ class _OwnerGrantStampsScreenState
     }
 
     Carol.showTextSnackBar(
-      text: 'Grant successful!',
+      text: _localizations.grantStampsSuccess,
       level: SnackBarLevel.success,
     );
     if (mounted) {
