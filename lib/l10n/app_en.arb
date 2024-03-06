@@ -26,8 +26,11 @@
     "rememberMe": "Remember me",
     "signInUp": "Sign In / Up",
     "versionCompareFailureDialogContent": "Failed to compare current version name and required minimum version name.\nExiting Application.",
+    "needsUpgrade": "Needs Upgrade",
+    "needsUpgradeContent": "Application needs more recent version to proceed.",
     "welcomeTo": "Welcome to",
     "youAreSignedIn": "You are signed in",
+    "goToStore": "Go to Store",
 
     "@_AppNoticeDialogScreen": {},
     "readDetail": "Read detail",

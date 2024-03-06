@@ -1,4 +1,4 @@
-import 'package:carol/params/shared_preferences.dart' as prefs_params;
+import 'package:carol/widgets/common/language_dropdown_button.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'package:carol/apis/customer_apis.dart' as customer_apis;
@@ -16,8 +16,6 @@ import 'package:carol/utils.dart';
 import 'package:carol/widgets/common/loading.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:transparent_image/transparent_image.dart';
 
 final activeDrawerItemProvider =
     StateNotifierProvider<ActiveDrawerItemNotifier, DrawerItemEnum>(
@@ -42,7 +40,6 @@ class _MainDrawerState extends ConsumerState<MainDrawer> {
   Widget build(BuildContext context) {
     _localizations = AppLocalizations.of(context)!;
     final currentUser = ref.watch(currentUserProvider);
-    final currentLocale = ref.watch(activeLocaleProvider);
     final localizations = AppLocalizations.of(context)!;
     if (currentUser == null) {
       // Can happen when signed out
@@ -51,42 +48,42 @@ class _MainDrawerState extends ConsumerState<MainDrawer> {
       );
     }
 
-    final avatar = ClipRRect(
-      borderRadius: BorderRadius.circular(25.0),
-      child: currentUser.profileImageUrl == null
-          ? Stack(
-              children: [
-                Image.memory(
-                  kTransparentImage,
-                  height: 50,
-                  width: 50,
-                  fit: BoxFit.cover,
-                ),
-                Positioned.fill(
-                  child: Align(
-                    alignment: Alignment.center,
-                    child: Text(
-                      _localizations.noImage,
-                      style: const TextStyle(
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            )
-          : Image.asset(
-              currentUser.profileImageUrl!,
-              height: 50,
-              width: 50,
-              fit: BoxFit.cover,
-            ),
-    );
-    final profileIcon = Padding(
-      padding: DesignUtils.basicWidgetEdgeInsets(),
-      child: avatar,
-    );
-    const supportedLanguages = SupportedLanguage.values;
+    // Skip
+    // final avatar = ClipRRect(
+    //   borderRadius: BorderRadius.circular(25.0),
+    //   child: currentUser.profileImageUrl == null
+    //       ? Stack(
+    //           children: [
+    //             Image.memory(
+    //               kTransparentImage,
+    //               height: 50,
+    //               width: 50,
+    //               fit: BoxFit.cover,
+    //             ),
+    //             Positioned.fill(
+    //               child: Align(
+    //                 alignment: Alignment.center,
+    //                 child: Text(
+    //                   _localizations.noImage,
+    //                   style: const TextStyle(
+    //                     fontStyle: FontStyle.italic,
+    //                   ),
+    //                 ),
+    //               ),
+    //             ),
+    //           ],
+    //         )
+    //       : Image.asset(
+    //           currentUser.profileImageUrl!,
+    //           height: 50,
+    //           width: 50,
+    //           fit: BoxFit.cover,
+    //         ),
+    // );
+    // final profileIcon = Padding(
+    //   padding: DesignUtils.basicWidgetEdgeInsets(),
+    //   child: avatar,
+    // );
     return Drawer(
       width: 250,
       backgroundColor: Theme.of(context).colorScheme.primaryContainer,
@@ -107,7 +104,7 @@ class _MainDrawerState extends ConsumerState<MainDrawer> {
               },
               child: Row(
                 children: [
-                  profileIcon,
+                  // profileIcon,
                   Expanded(
                     child: Text(
                       textAlign: TextAlign.center,
@@ -161,45 +158,8 @@ class _MainDrawerState extends ConsumerState<MainDrawer> {
                   ),
                 ],
               ),
-              DropdownButton(
-                value: supportedLanguages.firstWhere((element) =>
-                    element.languageCode == currentLocale.languageCode),
-                selectedItemBuilder: (context) {
-                  return supportedLanguages
-                      .map(
-                        (e) => Center(
-                          child: Text(
-                            e.language,
-                            style: TextStyle(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onPrimaryContainer,
-                            ),
-                          ),
-                        ),
-                      )
-                      .toList();
-                },
-                icon: Icon(
-                  Icons.language,
-                  color: Theme.of(context).colorScheme.onPrimaryContainer,
-                ),
-                items: supportedLanguages
-                    .map((e) => LocaleDropdownMenuItem(e))
-                    .toList(),
-                onChanged: (value) async {
-                  if (value == null) {
-                    return;
-                  }
-                  if (value is! SupportedLanguage) {
-                    return;
-                  }
-                  ref.read(activeLocaleProvider.notifier).set(value);
-
-                  final prefs = await SharedPreferences.getInstance();
-                  prefs.setString(
-                      prefs_params.languageCodeKey, value.languageCode);
-                },
+              LanguageDropdownButton(
+                textColor: Theme.of(context).colorScheme.onPrimaryContainer,
               ),
             ],
           ),

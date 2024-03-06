@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:app_links/app_links.dart';
 import 'package:carol/apis/app_apis.dart' as app_apis;
@@ -16,6 +17,7 @@ import 'package:carol/providers/current_user_notifier.dart';
 import 'package:carol/screens/app_notice_dialog_screen.dart';
 import 'package:carol/screens/dashboard_screen.dart';
 import 'package:carol/utils.dart';
+import 'package:carol/widgets/common/language_dropdown_button.dart';
 import 'package:carol/widgets/main_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -24,6 +26,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:pkce/pkce.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 final currentUserProvider = StateNotifierProvider<CurrentUserNotifier, User?>(
     (ref) => CurrentUserNotifier());
@@ -173,6 +176,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   Future<void> _checkVersionName(String currrentVersionName) async {
     final errorTextColor = Theme.of(context).colorScheme.onError;
     final errorBgColor = Theme.of(context).colorScheme.error;
+    final primaryTextColor = Theme.of(context).colorScheme.onPrimary;
+    final primaryBgColor = Theme.of(context).colorScheme.primary;
 
     final int compareVersionName;
     try {
@@ -226,7 +231,32 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           context: context,
           builder: (ctx) {
             return AlertDialog(
+              actionsAlignment: MainAxisAlignment.center,
               actions: [
+                TextButton.icon(
+                  style: TextButton.styleFrom(
+                    backgroundColor: primaryBgColor,
+                  ),
+                  icon: Icon(
+                    Icons.upgrade,
+                    color: primaryTextColor,
+                  ),
+                  label: Text(
+                    _localizations.goToStore,
+                    style: TextStyle(
+                      color: primaryTextColor,
+                    ),
+                  ),
+                  onPressed: () {
+                    if (Platform.isAndroid) {
+                      final url = Uri.parse('market://details?id=cards.carol');
+                      launchUrl(
+                        url,
+                        mode: LaunchMode.externalApplication,
+                      );
+                    }
+                  },
+                ),
                 TextButton.icon(
                   style: TextButton.styleFrom(
                     backgroundColor: errorBgColor,
@@ -246,9 +276,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   },
                 ),
               ],
+              title: Text(_localizations.needsUpgrade),
               content: SingleChildScrollView(
                 child: Text(
-                  _localizations.versionCompareFailureDialogContent,
+                  _localizations.needsUpgradeContent,
                 ),
               ),
             );
@@ -660,7 +691,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                           ),
                         ),
                       ),
-                    )
+                    ),
+                    LanguageDropdownButton(
+                      textColor: Theme.of(context).colorScheme.onPrimary,
+                    ),
                   ],
                 ),
               ),

@@ -26,8 +26,11 @@
     "rememberMe": "기억하기",
     "signInUp": "로그인/회원가입",
     "versionCompareFailureDialogContent": "현재 버전과 최소 요구 버전을 비교하지 못 했어요.\n애플리케이션을 종료합니다.",
+    "needsUpgrade": "업그레이드가 필요해요",
+    "needsUpgradeContent": "진행하기 위해선 더 최신 버전이 필요해요.",
     "welcomeTo": "Welcome to",
-    "youAreSignedIn": "로그인되었습니다,",
+    "youAreSignedIn": "로그인되었습니다",
+    "goToStore": "스토어 가기",
     
     "@_AppNoticeDialogScreen": {},
     "readDetail": "자세히 읽기",
