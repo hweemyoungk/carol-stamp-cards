@@ -1,8 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- https://docs.flutter.dev/deployment/android#reviewing-the-app-manifest -->
+    <uses-permission android:name="android.permission.INTERNET" />
     <application
-        android:label="Carol"
+        android:label="Carol Cards"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/carol_launcher_icon">
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -46,8 +48,8 @@
             <action android:name="android.intent.action.VIEW" />
             <data android:scheme="sms" />
         </intent> -->
-            <!-- If your app checks for call support -->
-            <!-- <intent>
+        <!-- If your app checks for call support -->
+        <!-- <intent>
             <action android:name="android.intent.action.VIEW" />
             <data android:scheme="tel" />
         </intent> -->

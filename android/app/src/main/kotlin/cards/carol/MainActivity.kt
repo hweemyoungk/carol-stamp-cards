@@ -1,4 +1,4 @@
-package com.example.carol
+package cards.carol
 
 import io.flutter.embedding.android.FlutterActivity
 
