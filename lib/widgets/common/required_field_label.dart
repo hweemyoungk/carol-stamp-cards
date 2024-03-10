@@ -2,7 +2,7 @@ import 'package:carol/utils.dart';
 import 'package:flutter/material.dart';
 
 class RequiredFieldLabel extends StatelessWidget {
-  final Text labelText;
+  final Widget labelText;
 
   const RequiredFieldLabel(this.labelText, {super.key});
 
@@ -10,7 +10,7 @@ class RequiredFieldLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        labelText,
+        Flexible(child: labelText),
         const SizedBox(width: 4),
         DesignUtils.requiredFieldLabelSuffixText,
       ],

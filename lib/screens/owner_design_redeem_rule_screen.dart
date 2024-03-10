@@ -1,6 +1,7 @@
 import 'package:carol/models/redeem_rule.dart';
 import 'package:carol/models/stamp_card_blueprint.dart';
 import 'package:carol/utils.dart';
+import 'package:carol/widgets/common/required_field_label.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -87,7 +88,9 @@ class _OwnerDesignRedeemRuleScreenState
                           color: Theme.of(context).colorScheme.onBackground),
                       maxLength: 50,
                       decoration: InputDecoration(
-                        label: Text(_localizations.displayName),
+                        label: RequiredFieldLabel(
+                          Text(_localizations.displayName),
+                        ),
                       ),
                       validator: (value) {
                         if (value == null ||
@@ -113,7 +116,9 @@ class _OwnerDesignRedeemRuleScreenState
                           color: Theme.of(context).colorScheme.onBackground),
                       maxLength: 1000,
                       decoration: InputDecoration(
-                        label: Text(_localizations.description),
+                        label: RequiredFieldLabel(
+                          Text(_localizations.description),
+                        ),
                       ),
                       validator: (value) {
                         if (value == null ||
@@ -156,7 +161,9 @@ class _OwnerDesignRedeemRuleScreenState
                                     Theme.of(context).colorScheme.onBackground,
                               ),
                           decoration: InputDecoration(
-                            label: Text(_localizations.consumes),
+                            label: RequiredFieldLabel(
+                              Text(_localizations.consumes),
+                            ),
                             suffixText: _localizations.stamps,
                             suffixStyle: TextStyle(
                               // color: editConsumesEnabled

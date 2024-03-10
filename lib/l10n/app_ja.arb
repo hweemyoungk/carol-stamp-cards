@@ -66,7 +66,7 @@
     "deleteCardSuccess": "カードを削除しました!",
 
     "@_CustomerDesignStampCardScreen": {},
-    "modifyCardAppBarTitle": "カード修正",
+    "modifyCardAppBarTitle": "カードを修正",
     "modifyCardSuccess": "カードを修正しました!",
     
     "@_CustomerScreen": {},
