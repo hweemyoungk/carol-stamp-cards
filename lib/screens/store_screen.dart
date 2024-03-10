@@ -348,7 +348,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         Padding(
           padding: DesignUtils.basicWidgetEdgeInsets(),
           child: Text(
-            _localizations.aboutStoreDialogTitle,
+            _localizations.storeDescription,
             style: Theme.of(context).textTheme.titleLarge!.copyWith(
                   color: onSecondary,
                 ),

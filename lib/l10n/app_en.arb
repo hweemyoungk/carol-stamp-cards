@@ -242,6 +242,7 @@
     "needsPermission": "Needs permission",
 
     "@_StoreScreen": {},
+    "storeDescription": "Description",
     "failedToLoadNumCurrentTotalBlueprintsOfStore": "Failed to load number of current total blueprints of store",
     "reachedMaxNumCurrentTotalBlueprintsOfStore": "Reached max number of current total blueprints of store",
     "storeClosed": "Store was already closed",

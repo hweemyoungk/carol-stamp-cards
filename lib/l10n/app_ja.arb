@@ -1,0 +1,465 @@
+{
+    "@@locale": "ja",
+    "@_Utils": {},
+    "alreadyPassed": "既に経過",
+    "dayInitial": "日",
+    "hourInitial": "時間",
+    "minuteInitial": "分",
+    "monthInitial": "ヶ月",
+    "secondInitial": "秒",
+    "yearInitial": "年",
+
+    "@_AccountDialogScreen": {},
+    "cannotDeleteAccount": "アカウントを削除できません",
+    "deleteAccount": "アカウント削除",
+    "alertContentCannotUndo": "この操作は取り返せません.",
+    "deleteAccountAlertTitle": "アカウントを削除しますか?",
+    "deleteAccountSuccess": "アカウントを削除しました!",
+    "editAccount": "アカウント編集",
+    "signOut": "ログアウト",
+
+    "@_AuthScreen": {},
+    "abortSignInUp": "ログイン/会員登録を中止",
+    "carolCards": "Carol Cards",
+    "exit": "退出",
+    "pleaseWait": "お待ちください...",
+    "rememberMe": "自動ログイン",
+    "signInUp": "ログイン/会員登録",
+    "versionCompareFailureDialogContent": "現在のバージョンと最低必要バージョンが比較できません.\nアプリを終了します.",
+    "needsUpgrade": "アップグレードが必要です",
+    "needsUpgradeContent": "続けるにはより最新のバージョンが必要です.",
+    "welcomeTo": "Welcome to",
+    "youAreSignedIn": "ログインできました",
+    "goToStore": "ストアへ",
+    
+    "@_AppNoticeDialogScreen": {},
+    "readDetail": "詳細",
+    "close": "閉める",
+    "doNotShowAgain": "もう表示しない",
+
+    "@_BlueprintDialogScreen": {},
+    "cardName": "カード名",
+    "cannotIssueCard": "このカードは発行できません!",
+    "getCard": "カード発行",
+    "issueCardSuccess": "カードを発行しました!",
+    "blueprintNotPublishing": "カード原型が配布されていません",
+    "blueprintExpired": "カード原型の有効期限が過ぎました",
+    "failedToLoadNumIssuesPerCustomer": "カスタマーの発行数を取得できませんでした",
+    "reachedMaxNumIssuesPerCustomer": "カスタマー当たり発行数が上限に達しました",
+    "failedToLoadNumTotalIssues": "カード原型の全発行数を取得できませんでした",
+    "reachedMaxNumTotalIssues": "カード原型の全発行数が上限に達しました",
+    "cannotFindCustomerMembership": "カスタマーメンバーシップが取得できませんでした.ログインし直してください.",
+    "failedToLoadNumAccumulatedTotalCards": "全カードの累計数が取得できませんでした",
+    "reachedMaxNumAccumulatedTotalCards": "全カードの累計数が上限に達しました",
+    "failedToLoadNumCurrentTotalCards": "保有中の全カード数が取得できませんでした",
+    "reachedMaxNumCurrentTotalCards": "保有中の全カード数が上限に達しました",
+    "failedToLoadNumCurrentActiveCards": "保有中の有効カード数が取得できませんでした",
+    "reachedMaxNumCurrentActiveCards": "保有中の有効カード数が上限に達しました",
+    
+    "@_CardScreen": {},
+    "reachedMaxNumRedeems": "使用回数が上限に達しました",
+    "alreadyDeletedCard": "カードが既に削除されています",
+    "alreadyExpiredCard": "カードの有効期限が過ぎています",
+    "alreadyDeletedStore": "店舗が既に閉店しています",
+    "max": "最大",
+    "deleteCardAlertTitle": "カードを削除しますか?",
+    "deleteCardSuccess": "カードを削除しました!",
+
+    "@_CustomerDesignStampCardScreen": {},
+    "modifyCardAppBarTitle": "カード修正",
+    "modifyCardSuccess": "カードを修正しました!",
+    
+    "@_CustomerScreen": {},
+    "customersScreenAppBarTitle": "カスタマー画面",
+    
+    "@_MembershipScreen": {},
+    "customerMembership":"カスタマーメンバーシップ",
+    "ownerMembership":"オーナーメンバーシップ",
+    "comingSoon": "Coming soon...",
+    "youAreNow": "只今あなたは",
+    "free": "無料",
+    "pricePerMonth": "{monthlyPrice}/月}",
+    "@pricePerMonth": {
+        "placeholders": {
+            "monthlyPrice": {
+                "type": "String",
+                "example": "$1"
+            }
+        }
+    },
+
+    "@_OwnerDesignBlueprintScreen": {},
+    "newBlueprintAppBarTitle": "新しいカード原型",
+    "modifyBlueprintAppBarTitle": "カード原型を修正",
+    "aboutBlueprintDialogTitle": "カード原型とは",
+    "whatIsBlueprint": "カード原型はカスタマーに発行するカードの詳細内容です.",
+    "blueprintExplanationItem1": "1. 次の設定は自由に修正できます:\n  - 名称\n  - 説明\n  - カスタマー当たり発行数の上限\n  - 全発行数の上限\n  - 今から配布",
+    "blueprintExplanationItem2": "2. ポイント付与条件は修正できません.",
+    "blueprintExplanationItem3": "3. 次の数字は減少できません:\n  - ポイントの上限\n  - カード当たり使用回数の上限",
+    "blueprintExplanationItem4": "4. 修正後の有効期限は、修正前の日時と、現在より{modifyBlueprintExpDateMinRemainingFromNowFormatted}後の日時の、どちらかより遅くなければなりません.",
+    "@blueprintExplanationItem4": {
+        "placeholders": {
+            "modifyBlueprintExpDateMinRemainingFromNowFormatted": {
+                "type": "String",
+                "example": "1d"
+            }
+        }
+    },
+    "blueprintExplanationItem5": "5. '今から配布'が無効なときはカスタマーには見えません. しかし既に発行済みのカードを保有したカスタマーには依然として見えます.",
+    "blueprintExplanationItem6": "6. '今から配布'が無効でも、既に発行済のカードは有効化されています.",
+    "blueprintExplanationItem7": "7. カード原型は削除できません. 無効化するには有効期限を待たなければなりません.",
+    "cannotReduceMaxStamps": "ポイントの上限は減らせません",
+    "failedToLoadNumPublishingBlueprintsOfStore": "現在の店舗で配布中のカード原型数が取得できませんでした",
+    "reachedMaxNumPublishingBlueprintsOfStore": "現在の店舗で配布中のカード原型数が上限に達しました",
+    "createBlueprintAlertTitle": "カード原型を作りますか?",
+    "modifyBlueprintAlertTitle": "カード原型を修正しますか?",
+    "createPublishingBlueprintAlertContent": "現在の店舗で配布中のカード原型1つを占めます.",
+    "createBlueprintAlertContent": "現在の店舗のカード原型1つを占めます.",
+    "createBlueprintSuccess": "カード原型を作りました!",
+    "modifyBlueprintSuccess": "カード原型を修正しました!",
+    "addRedeemRuleAlertContent": "現在のカード原型の使用ルール1つを占めます.",
+    "reachedMaxNumCurrentTotalRedeemRulesPerBlueprint": "カード原型当たり全使用ルール数が上限に達しました",
+    "cannotAddRedeemRule": "使用ルールを追加できません",
+
+    "@_OwnerDesignRedeemRuleScreen": {},
+    "newRedeemRuleAppBarTitle": "新しい使用ルール",
+    "modifyRedeemRuleAppBarTitle": "使用ルールを修正",
+    "aboutRedeemRuleDialogTitle": "使用ルールとは",
+    "whatIsRedeemRule": "使用ルールはカスタマーが集めたポイントを消費する一つの方法を定めます.",
+    "redeemRuleExplanationItem1": "1. 作られた使用ルールはカード原型の有効期限が過ぎるまで、常に有効です.",
+    "redeemRuleExplanationItem2": "2. 次の設定は自由に修正できます:\n  - 名称\n  - 説明",
+    "redeemRuleExplanationItem3": "3. ポイント消費量は修正できますが、カード原型のポイントの上限を超えられません.",
+
+    "@_OwnerDesignStoreScreen": {},
+    "newStoreAppBarTitle": "新しい店舗",
+    "modifyStoreAppBarTitle": "店舗を修正",
+    "createStoreAlertTitle": "店舗を作りますか?",
+    "modifyStoreAlertTitle": "店舗を修正しますか?",
+    "createStoreAlertContent": "有効な店舗1つを占めます.",
+    "createStoreSuccess": "店舗を作りました!",
+    "modifyStoreSuccess": "店舗を修正しました!",
+    "aboutStoreDialogTitle": "店舗とは",
+    "whatIsStore": "店舗はカード原型をデザインし、配布するところです.",
+    "storeExplanationItem1": "1. 店舗は作られた時点で有効です.",
+    "storeExplanationItem2": "2. カスタマーは店舗の店舗QRをスキャンして店舗の情報を取得できます.",
+    "storeExplanationItem3": "3. 有効な店舗の全ての設定は自由に修正できます.",
+    "storeExplanationItem4": "4. 有効な店舗ではカード原型が作られます.",
+    "storeExplanationItem5": "5. 有効な店舗は配布中のカード原型がないときに閉店できます.",
+    "storeExplanationItem6": "6. 閉店済みの店舗は再び有効にできません.",
+    "storeExplanationItem7": "7. 閉店済みの店舗の設定は修正できません.",
+    "storeExplanationItem8": "8. 閉店済みの店舗は依然としてカスタマーに見えます.",
+    "storeExplanationItem9": "9. 閉店済みの店舗は{softDeleteClosedStoreFormatted}後に自動的に削除されます.",
+    "@storeExplanationItem9": {
+        "placeholders": {
+            "softDeleteClosedStoreFormatted": {
+                "type": "String"
+            }
+        }
+    },
+
+    "@_OwnerGrantStampsScreen": {},
+    "grantStampsAppBarTitle": "ポイントを付与",
+    "upToMaxStampsAllowed": "最大{maxGrant}ポイントを付与可能",
+    "@upToMaxStampsAllowed": {
+        "placeholders": {
+            "maxGrant": {
+                "type": "int"
+            }
+        }
+    },
+    "grantStampsSuccess": "ポイントを付与しました!",
+
+    "@_OwnerScreen": {},
+    "ownersScreenAppBarTitle": "オーナー画面",
+    "cannotCreateStore": "店舗が作れません",
+    "cannotFindOwnerMembership": "オーナーメンバーシップが取得できませんでした. ログインし直してください.",
+    "failedToLoadNumAccumulatedTotalStores": "全店舗の累積数が取得できませんでした",
+    "reachedMaxNumAccumulatedTotalStores": "全店舗の累積数が上限に達しました",
+    "failedToLoadNumCurrentTotalStores": "保有中の全店舗数が取得できませんでした",
+    "reachedMaxNumCurrentTotalStores": "保有中の全店舗数が上限に達しました",
+    "failedToLoadNumCurrentActiveStores": "保有中の有効な全店舗数が取得できませんでした",
+    "reachedMaxNumCurrentActiveStores": "保有中の有効な全店舗数が上限に達しました",
+    "aboutRedeemRequestDialogTitle": "使用リクエストとは",
+    "whatIsRedeemRequest": "使用リクエストはあなたのカスタマーがポイント消費を求める一時的な要求です.",
+    "redeemRequestExplanationItem1": "1. リフレッシュポタンをタップし、現在の使用リクエストを取得してください.",
+    "redeemRequestExplanationItem2": "2. カスタマーは保有したカードの使用ルールを満たす限り、いつでも使用リクエストが送れます.",
+    "redeemRequestExplanationItem3": "3. 使用リクエストの持続時間は短いです. 生成から{watchRedeemRequestDurationFormatted}後に消えます.",
+    "@redeemRequestExplanationItem3": {
+        "placeholders": {
+            "watchRedeemRequestDurationFormatted": {
+                "type": "String"
+            }
+        }
+    },
+    "redeemRequestExplanationItem4": "4. 使用リクエストを承認すると、カスタマーンボカードから使用ルールの'ポイント消費量'だけのポイントが消滅します.",
+    "redeemRequestExplanationItem5": "5. 使用リクエストの承認後、オーナーは使用ルールで約束したリワードを提供しなければなりません.",
+
+    "@_RedeemDialogScreen": {},
+    "notEnoughStamps": "ポイントが足りません!",
+    "consumeStamps": "{consumes}ポイントとリワードを交換",
+    "@consumeStamps": {
+        "placeholders": {
+            "consumes": {
+                "type": "int"
+            }
+        }
+    },
+    "redeemSuccess": "ポイントを消費しました!",
+    "awaitingOwnersApproval": "オーナーからの承認を待っています",
+    "sendingRedeemRequest": "オーナーへ使用リクエストを送信中...",
+    
+    "@_RedeemRequestDialogScreen": {},
+    "requestAlreadyExpired": "使用リクエストが既に消えています",
+    "alreadyRedeemed": "既に承認済みです",
+    "customerDisplayNamesRedeemRequest": "{customerDisplayName}様からの使用リクエスト",
+    "@customerDisplayNamesRedeemRequest": {
+        "placeholders": {
+            "customerDisplayName": {
+                "type": "String"
+            }
+        }
+    },
+    "consumesStampsBy": "次の使用ルールによって{consumes}ポイントを消費します...",
+    "@consumesStampsBy": {
+        "placeholders": {
+            "consumes": {
+                "type": "int"
+            }
+        }
+    },
+    "cannotApprove": "承認できません",
+    "approving": "承認中",
+    "approveSuccess": "使用リクエストを承認しました!",
+    
+    "@_ScanQrScreen": {},
+    "scanStoreQrAppBarTitle": "店舗QRをスキャン",
+    "scanCardQrAppBarTitle": "カードQRをスキャン",
+    "toggleFlash": "フラッシュ",
+    "flipCamera": "前/後方転換",
+    "loading": "取得中...",
+    "inactiveCard": "無効なカード",
+    "inactiveStore": "無効な店舗",
+    "needsPermission": "権限が必要です",
+
+    "@_StoreScreen": {},
+    "storeDescription": "店舗説明",
+    "failedToLoadNumCurrentTotalBlueprintsOfStore": "店舗の現在の全カード原型数が取得できませんでした",
+    "reachedMaxNumCurrentTotalBlueprintsOfStore": "店舗の現在の全カード原型数が上限に達しました",
+    "storeClosed": "店舗が既に閉店済みです",
+    "blueprintsBeingPublished": "配布中のカード原型",
+    "noPublishingBlueprints": "配布中のカード原型がありません!",
+    "cannotCloseStore": "店舗を閉店できません",
+
+    "@_LoadingMessages": {},
+    "loadingBlueprint": "カード原型を取得中...",
+    "loadingBlueprints": "カード原型を取得中...",
+    "loadingCard": "カードを取得中...",
+    "loadingUser": "ユーザを取得中...",
+    "loadingStore": "店舗を取得中...",
+    "loadingRedeemRequest": "使用リクエストを取得中...",
+
+    "@_ButtonTexts": {},
+    "approve": "承認",
+    "back": "戻る",
+    "delete": "削除",
+    "modify": "修正",
+    "create": "作る",
+    "storeInfo": "店舗情報",
+    "deleteCard": "カード削除",
+    "cards": "カード",
+    "store": "店舗",
+    "stores": "店舗",
+    "customer": "カスタマー",
+    "membership": "メンバーシップ",
+    "owner": "オーナー",
+    "proceed": "進む",
+    "privacyPolicy": "プライバシーポリシー",
+    "grantStamps": "ポイント付与",
+    "redeemRequests": "使用リクエスト",
+    "blueprint": "カード原型",
+    "showStoreQr": "店舗QR表示",
+    "closeStore": "閉店",
+    "cannotCreateBlueprint": "カード原型が作れません",
+    "closeStoreAlertTitle": "店舗を閉店しますか?",
+    "closedStoreWillBeDeletedAutomatically": "閉店した店舗は{softDeleteClosedStoreFormatted}後に自動的に削除されます.",
+    "@closedStoreWillBeDeletedAutomatically": {
+        "placeholders": {
+            "softDeleteClosedStoreFormatted": {
+                "type": "String"
+            }
+        }
+    },
+    "closeStoreSuccess": "店舗を閉店しました!",
+    "refreshStoreSuccess": "店舗をリフレッシュしました!",
+    "storeQrTitle": "店舗QR",
+    "letCustomersScan": "カスタマーがスキャンできます!",
+    
+    "@_BlueprintInfo": {},
+    "rewards": "リワード",
+    "noRewards": "リワードがありません!",
+    
+    "@_CardInfo": {},
+    "hasntComeYet": "未到来",
+    "lastModified": "最後の修正",
+    "expiredIn": "有効期限まで",
+    "ago": "{durationFormatted}前",
+    "@ago": {
+        "placeholders": {
+            "durationFormatted": {
+                "type": "String"
+            }
+        }
+    },
+    "left": "残り{durationFormatted}",
+    "@left": {
+        "placeholders": {
+            "durationFormatted": {
+                "type": "String"
+            }
+        }
+    },
+    
+    "@_CardsListItemCard": {},
+    "noImage": "No Image",
+    
+    "@_CardsList": {},
+    "noDataFound": "データがありません!",
+    
+    "@_Carol": {},
+    "serverError": "サーバーがデータ処理に失敗しました. 問題が続く場合、管理者へご一報ください.",
+    "dataStaleSignInAgain": "データが古いようです. ログインし直してください.",
+    "dataStaleRefresh": "データが古いようです. リフレッシュしてからお試しください.",
+    "credentialStaleSignInAgain": "ログイン情報が古いようです. ログインし直してください.",
+    "serverBusy": "サーバーが忙しいようです. 少々お待ちになってからお試しください.",
+    "serverMaintenance": "サーバーがメンテナンス中です. 少々お待ちになってからお試しください.",
+    "unexpectedError": "予期せぬエラーが発生しました",
+    
+    "@_FormFields": {},
+    "displayName": "名称",
+    "textLengthViolationMessage": "{min}~{max}文字でなければなりません",
+    "@textLengthViolationMessage": {
+        "placeholders": {
+            "min": {
+                "type": "int",
+                "example": "1"
+            },
+            "max": {
+                "type": "int",
+                "example": "30"
+            }
+        }
+    },
+    "description": "説明",
+    "stampGrantConditions": "ポイント付与条件",
+    "maxStamps": "ポイントの上限",
+    "maxRedeemsPerCard": "カード当たり使用回数の上限",
+    "maxIssuesPerCustomer": "カスタマー当たり発行数の上限",
+    "maxTotalIssues": "全発行数の上限",
+    "noLimit": "上限なし",
+    "redeemRules": "使用ルール",
+    "expirationDate": "有効期限",
+    "expirationDateFirstDateViolationMessage": "有効期限は{firstDateFormatted}以降でなければなりません.\n選択し直してください.",
+    "@expirationDateFirstDateViolationMessage": {
+        "placeholders": {
+            "firstDateFormatted": {
+                "type": "String"
+            }
+        }
+    },
+    "publishNow": "今から配布",
+    "noDateSelected": "日時が選択されていません",
+    "consumes": "ポイント消費量",
+    "zipcode": "郵便番号",
+    "address": "住所",
+    "phone": "電話番号",
+    "latitude": "緯度",
+    "longitude": "軽度",
+    "grant": "付与する",
+    "yourGoal": "目標数",
+    "stamps": "ポイント",
+    "lostBlueprintData": "カード原型データを消失しました... リフレッシュしてからお試しください.",
+    "integerViolationMessage": "整数でなければなりません",
+    "integerLowerboundViolationMessage": "{lowerbound}以上の整数でなければなりません",
+    "@integerLowerboundViolationMessage": {
+        "placeholders": {
+            "lowerbound": {
+                "type": "int",
+                "example": "1"
+            }
+        }
+    },
+    "integerRangeViolationMessage": "{min}~{max}の整数でなければなりません",
+    "@integerRangeViolationMessage": {
+        "placeholders": {
+            "min": {
+                "type": "int",
+                "example": "1"
+            },
+            "max": {
+                "type": "int",
+                "example": "30"
+            }
+        }
+    },
+    "floatRangeViolationMessage": "{min}~{max}の実数でなければなりません",
+    "@floatRangeViolationMessage": {
+        "placeholders": {
+            "min": {
+                "type": "double",
+                "format": "decimalPattern",
+                "example": "1.0"
+            },
+            "max": {
+                "type": "double",
+                "format": "decimalPattern",
+                "example": "30.0"
+            }
+        }
+    },
+    
+    "@_ErrorMessages": {},
+    "failedToAuthenticate": "認証できませんでした. 管理者へご連絡ください.",
+    "failedToAutoSignIn": "自動ログインに失敗しました. 直接ログインしてください.",
+    "failedToCloseStore": "店舗を閉店できませんでした",
+    "failedToDeleteAccount": "アカウントを削除できませんでした",
+    "failedToDeleteCard": "カードを削除できませんでした",
+    "failedToGrantStamps": "ポイントを付与できませんでした",
+    "failedToLoadAppNotices": "アプリの告知が取得できませんでした",
+    "failedToLoadCustomerModels": "カスタマーデータが取得できませんでした",
+    "failedToLoadCustomersCardAndBlueprint": "カスタマーのカード及びカード原型データが取得できませんでした",
+    "failedToLoadOwnerModels": "オーナーデータが取得できませんでした",
+    "failedToLoadCard": "カードデータが取得できませんでした",
+    "failedToLoadNewlyCreatedCard": "作成後のカードデータが取得できませんでした",
+    "failedToLoadNewlyCreatedBlueprint": "作成後のカード原型データが取得できませんでした",
+    "failedToLoadNewlyCreatedStore": "作成後の店舗データが取得できませんでした",
+    "failedToLoadModifiedBlueprint": "修正後のカード原型データが取得できませんでした",
+    "failedToLoadRedeemRules": "使用ルールデータが取得できませんでした",
+    "failedToLoadBlueprint": "カード原型データが取得できませんでした",
+    "failedToLoadBlueprints": "カード原型データが取得できませんでした",
+    "failedToLoadRedeemRequests": "使用ルールデータが取得できませんでした",
+    "failedToLoadStore": "店舗データが取得できませんでした",
+    "failedToModifyCard": "カードを修正できませんでした",
+    "failedToModifyBlueprint": "カード原型を修正できませんでした",
+    "failedToModifyStore": "店舗を修正できませんでした",
+    "failedToSignIn": "ログインできませんでした",
+    "failedToIssueCard": "カードを発行できませんでした",
+    "failedToSaveNewCard": "新しいカードを作れませんでした",
+    "failedToSaveNewBlueprint": "新しいカード原型を作れませんでした",
+    "failedToSaveNewStore": "新しい店舗を作れませんでした",
+    "failedToSaveNewRedeemRequest": "新しい使用ルールを作れませんでした",
+    "failedToRedeem": "使用できませんでした",
+    "failedToCheckRedeemExists": "使用履歴の存在の確認に失敗しました",
+    "failedToCheckRedeemRequestExists": "使用リクエストの存在の確認に失敗しました",
+    "failedToCancelRedeemRequest": "使用リクエストを取り消せませんでした",
+    "failedToApproveRedeemRequest": "使用リクエストを承認できませんでした",
+    "failedToToggleFavorite": "お気に入りを切り替えできませんでした",
+    "followingStoresStillExist": "次の店舗がまだ存在します",
+    "followingBlueprintsAreStillPublishing": "次のカード原型がまだ配布中です",
+    "invalidStateToken": "Invalid state token",
+    "lostData": "データを消失しました... リフレッシュしてからお試しください.",
+    "lostCardData": "カードデータを消失しました... リフレッシュしてからお試しください.",
+    "lostStoreData": "店舗データを消失しました... リフレッシュしてからお試しください.",
+    "lostPkceData": "Lost PKCE data",
+    "receivedInvalidOidcToken": "Received invalid OIDC token",
+    "signInAgain": "ログインし直してください"
+}
