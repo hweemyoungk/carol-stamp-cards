@@ -277,6 +277,7 @@ enum DrawerItemEnum {
 
 enum SupportedLanguage {
   en(languageCode: 'en', language: 'English'),
+  ja(languageCode: 'ja', language: '日本語'),
   ko(languageCode: 'ko', language: '한국어'),
   ;
 

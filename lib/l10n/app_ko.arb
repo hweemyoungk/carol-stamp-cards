@@ -242,6 +242,7 @@
     "needsPermission": "권한이 필요해요",
 
     "@_StoreScreen": {},
+    "storeDescription": "가게 설명",
     "failedToLoadNumCurrentTotalBlueprintsOfStore": "가게의 현재 총 카드 원형 수를 불러오지 못 했어요",
     "reachedMaxNumCurrentTotalBlueprintsOfStore": "가게의 현재 총 카드 원형 수가 상한에 도달했어요",
     "storeClosed": "가게가 이미 폐점했어요",
