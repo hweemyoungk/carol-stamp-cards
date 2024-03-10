@@ -6,6 +6,7 @@ import 'package:carol/providers/blueprint_notifier.dart';
 import 'package:carol/screens/card_screen.dart';
 import 'package:carol/utils.dart';
 import 'package:carol/widgets/cards_explorer/cards_list.dart';
+import 'package:carol/widgets/common/required_field_label.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -79,7 +80,9 @@ class _CustomerDesignStampCardScreenState
                             color: Theme.of(context).colorScheme.onBackground),
                         maxLength: 30,
                         decoration: InputDecoration(
-                          label: Text(_localizations.displayName),
+                          label: RequiredFieldLabel(
+                            Text(_localizations.displayName),
+                          ),
                         ),
                         validator: (value) {
                           if (value == null ||
@@ -112,7 +115,9 @@ class _CustomerDesignStampCardScreenState
                                         .colorScheme
                                         .onBackground),
                             decoration: InputDecoration(
-                              label: Text(_localizations.yourGoal),
+                              label: RequiredFieldLabel(
+                                Text(_localizations.yourGoal),
+                              ),
                               suffixText: _localizations.stamps,
                               suffixStyle: TextStyle(
                                   color: Theme.of(context)

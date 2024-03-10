@@ -12,6 +12,7 @@ import 'package:carol/utils.dart';
 import 'package:carol/widgets/common/alert_row.dart';
 import 'package:carol/widgets/common/icon_button_in_progress.dart';
 import 'package:carol/widgets/common/proceed_alert_dialog.dart';
+import 'package:carol/widgets/common/required_field_label.dart';
 import 'package:carol/widgets/stores_explorer/stores_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -124,10 +125,12 @@ class _OwnerDesignStoreScreenState
                             color: Theme.of(context).colorScheme.onBackground),
                         maxLength: 30,
                         decoration: InputDecoration(
-                          label: Text(
-                            _localizations.displayName,
-                            style: TextStyle(
-                              color: onBackgroundTernary,
+                          label: RequiredFieldLabel(
+                            Text(
+                              _localizations.displayName,
+                              style: TextStyle(
+                                color: onBackgroundTernary,
+                              ),
                             ),
                           ),
                         ),
@@ -155,10 +158,12 @@ class _OwnerDesignStoreScreenState
                             color: Theme.of(context).colorScheme.onBackground),
                         maxLength: 1000,
                         decoration: InputDecoration(
-                          label: Text(
-                            _localizations.description,
-                            style: TextStyle(
-                              color: onBackgroundTernary,
+                          label: RequiredFieldLabel(
+                            Text(
+                              _localizations.description,
+                              style: TextStyle(
+                                color: onBackgroundTernary,
+                              ),
                             ),
                           ),
                         ),
@@ -197,10 +202,12 @@ class _OwnerDesignStoreScreenState
                                 )),
                         maxLength: 1000,
                         decoration: InputDecoration(
-                          label: Text(
-                            _localizations.stampGrantConditions,
-                            style: TextStyle(
-                              color: onBackgroundTernary,
+                          label: RequiredFieldLabel(
+                            Text(
+                              _localizations.stampGrantConditions,
+                              style: TextStyle(
+                                color: onBackgroundTernary,
+                              ),
                             ),
                           ),
                         ),
@@ -236,12 +243,18 @@ class _OwnerDesignStoreScreenState
                                       color: Theme.of(context)
                                           .colorScheme
                                           .onBackground),
-                              // double _lng;
                               decoration: InputDecoration(
-                                label: Text(
-                                  _localizations.maxStamps,
-                                  style: TextStyle(
-                                    color: onBackgroundTernary,
+                                border: const OutlineInputBorder(
+                                  borderSide: BorderSide(width: 1),
+                                ),
+                                label: RequiredFieldLabel(
+                                  Text(
+                                    _localizations.maxStamps,
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 2,
+                                    style: TextStyle(
+                                      color: onBackgroundTernary,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -284,12 +297,18 @@ class _OwnerDesignStoreScreenState
                                       color: Theme.of(context)
                                           .colorScheme
                                           .onBackground),
-                              // double _lng;
                               decoration: InputDecoration(
-                                label: Text(
-                                  _localizations.maxRedeemsPerCard,
-                                  style: TextStyle(
-                                    color: onBackgroundTernary,
+                                border: const OutlineInputBorder(
+                                  borderSide: BorderSide(width: 1),
+                                ),
+                                label: RequiredFieldLabel(
+                                  Text(
+                                    _localizations.maxRedeemsPerCard,
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 2,
+                                    style: TextStyle(
+                                      color: onBackgroundTernary,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -326,12 +345,22 @@ class _OwnerDesignStoreScreenState
                                       color: Theme.of(context)
                                           .colorScheme
                                           .onBackground),
-                              // double _lng;
                               decoration: InputDecoration(
-                                label: Text(
-                                  _localizations.maxIssuesPerCustomer,
-                                  style: TextStyle(
-                                    color: onBackgroundTernary,
+                                // labelText: _localizations.maxIssuesPerCustomer,
+                                // labelStyle: TextStyle(
+                                //   color: onBackgroundTernary,
+                                // ),
+                                border: const OutlineInputBorder(
+                                  borderSide: BorderSide(width: 1),
+                                ),
+                                label: RequiredFieldLabel(
+                                  Text(
+                                    _localizations.maxIssuesPerCustomer,
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 2,
+                                    style: TextStyle(
+                                      color: onBackgroundTernary,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -361,7 +390,7 @@ class _OwnerDesignStoreScreenState
                       children: [
                         // late int _numMaxIssues;
                         Padding(
-                          padding: DesignUtils.basicWidgetEdgeInsets(),
+                          padding: DesignUtils.basicWidgetEdgeInsets(2),
                           child: Row(
                             children: [
                               SizedBox(
@@ -382,10 +411,17 @@ class _OwnerDesignStoreScreenState
                                                       ? 0.5
                                                       : 1.0)),
                                   decoration: InputDecoration(
-                                    label: Text(
-                                      _localizations.maxTotalIssues,
-                                      style: TextStyle(
-                                        color: onBackgroundTernary,
+                                    border: const OutlineInputBorder(
+                                      borderSide: BorderSide(width: 1),
+                                    ),
+                                    label: RequiredFieldLabel(
+                                      Text(
+                                        _localizations.maxTotalIssues,
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 2,
+                                        style: TextStyle(
+                                          color: onBackgroundTernary,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -440,15 +476,18 @@ class _OwnerDesignStoreScreenState
                       children: [
                         Padding(
                           padding: DesignUtils.basicWidgetEdgeInsets(),
-                          child: Text(
-                            _localizations.redeemRules,
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelLarge!
-                                .copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onBackground),
+                          child: SizedBox(
+                            width: 100,
+                            child: Text(
+                              _localizations.redeemRules,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelLarge!
+                                  .copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onBackground),
+                            ),
                           ),
                         ),
                         IconButton(
@@ -558,12 +597,17 @@ class _OwnerDesignStoreScreenState
                       children: [
                         Padding(
                           padding: DesignUtils.basicWidgetEdgeInsets(),
-                          child: Text(
-                            _localizations.expirationDate,
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelLarge!
-                                .copyWith(color: onBackgroundTernary),
+                          child: SizedBox(
+                            width: 100,
+                            child: RequiredFieldLabel(
+                              Text(
+                                _localizations.expirationDate,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .labelLarge!
+                                    .copyWith(color: onBackgroundTernary),
+                              ),
+                            ),
                           ),
                         ),
                         Padding(
@@ -617,15 +661,20 @@ class _OwnerDesignStoreScreenState
                       children: [
                         Padding(
                           padding: DesignUtils.basicWidgetEdgeInsets(),
-                          child: Text(
-                            _localizations.publishNow,
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelLarge!
-                                .copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onBackground),
+                          child: SizedBox(
+                            width: 100,
+                            child: RequiredFieldLabel(
+                              Text(
+                                _localizations.publishNow,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .labelLarge!
+                                    .copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onBackground),
+                              ),
+                            ),
                           ),
                         ),
                         const SizedBox(width: 25),

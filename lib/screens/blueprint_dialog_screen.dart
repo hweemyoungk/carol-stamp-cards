@@ -14,6 +14,7 @@ import 'package:carol/widgets/blueprint/blueprint_info.dart';
 import 'package:carol/widgets/cards_explorer/cards_list.dart';
 import 'package:carol/widgets/common/alert_row.dart';
 import 'package:carol/widgets/common/loading.dart';
+import 'package:carol/widgets/common/required_field_label.dart';
 import 'package:carol/widgets/stores_explorer/stores_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -39,6 +40,7 @@ class BlueprintDialogScreen extends ConsumerStatefulWidget {
 }
 
 class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
+  final _formKey = GlobalKey<FormState>();
   final List<Widget> _alertRows = [];
   Widget? _unissuableAlerts;
   late Widget _issueButton;
@@ -108,31 +110,50 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
         controller: TextEditingController(text: blueprint.displayName),
         enabled: _issueStatus == _IssueStatus.issuable,
         decoration: InputDecoration(
-          labelText: _localizations.cardName,
-          labelStyle: TextStyle(
-            color: Theme.of(context).colorScheme.onSecondary,
+          label: RequiredFieldLabel(
+            Text(
+              _localizations.cardName,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSecondary,
+              ),
+            ),
           ),
+          // labelText: _localizations.cardName,
+          // labelStyle: TextStyle(
+          //   color: Theme.of(context).colorScheme.onSecondary,
+          // ),
         ),
         // initialValue: blueprint.displayName,
+        validator: (value) {
+          if (value == null ||
+              value.trim().isEmpty ||
+              value.trim().length > 30) {
+            return _localizations.textLengthViolationMessage(1, 30);
+          }
+          return null;
+        },
         style: const TextStyle(fontSize: 24),
       );
 
       return AlertDialog(
         title: dialogTitle,
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              blueprintInfo,
-              Padding(
-                padding: DesignUtils.basicWidgetEdgeInsets(),
-                child: _cardNameTextField,
-              ),
-              if (_unissuableAlerts != null) _unissuableAlerts!,
-              backButton,
-              _issueButton,
-            ],
+        content: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                blueprintInfo,
+                Padding(
+                  padding: DesignUtils.basicWidgetEdgeInsets(),
+                  child: _cardNameTextField,
+                ),
+                if (_unissuableAlerts != null) _unissuableAlerts!,
+                backButton,
+                _issueButton,
+              ],
+            ),
           ),
         ),
       );
@@ -544,6 +565,10 @@ class _BlueprintDialogScreenState extends ConsumerState<BlueprintDialogScreen> {
   }
 
   void _onPressIssue() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
     final currentUser = ref.read(currentUserProvider)!;
     final blueprint = ref.read(customerBlueprintDialogScreenBlueprintProvider);
     if (blueprint == null) return;
