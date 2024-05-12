@@ -37,15 +37,20 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
   late Widget redeemButton;
   String? _redeemRequestId;
   late RedeemStatus _redeemStatus;
+  late String _notRedeemableText;
 
-  @override
-  void initState() {
-    super.initState();
+  void _checkRedeemable() {
     final redeemRule = widget.redeemRule;
     final card = widget.card;
-    _redeemStatus = card.numCollectedStamps < redeemRule.consumes
-        ? RedeemStatus.notRedeemable
-        : RedeemStatus.redeemable;
+    if (card.numCollectedStamps < redeemRule.consumes) {
+      _redeemStatus = RedeemStatus.notRedeemable;
+      _notRedeemableText = _localizations.notEnoughStamps;
+    } else if (card.blueprint!.isExpired) {
+      _redeemStatus = RedeemStatus.notRedeemable;
+      _notRedeemableText = _localizations.blueprintExpired;
+    } else {
+      _redeemStatus = RedeemStatus.redeemable;
+    }
   }
 
   @override
@@ -54,6 +59,8 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
     final redeemRule = widget.redeemRule;
     final stampCard = widget.card;
 
+    _checkRedeemable();
+
     if (_redeemStatus == RedeemStatus.notRedeemable) {
       redeemButton = ElevatedButton(
         onPressed: null,
@@ -61,7 +68,7 @@ class _RedeemDialogScreenState extends ConsumerState<RedeemDialogScreen> {
             disabledBackgroundColor:
                 Theme.of(context).colorScheme.errorContainer),
         child: Text(
-          _localizations.notEnoughStamps,
+          _notRedeemableText,
           style:
               TextStyle(color: Theme.of(context).colorScheme.onErrorContainer),
         ),
